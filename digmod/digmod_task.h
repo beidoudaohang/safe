@@ -1,5 +1,5 @@
 /*
- * File      : digmod.h
+ * File      : digmod_task.h
  * 
  *dig module
  *

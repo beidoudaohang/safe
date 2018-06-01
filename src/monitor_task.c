@@ -1,5 +1,5 @@
 /*
- * File      : monitor.c
+ * File      : monitor_task.c
  * 
  *
  *
@@ -22,7 +22,7 @@
 
 #define WEBCLIENTCNT 10
 #define MAXDATASIZE 1024
-#define WEB_SOCK_FILE "../web_socket"
+#define WEB_SOCK_FILE "web_socket"
 
 pthread_t monitor_tid;
 pthread_attr_t monitor_attr;
@@ -37,27 +37,27 @@ int socket_init()
     struct sockaddr_un sun;
 
     if((sockfd = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1){
-        LOG_DEBUG("socket create error");
+        RLDEBUG("socket create error");
         exit(1);
     }
 
-    //LOG_DEBUG("socket success!,sockfd = %d\n", sockfd);
+    //RLDEBUG("socket success!,sockfd = %d\n", sockfd);
 
     memset(&sun, 0, sizeof(sun));
     sun.sun_family = AF_LOCAL;
     strcpy (sun.sun_path, WEB_SOCK_FILE);    
 
     if(bind(sockfd, (struct sockaddr *)&sun, sizeof(sun)) == -1){
-        LOG_DEBUG("bind error ");
+        RLDEBUG("bind error ");
         exit(1);
     }
 
-    //LOG_DEBUG("bind success!\n");
+    //RLDEBUG("bind success!\n");
     if(listen(sockfd, WEBCLIENTCNT) == -1){
-        LOG_DEBUG("listen error");
+        RLDEBUG("listen error");
         exit(1);
     }
-    LOG_DEBUG("listening....\n");
+    RLDEBUG("listening....\n");
 
     return sockfd;
 }
@@ -73,7 +73,7 @@ void client_deal(fd_set rset, fd_set mainset, u16 ready)
         client_fd = web_clientfd[i];
         if(FD_ISSET(client_fd, &rset)){
             if((recvbytes = recv(client_fd, buf, MAXDATASIZE, 0)) == -1){
-                LOG_DEBUG("recv error");
+                RLDEBUG("recv error");
                 continue;
             }
 
@@ -81,14 +81,14 @@ void client_deal(fd_set rset, fd_set mainset, u16 ready)
                 close(client_fd); 
                 FD_CLR(client_fd, &mainset);
                 web_clientfd[i] = 0;
-                LOG_DEBUG("client:%d off!\n", client_fd);
+                RLDEBUG("client:%d off!\n", client_fd);
             }else{
                 buf[recvbytes] = 0;
 
-                LOG_DEBUG("client:%d input\n%s\n", client_fd, buf);
+                RLDEBUG("client:%d input\n%s\n", client_fd, buf);
 
                 if((sendbytes = send(client_fd, (void *)buf, strlen(buf), 0)) == -1){
-                    LOG_DEBUG("send error ");
+                    RLDEBUG("send error ");
                     continue;
                 }
             }
@@ -106,7 +106,7 @@ void *local_web_thread(void *arg)
     fd_set rset, mainset;
     u16 ready, i;
 
-    LOG_DEBUG("start local web thread...\r\n"); 
+    RLDEBUG("start local web thread...\r\n"); 
 
     unlink(WEB_SOCK_FILE);  
 
@@ -120,13 +120,13 @@ void *local_web_thread(void *arg)
         rset = mainset;
         ready = select(maxfd+1, &rset, NULL, NULL, NULL);
         if(ready == -1){
-            LOG_DEBUG("select error");
+            RLDEBUG("select error");
             continue;
         }
 
         if(FD_ISSET(sockfd, &rset)){
             if((client_fd = accept(sockfd, (struct sockaddr *)&cun, &client_size)) != -1){
-                LOG_DEBUG("client:%d enter!\n", client_fd);
+                RLDEBUG("client:%d enter!\n", client_fd);
 
                 for(i=0; i<WEBCLIENTCNT; ++i){
                     if(web_clientfd[i] <= 0) {
@@ -153,7 +153,7 @@ void *local_web_thread(void *arg)
 
     close(sockfd);
     unlink (WEB_SOCK_FILE);  
-    LOG_DEBUG("close web server\n");
+    RLDEBUG("close web server\n");
 
 }
 
@@ -161,7 +161,7 @@ void *monitor_thread(void *arg)
 {
     s32 err;
 
-    LOG_DEBUG("start monitor thread...\r\n"); 
+    RLDEBUG("start monitor thread...\r\n"); 
 
     //modem Remote controls
 
@@ -172,7 +172,7 @@ void *monitor_thread(void *arg)
     pthread_attr_setdetachstate(&local_web_attr, PTHREAD_CREATE_DETACHED);
     err = pthread_create(&local_web_tid, &local_web_attr, local_web_thread, NULL);
     if (err < 0) {
-        LOG_DEBUG("creat local web thread false!\r\n");
+        RLDEBUG("creat local web thread false!\r\n");
     }
 
     while(1){

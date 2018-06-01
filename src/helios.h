@@ -29,6 +29,10 @@ typedef double f64;
 #define MIN(A,B)		(((A)>=(B))?(B):(A))
 #define MAX(A,B)		(((A)>=(B))?(A):(B))
 
-#define PRO_DEBUG_ENABLE        1
+#define PRO_DEBUG_ENABLE        	1
+#define MONITOR_MODULE_ENABLE		1	/*标示是否包含监控模块*/
+#define OTHER_MODULE_ENABLE			1	/*标示是否有除监控模块以外的模块*/
+//#define RL_PERMISSION_CHECK		1		/*adr access permisson check*/
+#define MOD_NUM_IN_ONE_PCB 			3	
 
 #endif //__HELIOS_H__

@@ -1,5 +1,5 @@
 /*
- * File      : digmod.c
+ * File      : digmod_task.c
  * 
  *dig module
  *
@@ -59,22 +59,22 @@ s32 dig_alarm_deal()
 
 void *digmod_thread(void *arg)
 {
-    LOG_DEBUG("start digmod thread...\r\n"); 
+    RLDEBUG("start digmod thread...\r\n"); 
 
     while(fpga_load()){
-        LOG_DEBUG("fpga load fail!");
+        RLDEBUG("fpga load fail!");
     }
 
     while(fpga_config()){
-        LOG_DEBUG("fpga config fail!");
+        RLDEBUG("fpga config fail!");
     }
 
     while(fpga_config()){
-        LOG_DEBUG("fpga config fail!");
+        RLDEBUG("fpga config fail!");
     }
 
     while(fpga_monitor()){
-        LOG_DEBUG("fpga monitor fail!");
+        RLDEBUG("fpga monitor fail!");
     }
 
     ad9370_config();

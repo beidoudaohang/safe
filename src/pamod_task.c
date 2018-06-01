@@ -1,5 +1,5 @@
 /*
- * File      : pamod.c
+ * File      : pamod_task.c
  * 
  *
  *
@@ -53,7 +53,7 @@ s32 dl_pa_alarm_deal()
 
 void *pamod_thread(void *arg)
 {
-    LOG_DEBUG("start pamod thread...\r\n"); 
+    RLDEBUG("start pamod thread...\r\n"); 
 
 
     while(1){

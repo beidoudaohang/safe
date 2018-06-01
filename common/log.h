@@ -5,9 +5,9 @@
 void log_printf(char* fmt, ...);
 
 #ifdef PRO_DEBUG_ENABLE
-#define LOG_DEBUG(fmt,args...)  log_printf(fmt,##args)
+#define RLDEBUG(fmt,args...)  log_printf(fmt,##args)
 #else
-#define LOG_DEBUG(fmt,args...)
+#define RLDEBUG(fmt,args...)
 #endif
 
 #endif //__LOG_H__
