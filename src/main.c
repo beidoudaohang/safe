@@ -15,9 +15,6 @@
 #include "monitor_task.h"
 #include "pamod_task.h"
 
-void *monitor_thread(void *arg);
-void *pamod_thread(void *arg);
-void *web_thread(void *arg);
 
 
 int main(int argc, char const *argv[])
