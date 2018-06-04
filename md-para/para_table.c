@@ -8734,6 +8734,17 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	_para = (para*)(ps->next);
 
 	//RLDEBUG("one_para_adr_read_processing\r\n");
+	if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type))
+		mod_index = 0;
+	else
+		mod_index = find_para_adr_mod(ptable, adr_index, &(ps->md_adr));
+
+	if (mod_index < 0)
+	{
+		RLDEBUG("one_para_adr_read_processing can't find para adr system\r\n");
+		SET_PARA_ERR_CODE(err, PARA_ADR_OTHER_ERR);
+		goto ONE_PARA_ADR_READ_ERR;
+	}
 
 	if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type)) {
 #if MONITOR_MODULE_ENABLE
@@ -8769,16 +8780,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 
 	//RLDEBUG("one_para_adr_read_processing:adr index is:%d\r\n", adr_index);
 
-	if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type))
-		mod_index = 0;
-	else
-		mod_index = find_para_adr_mod(ptable, adr_index, &(ps->md_adr));
 
-	if (mod_index < 0) {
-		RLDEBUG("one_para_adr_read_processing can't find para adr system\r\n");
-		SET_PARA_ERR_CODE(err, PARA_ADR_OTHER_ERR);
-		goto ONE_PARA_ADR_READ_ERR;
-	}
 
 	//RLDEBUG("one_para_adr_read_processing:adr mod index is:%d\r\n", mod_index);
 	/*check permission*/
