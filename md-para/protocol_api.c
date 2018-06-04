@@ -124,6 +124,7 @@ static s16 one_frame_pack(const para_stream *ps, frame *pf)
     cmd_pack(ps, pf);
     header_pack(ps, pf);
 
+    #ifdef PROTOCOL_ENCRYPT_LZO
     //compress
     memset(lzo_in_buf, 0, sizeof(lzo_in_buf));
     memset(lzo_out_buf, 0, sizeof(lzo_out_buf));
@@ -142,7 +143,8 @@ static s16 one_frame_pack(const para_stream *ps, frame *pf)
     pf->header.len = len + 5;
     memcpy((pf->arr + FRAME_HEADER_LEN), lzo_out_buf, len);
     memcpy((pf->arr + FRAME_HEADER_LEN + len), FRAME_END, sizeof(FRAME_END));
-
+    #endif
+    
     return ((pf->header.len) + FRAME_START_LEN + 2 + FRAME_END_LEN );
 
     //return (ps->paralen + FRAME_HEADER_LEN + FRAME_CMD_LEN + FRAME_END_LEN);
@@ -498,6 +500,7 @@ s8 frame_recv_deal(s8 *str, u16 len, FRAME_SOURCE source, para_stream *ps)
 
     frame_len = 0;
 
+    #ifdef PROTOCOL_ENCRYPT_LZO
     /*uncompress and pwd*/
     if (frame_shell_check(str,  len, &begin)) {
         RLDEBUG("frame_recv_deal:frame_shell_check() false \r\n");
@@ -535,7 +538,7 @@ s8 frame_recv_deal(s8 *str, u16 len, FRAME_SOURCE source, para_stream *ps)
     memcpy((begin + FRAME_HEADER_LEN), lzo_out_buf, frame_len);
     memcpy((begin + FRAME_START_LEN + 2 + (pf->header.len)), FRAME_END, sizeof(FRAME_END));
 
-
+    #endif
     /*
     RLDEBUG("frame_recv_deal:after lzo decompress: recv dat len=%d\r\n", (pf->header.len + 2 + 5 + 5));
     for (cnt = 0; cnt < (pf->header.len + 2 + 5 + 5); cnt++) {

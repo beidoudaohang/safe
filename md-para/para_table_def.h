@@ -51,7 +51,7 @@ typedef struct {
 
 typedef struct {
 	u16 index;		/*参数编号*/
-	md_link_para link_para_a[MOD_NUM_IN_ONE_PCB];
+	md_link_para link_para_a;
 	u8 authority;	//USR_AUTHORITY	/*操作该参数需要的权限*/
 	u8 dig_adr;			/*是否需要发送给fpga*/
 	u8 flag;			/*读写标识*/

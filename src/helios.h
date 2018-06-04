@@ -35,4 +35,6 @@ typedef double f64;
 //#define RL_PERMISSION_CHECK		1		/*adr access permisson check*/
 #define MOD_NUM_IN_ONE_PCB 			3	
 
+
+//#define PROTOCOL_ENCRYPT_LZO        1
 #endif //__HELIOS_H__
