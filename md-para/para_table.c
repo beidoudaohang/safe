@@ -7890,19 +7890,17 @@ s32 find_para_adr(const para_table *table, u16 tlen, u16 adr)
 	return -1;
 }
 
-s32 find_para_adr_mod(para_table *table, u16 index, md_adr_info *md)
+s32 find_para_adr_mod( md_adr_info *md)
 {
 	u8 cnt;
 
 	if (NULL == md)
 		return -1;
-	if (NULL == table)
-		return -1;
 
 	for (cnt = 0; cnt < MOD_NUM_IN_ONE_PCB; cnt++) {
-		if (((md->mod_type) == (table[index].link_para_a[cnt].md_adr->mod_type)) && \
-		        ((md->mod_band) == (table[index].link_para_a[cnt].md_adr->mod_band)) && \
-		        ((md->mod_adr_t.dat) == (table[index].link_para_a[cnt].md_adr->mod_adr_t.dat))) {
+		if (((md->mod_type) == (band_para_a[cnt].md_adr_t.mod_type)) && \
+		        ((md->mod_band) == (band_para_a[cnt].md_adr_t.mod_band)) && \
+		        ((md->mod_adr_t.dat) == (band_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
 			return cnt;
 		}
 	}
@@ -8128,7 +8126,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type))
 		mod_index = 0;
 	else
-		mod_index = find_para_adr_mod(ptable, adr_index, &(ps->md_adr));
+		mod_index = find_para_adr_mod( &(ps->md_adr));
 
 	if (mod_index < 0)
 	{
