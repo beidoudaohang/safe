@@ -56,6 +56,7 @@ void *protocol_task(void* arg)
 	while (1) {
 		//RLDEBUG("protocol_task:sem_wait() begin \r\n");
 
+		#if TEST_DATA
 		err = sem_wait(&(protocol_sem_t.protocol_recv_sem));
 		if (err) {
 			RLDEBUG("protocol_task:sem_wait() false \r\n");
@@ -71,6 +72,11 @@ void *protocol_task(void* arg)
 				continue;
 			}
 		}
+		#endif
+		
+		// memcpy(frame_local_recv, "");
+		// frame_info_t.local_recv_len = 
+
 		//switch frame source
 		memset(&para_stream_t, 0, sizeof(para_stream));
 		if (frame_info_t.local_recv_len) {

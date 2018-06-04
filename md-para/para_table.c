@@ -8270,7 +8270,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
     if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type)) {
 		mod_index = 0;
 	} else {
-		mod_index = find_para_adr_mod(ptable, adr_index, &(ps->md_adr));
+		mod_index = find_para_adr_mod( &(ps->md_adr));
 	}
 
 	if (mod_index < 0) {

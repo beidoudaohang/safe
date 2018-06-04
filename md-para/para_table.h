@@ -38,7 +38,7 @@ extern usr_authorize usr_auth;
 /*****************************funs********************************/
 s16 get_para_table_size(void);
 s32 find_para_adr(const para_table *table, u16 tlen, u16 adr);
-s32 find_para_adr_mod(para_table *table, u16 index, md_adr_info *md);
+s32 find_para_adr_mod(md_adr_info *md);
 s8 one_para_adr_read_processing(const u16 adr, para_stream *ps);
 s8 one_para_adr_set_processing(const s8 *src, para_stream *ps);
 

@@ -31,7 +31,7 @@ void *local_recv_task(void* arg)
 
 	//RLDEBUG("local_recv_task task start!\r\n");
 
-	arg = arg;
+	arg = arg; 
 	//init local tty
 	err = frame_tty_open();
 	if (err < 0) {

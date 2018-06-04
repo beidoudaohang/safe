@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <errno.h>
+#include <semaphore.h>
+
 #include "log.h"
 #include "digmod_task.h"
 #include "monitor_task.h"
@@ -21,7 +24,6 @@
 #include "protocol_task.h"
 #include "dig_band0.h"
 #include "data_task_def.h"
-#include "handle_api.h"
 #include "local_recv_task.h"
 #include "data_task.h"
 
@@ -66,6 +68,7 @@ int main(int argc, char const *argv[])
         RLDEBUG("creat pamod thread false!\r\n");
     }
 
+	#if 0
 	//creat local recv task
 	pthread_attr_init(&local_recv_ts_attr);
 	pthread_attr_setdetachstate(&local_recv_ts_attr, PTHREAD_CREATE_DETACHED);
@@ -81,7 +84,8 @@ int main(int argc, char const *argv[])
 	if (err < 0) {
 		RLDEBUG("creat frame send task false!\r\n");
 	}
-
+	#endif
+	
 	//creat protocol processing task
 	pthread_attr_init(&protocol_ts_attr);
 	pthread_attr_setdetachstate(&protocol_ts_attr, PTHREAD_CREATE_DETACHED);
