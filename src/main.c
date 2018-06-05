@@ -17,7 +17,6 @@
 #include "digmod_task.h"
 #include "monitor_task.h"
 #include "pamod_task.h"
-
 #include "para_table.h"
 #include "porting.h"
 #include "protocol_sem.h"
@@ -28,12 +27,20 @@
 #include "data_task.h"
 
 
+
 int main(int argc, char const *argv[])
 {
     s32 err;
 
     RLDEBUG("start system...\r\n");
 
+	//init data
+	err = data_init();
+	if (err < 0) {
+		RLDEBUG("main:data_init err\r\n");
+		band_dynamic_para_a[0].alarm.ap_init = 1;
+	}
+	
 	//protocol sem init
 	err = sem_init(&(protocol_sem_t.protocol_send_sem), 0, 0);
 	if (err) {
@@ -92,6 +99,14 @@ int main(int argc, char const *argv[])
 	err = pthread_create(&protocol_ts_id, &protocol_ts_attr, protocol_task, &protocol_ts_attr);
 	if (err < 0) {
 		RLDEBUG("creat protocol task false!\r\n");
+	}
+
+	/********creat data update task*************/
+	pthread_attr_init(&data_ts_attr);
+	pthread_attr_setdetachstate(&data_ts_attr, PTHREAD_CREATE_DETACHED);
+	err = pthread_create(&data_ts_id, &data_ts_attr, data_task, &data_ts_attr);
+	if (err < 0) {
+		RLDEBUG("creat data task false!\r\n");
 	}
 
     while(1){

@@ -92,7 +92,7 @@ static s16 check_relay_mode(void* local, void* remote, md_adr_info *md_adr, u8 d
 /*****************************para table8*************************/
 
 #if MONITOR_MODULE_ENABLE
-para_table u_para_table_a[] =
+const para_table u_para_table_a[] =
 {
     {
         .index = 1,
@@ -2344,7 +2344,7 @@ const para_table u_para_table_a[] = {};
 #endif
 
 #if OTHER_MODULE_ENABLE
-para_table para_table_a[] =
+const para_table para_table_a[] =
 {
     {
         .index = 1,
@@ -8116,6 +8116,8 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	para_table *ptable = NULL;
 	u16 para_table_size = 0;
 	USR_AUTHORITY adr_permission = 0;
+    md_adr_info *ptable_para_adr;
+    void *ptable_para_dat;
 
 	if ((NULL == ps) || (NULL == (ps->next)))
 		return -1;
@@ -8170,8 +8172,8 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	//RLDEBUG("one_para_adr_read_processing:adr index is:%d\r\n", adr_index);
 	
     if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
-        ptable[adr_index].link_para_a.md_adr = &band_para_a[mod_index].md_adr_t;
-        ptable[adr_index].link_para_a.link_para_t.dat += sizeof(band_para)*mod_index;
+        ptable_para_adr = &band_para_a[mod_index].md_adr_t;
+        ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat + sizeof(band_para)*mod_index;
     }
 
 
@@ -8218,7 +8220,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	ps->next = ps->next + sizeof(para);
 	if (NULL != (ptable[adr_index].link_para_a.link_para_t.paradeal)) {
 		parafun = (ptable[adr_index].link_para_a.link_para_t.paradeal);
-		para_num = parafun((ptable[adr_index].link_para_a.link_para_t.dat), (ps->next), (ptable[adr_index].link_para_a.md_adr), (ptable[adr_index].dig_adr), PARA_RD);
+		para_num = parafun((ptable_para_dat), (ps->next), (ptable_para_adr), (ptable[adr_index].dig_adr), PARA_RD);
 		if (para_num < 0) {
 			//err = ((0xf0 & (PARA_ADR_OTHER_ERR << 4))|(0x0f&((para_table_a[adr_index].link_para_a.link_para_t.para_type_t.dat))));
 			SET_PARA_ERR_CODE(err, PARA_ADR_OTHER_ERR);
@@ -8226,7 +8228,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 			goto ONE_PARA_ADR_READ_ERR;
 		}
 	} else {
-		memcpy((void*)(ps->next), (void*)(ptable[adr_index].link_para_a.link_para_t.dat), (ptable[adr_index].link_para_a.link_para_t.len));
+		memcpy((void*)(ps->next), (void*)(ptable_para_dat), (ptable[adr_index].link_para_a.link_para_t.len));
 	}
 	ps->next = ps->next + (ptable[adr_index].link_para_a.link_para_t.len);
 	ps->paralen += (sizeof(para) + (ptable[adr_index].link_para_a.link_para_t.len));
@@ -8256,10 +8258,11 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	u8 err = 0;
 	para *_para = NULL;
 	paradeal parafun = NULL;
-
 	para_table *ptable = NULL;
 	u16 para_table_size = 0;
 	USR_AUTHORITY adr_permission = 0;
+    md_adr_info *ptable_para_adr;
+    void *ptable_para_dat;
 
 	if ((NULL == ps) || (NULL == (ps->next)) || (NULL == src)) {
 		return -1;
@@ -8314,8 +8317,8 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	}
 
     if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
-        ptable[adr_index].link_para_a.md_adr = &band_para_a[mod_index].md_adr_t;
-        ptable[adr_index].link_para_a.link_para_t.dat += sizeof(band_para)*mod_index;
+        ptable_para_adr = &band_para_a[mod_index].md_adr_t;
+        ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat + sizeof(band_para)*mod_index;
     }
 
 	/*check permission*/
@@ -8387,7 +8390,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 		}
 
 		parafun = (ptable[adr_index].link_para_a.link_para_t.paradeal);
-		para_num = parafun((void*)(ptable[adr_index].link_para_a.link_para_t.dat), (void*)(src + sizeof(para)), (ptable[adr_index].link_para_a.md_adr), (ptable[adr_index].dig_adr), PARA_RW);
+		para_num = parafun((void*)(ptable_para_dat), (void*)(src + sizeof(para)), (ptable_para_adr), (ptable[adr_index].dig_adr), PARA_RW);
 		if (para_num < 0) {
 			RLDEBUG("one_para_adr_set_processing:parafun() err\r\n");
 			SET_PARA_ERR_CODE(err, PARA_ADR_OTHER_ERR);
@@ -8403,11 +8406,11 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 			goto ONE_PARA_ADR_SET_ERR;
 		}
 		/*复制参数*/
-		memcpy((void*)(ptable[adr_index].link_para_a.link_para_t.dat), (void*)(src + sizeof(para)), (ptable[adr_index].link_para_a.link_para_t.len));
+		memcpy((void*)(ptable_para_dat), (void*)(src + sizeof(para)), (ptable[adr_index].link_para_a.link_para_t.len));
 	}
 
 	if (ptable[adr_index].dig_adr) {
-		set_adr_add(ptable[adr_index].dig_adr , ptable[adr_index].link_para_a.md_adr);
+		set_adr_add(ptable[adr_index].dig_adr , ptable_para_adr);
 	}
 	ps->next = ps->next + (ptable[adr_index].link_para_a.link_para_t.len);
 

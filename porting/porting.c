@@ -30,16 +30,19 @@ description:
 #include "pwd.h"
 #include "log.h"
 /*****************************para define*************************/
-static const s8 para_file_path[] = {"/data/helios"};
-static const s8 unit_file_name_a[] = {"/data/helios/unita"};
-static const s8 unit_file_name_b[] = {"/data/helios/unitb"};
-static const s8 band_file_name_a[] = {"/data/helios/banda"};
-static const s8 band_file_name_b[] = {"/data/helios/bandb"};
 
-static const s8 pcb_file_name_a[] = {"/data/helios/pcba"};
-static const s8 pcb_file_name_b[] = {"/data/helios/pcbb"};
+static const s8 para_file_path[] = {"datafile"};
 
-static s8 file_buf[MAX(sizeof(unit_para), (MD5_CODE_SIZE + 32 + MOD_NUM_IN_ONE_PCB * sizeof(band_para)))] = {0};
+static const s8 unit_file_name_a[] = {"datafile/unita"};
+static const s8 unit_file_name_b[] = {"datafile/unitb"};
+
+static const s8 band_file_name_a[MOD_NUM_IN_ONE_PCB][20] = {"datafile/band0a","datafile/band1a","datafile/band2a"};
+static const s8 band_file_name_b[MOD_NUM_IN_ONE_PCB][20] = {"datafile/band0b","datafile/band1b","datafile/band2b"};
+
+static const s8 pcb_file_name_a[] = {"datafile/pcba"};
+static const s8 pcb_file_name_b[] = {"datafile/pcbb"};
+
+static s8 file_buf[MAX(sizeof(unit_para), (MD5_CODE_SIZE + 32 +  sizeof(band_para)))] = {0};
 
 typedef enum {
 	PARA_FILE_NORMAL = 0,
@@ -418,7 +421,7 @@ s32 band_file_init(void)
 	s32 len;
 	u32 filecode = 0;
 	s32 filenode;
-
+	u8 mod_index;
 	//test path
 	err = access((const char*)para_file_path, F_OK);
 	if (err < 0) {
@@ -431,63 +434,65 @@ s32 band_file_init(void)
 		}
 	}
 
-	//band file a
-	err = access((const char*)band_file_name_a, F_OK);
-	if (err < 0) {
-		filenode = open((const char*)band_file_name_a, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-		if (filenode < 0) {
-			return -1;
+	for(mod_index=0; mod_index< MOD_NUM_IN_ONE_PCB; ++mod_index){
+		//band file a
+		err = access((const char*)band_file_name_a[mod_index], F_OK);
+		if (err < 0) {
+			filenode = open((const char*)band_file_name_a[mod_index], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+			if (filenode < 0) {
+				return -1;
+			}
+
+			err = write(filenode, &filecode, sizeof(filecode));
+			if (err < 0) {
+				close(filenode);
+				return -1;
+			}
+			memset(file_buf, 0, sizeof(file_buf));
+			err = file_encode(file_buf, sizeof(file_buf), sizeof(band_para));
+			if (err < 0) {
+				close(filenode);
+				return -1;
+			}
+			err = write(filenode, file_buf, (sizeof(band_para) + MD5_CODE_SIZE));
+			if ((err < 0) || (err < (s32)sizeof(unit_para))) {
+				close(filenode);
+				return -1;
+			}
+			close(filenode);
 		}
 
-		err = write(filenode, &filecode, sizeof(filecode));
+		//unit file b
+		err = access((const char*)band_file_name_b[mod_index], F_OK);
 		if (err < 0) {
-			close(filenode);
-			return -1;
-		}
-		memset(file_buf, 0, sizeof(file_buf));
-		err = file_encode(file_buf, sizeof(file_buf), MOD_NUM_IN_ONE_PCB * sizeof(band_para));
-		if (err < 0) {
-			close(filenode);
-			return -1;
-		}
-		err = write(filenode, file_buf, (MOD_NUM_IN_ONE_PCB * sizeof(band_para) + MD5_CODE_SIZE));
-		if ((err < 0) || (err < (s32)sizeof(unit_para))) {
-			close(filenode);
-			return -1;
-		}
-		close(filenode);
-	}
+			filenode = open((const char*)band_file_name_b[mod_index], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+			if (filenode < 0) {
+				return -1;
+			}
 
-	//unit file b
-	err = access((const char*)band_file_name_b, F_OK);
-	if (err < 0) {
-		filenode = open((const char*)band_file_name_b, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-		if (filenode < 0) {
-			return -1;
-		}
-
-		err = write(filenode, &filecode, sizeof(filecode));
-		if (err < 0) {
+			err = write(filenode, &filecode, sizeof(filecode));
+			if (err < 0) {
+				close(filenode);
+				return -1;
+			}
+			memset(file_buf, 0, sizeof(file_buf));
+			err = file_encode(file_buf, sizeof(file_buf), sizeof(band_para));
+			if (err < 0) {
+				close(filenode);
+				return -1;
+			}
+			err = write(filenode, file_buf, (sizeof(band_para) + MD5_CODE_SIZE));
+			if ((err < 0) || (err < (s32)sizeof(unit_para))) {
+				close(filenode);
+				return -1;
+			}
 			close(filenode);
-			return -1;
 		}
-		memset(file_buf, 0, sizeof(file_buf));
-		err = file_encode(file_buf, sizeof(file_buf), MOD_NUM_IN_ONE_PCB * sizeof(band_para));
-		if (err < 0) {
-			close(filenode);
-			return -1;
-		}
-		err = write(filenode, file_buf, (MOD_NUM_IN_ONE_PCB * sizeof(band_para) + MD5_CODE_SIZE));
-		if ((err < 0) || (err < (s32)sizeof(unit_para))) {
-			close(filenode);
-			return -1;
-		}
-		close(filenode);
 	}
 
 	return 0;
 }
-s32 band_file_read(band_para *bp)
+s32 band_file_read(band_para *bp, u8 mod_index)
 {
 	s32 err;
 	s32 file_a, file_b;
@@ -500,10 +505,10 @@ s32 band_file_read(band_para *bp)
 	if (NULL == bp)
 		return -1;
 	//open file
-	file_a = open((const char*)band_file_name_a, O_RDONLY);
+	file_a = open((const char*)band_file_name_a[mod_index], O_RDONLY);
 	if (file_a < 0)
 		return -1;
-	file_b = open((const char*)band_file_name_b, O_RDONLY);
+	file_b = open((const char*)band_file_name_b[mod_index], O_RDONLY);
 	if (file_b < 0) {
 		close(file_a);
 		return -1;
@@ -539,16 +544,16 @@ s32 band_file_read(band_para *bp)
 BAND_FILE_READ_TRY:
 	file_code_cur++;
 	memset(file_buf, 0, sizeof(file_buf));
-	read_len = read(file_cur, file_buf, (sizeof(band_para) * MOD_NUM_IN_ONE_PCB + MD5_CODE_SIZE));
-	if ((read_len < 0) /*|| (read_len != (sizeof(band_para)*MOD_NUM_IN_ONE_PCB + MD5_CODE_SIZE))*/) {
+	read_len = read(file_cur, file_buf, (sizeof(band_para) + MD5_CODE_SIZE));
+	if ((read_len < 0) /*|| (read_len != (sizeof(band_para) + MD5_CODE_SIZE))*/) {
 		//close(file_cur);
 		RLDEBUG("band_file_read:read band file false\r\n");
-		RLDEBUG("band_file_read: source len is:%d \r\n", (sizeof(band_para)*MOD_NUM_IN_ONE_PCB));
+		RLDEBUG("band_file_read: source len is:%d \r\n", (sizeof(band_para)));
 		RLDEBUG("band_file_read: read len is:%d \r\n", (read_len));
 	}
 	err = file_decode(file_buf, sizeof(file_buf), read_len - MD5_CODE_SIZE);
 	if (err < 0) {
-		RLDEBUG("band_file_read:newer band file err: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) * MOD_NUM_IN_ONE_PCB, read_len, read_len - MD5_CODE_SIZE);
+		RLDEBUG("band_file_read:newer band file err: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) , read_len, read_len - MD5_CODE_SIZE);
 		if (file_cur == file_a) {
 			file_cur = file_b;
 		} else if (file_cur == file_b) {
@@ -563,7 +568,7 @@ BAND_FILE_READ_TRY:
 		}
 	}
 
-	RLDEBUG("band_file_read:newer band file done: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) * MOD_NUM_IN_ONE_PCB, read_len, read_len - MD5_CODE_SIZE);
+	RLDEBUG("band_file_read:newer band file done: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) , read_len, read_len - MD5_CODE_SIZE);
 
 	memcpy(bp, file_buf, read_len - MD5_CODE_SIZE);
 
@@ -579,7 +584,7 @@ BAND_FILE_READ_ERR:
 	close(file_b);
 	return -1;
 }
-s32 band_file_write(band_para *bp)
+s32 band_file_write(band_para *bp, u8 mod_index)
 {
 	s32 err;
 	s32 file_a, file_b;
@@ -591,12 +596,12 @@ s32 band_file_write(band_para *bp)
 	if (NULL == bp)
 		return -1;
 	//open file
-	file_a = open((const char*)band_file_name_a, O_RDWR);
+	file_a = open((const char*)band_file_name_a[mod_index], O_RDWR);
 	if (file_a < 0) {
 		RLDEBUG("band_file_write:open band file a false\r\n");
 		return -1;
 	}
-	file_b = open((const char*)band_file_name_b, O_RDWR);
+	file_b = open((const char*)band_file_name_b[mod_index], O_RDWR);
 	if (file_b < 0) {
 		close(file_a);
 		RLDEBUG("band_file_write:open band file b false\r\n");
