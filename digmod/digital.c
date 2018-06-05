@@ -13,7 +13,7 @@ description:
 #include "helios.h"
 #include "module_adr_def.h"
 #include "para_table.h"
-//#include "dig_band0.h"
+#include "dig_band0.h"
 #include "porting.h"
 #include "digital.h"
 #include "log.h"

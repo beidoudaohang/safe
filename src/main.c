@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <semaphore.h>
+#include <string.h>
 
 #include "log.h"
 #include "digmod_task.h"

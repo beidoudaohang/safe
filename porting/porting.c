@@ -102,7 +102,7 @@ s32 file_encode(s8 *buf, u32 len, u32 size)
 
 	memcpy((buf + size), md5, sizeof(md5));
 
-	printf("file_encode: buf_len=%d,data_len=%d,md5_buf_size=%d \r\n", len, size, sizeof(md5));
+	printf("file_encode: buf_len=%d,data_len=%d,md5_buf_size=%ld \r\n", len, size, sizeof(md5));
 	for (err = 0; err < sizeof(md5); err++) {
 		printf("%02x ", (u8)(md5[err]));
 	}

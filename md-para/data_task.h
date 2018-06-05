@@ -23,6 +23,7 @@ description:
 extern pthread_t data_ts_id;
 extern pthread_attr_t data_ts_attr;
 /*****************************funs********************************/
+s32 data_init(void);
 void data_update(DATA_TYPE type);
 void *data_task(void* arg);
 s32 data_update_check(void);
