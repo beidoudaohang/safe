@@ -20,6 +20,9 @@ description:
 #include "protocol_task.h"
 #include "local_recv_task.h"
 #include "log.h"
+
+const u8 key_test[47] = {0x48, 0x53, 0x31, 0x2e, 0x30, 0x23, 0x00, 0x00, 0xff, 0xff, 0x6e, 0xfa, 0x01, 0x00, 0x01, 0x00, 0x00, 0x01, 0x30, 0x07, 0x00, 0x01, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x39, 0x00, 0x01, 0x01, 0x00, 0xea, 0x48, 0x45, 0x31, 0x2e, 0x30};
+
 /*************************data struct define***********************/
 pthread_t local_recv_ts_id;
 pthread_attr_t local_recv_ts_attr;
@@ -29,7 +32,20 @@ void *local_recv_task(void* arg)
 	s32 err;
 	s32 cnt;
 
-	//RLDEBUG("local_recv_task task start!\r\n");
+	RLDEBUG("local_recv_task task start!\r\n");
+
+	#ifdef TEST_DATA
+	while(1){
+		band_para_a[0].md_adr_t.mod_type = MOD_TYPE_RELAY;
+		band_para_a[0].md_adr_t.mod_band = 0;
+		band_para_a[0].md_adr_t.mod_adr_t.dat = 0x01;
+		memcpy(frame_local_recv.arr, key_test, 47);
+		frame_info_t.local_recv_len = 47;
+		sem_post(&(protocol_sem_t.protocol_recv_sem));
+		timedelay(0, 5, 0, 0);
+	}
+
+	#endif
 
 	arg = arg; 
 	//init local tty

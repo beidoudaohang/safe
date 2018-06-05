@@ -37,5 +37,6 @@ typedef double f64;
 
 //#define PROTOCOL_ENCRYPT_LZO        1
 
+#define TEST_DATA
 
 #endif //__HELIOS_H__

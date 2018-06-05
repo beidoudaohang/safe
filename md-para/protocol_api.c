@@ -143,6 +143,9 @@ static s16 one_frame_pack(const para_stream *ps, frame *pf)
     pf->header.len = len + 5;
     memcpy((pf->arr + FRAME_HEADER_LEN), lzo_out_buf, len);
     memcpy((pf->arr + FRAME_HEADER_LEN + len), FRAME_END, sizeof(FRAME_END));
+    #else
+    RLDEBUG("pf->header.len = %d\r\n", pf->header.len);
+    memcpy((pf->arr + pf->header.len + FRAME_START_LEN + 2), FRAME_END, sizeof(FRAME_END));
     #endif
     
     return ((pf->header.len) + FRAME_START_LEN + 2 + FRAME_END_LEN );

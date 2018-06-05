@@ -19,21 +19,26 @@ CXXFLAGS = -g  -Wall
 CPPFLAGS = $(foreach n,$(AllDirs) , -I$(n))
 LDFLAGS = 
 MYLIB=
-SYSLIB=-lpthread
+SYSLIB=-lpthread --static
+
+DBGCFLAGS = -g -O0 -DDEBUG
 # $(StaticLib) : $(Objs)  
 #     ar rcs $@ $^  
   
 # $(DynamicLib) : $(Objs)  
 #     $(CC) -shared -o $@ $^ $(LDFLAGS)  
-  
+
+Debug:$(BIN_DIR)
+
 $(BIN_DIR) : $(Objs)  
-	$(CC) $(Objs) -o $@ $(SYSLIB)
+	$(CC) $(Objs) -o $@ $(SYSLIB) $(DBGCFLAGS) 
+
 
 %.d : %.c  
-	$(CC) -MT"$(<:.c=.o) $@" -MM $(CXXFLAGS) $(CPPFLAGS) $< > $(ROOT_DIR)/$(OBJS_DIR)/$@
+	$(CC) -MT"$(<:.c=.o) $@" -MM $(CXXFLAGS) $(CPPFLAGS) $< > $@
 
 sinclude $(Deps)
 
-.PHONY : clean
+.PHONY : clean Debug
 clean:
 	rm -f $(Objs) $(Deps) $(StaticLib) $(DynamicLib) $(BIN_DIR)

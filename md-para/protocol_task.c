@@ -55,8 +55,7 @@ void *protocol_task(void* arg)
 
 	while (1) {
 		//RLDEBUG("protocol_task:sem_wait() begin \r\n");
-
-		#if TEST_DATA
+		
 		err = sem_wait(&(protocol_sem_t.protocol_recv_sem));
 		if (err) {
 			RLDEBUG("protocol_task:sem_wait() false \r\n");
@@ -72,11 +71,7 @@ void *protocol_task(void* arg)
 				continue;
 			}
 		}
-		#endif
 		
-		// memcpy(frame_local_recv, "");
-		// frame_info_t.local_recv_len = 
-
 		//switch frame source
 		memset(&para_stream_t, 0, sizeof(para_stream));
 		if (frame_info_t.local_recv_len) {
@@ -142,6 +137,18 @@ void *protocol_task(void* arg)
 		}
 	}
 }
+#ifdef TEST_DATA
+s8 frame_usb_send(s8 *f, u16 len)
+{
+	u16 i;
+    RLDEBUG("usb send!\r\n");
+	for(i=0; i<len; i++){
+		RLDEBUG("0x%x,", (u8)f[i]);
+	}
+	RLDEBUG("\r\n");
+    return 1;
+}
+#endif
 
 void *frame_send_task(void* arg)
 {
@@ -156,6 +163,10 @@ void *frame_send_task(void* arg)
 		}
 		if (frame_info_t.send_len) {
 			if (FRAME_SOURCE_LOCAL == frame_source) {
+				#ifdef TEST_DATA
+				frame_usb_send((s8*)&frame_send, frame_info_t.send_len);
+				continue;
+				#endif
 				err = frame_tty_send((s8*)&frame_send, frame_info_t.send_len);
 				if (err < 0) {
 					RLDEBUG("frame_send_task:local tty send false\r\n");

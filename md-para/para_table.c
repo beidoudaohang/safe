@@ -92,7 +92,7 @@ static s16 check_relay_mode(void* local, void* remote, md_adr_info *md_adr, u8 d
 /*****************************para table8*************************/
 
 #if MONITOR_MODULE_ENABLE
-const para_table u_para_table_a[] =
+para_table u_para_table_a[] =
 {
     {
         .index = 1,
@@ -2344,7 +2344,7 @@ const para_table u_para_table_a[] = {};
 #endif
 
 #if OTHER_MODULE_ENABLE
-const para_table para_table_a[] =
+para_table para_table_a[] =
 {
     {
         .index = 1,
@@ -7901,7 +7901,7 @@ s32 find_para_adr_mod( md_adr_info *md)
 		if (((md->mod_type) == (band_para_a[cnt].md_adr_t.mod_type)) && \
 		        ((md->mod_band) == (band_para_a[cnt].md_adr_t.mod_band)) && \
 		        ((md->mod_adr_t.dat) == (band_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
-			return cnt;
+			        return cnt;
 		}
 	}
 
@@ -8266,6 +8266,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	}
 
 	_para = (para*)src;
+    RLDEBUG("one_para_adr_set_processing: find mod_index\r\n");
 
     if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type)) {
 		mod_index = 0;
@@ -8283,7 +8284,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 #if MONITOR_MODULE_ENABLE
 		ptable = (para_table*)u_para_table_a;
 		para_table_size = U_PARA_TABLE_SIZE;
-		//RLDEBUG("one_para_adr_set_processing: unit para table,the size is:%d\r\n", para_table_size);
+		RLDEBUG("one_para_adr_set_processing: unit para table,the size is:%d\r\n", para_table_size);
 #else
 		ptable = NULL;
 		para_table_size = 0;
@@ -8292,7 +8293,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 #if OTHER_MODULE_ENABLE
 		ptable = (para_table*)para_table_a;
 		para_table_size = M_PARA_TABLE_SIZE;
-		//RLDEBUG("one_para_adr_set_processing: band para table;the size is:%d\r\n", para_table_size);
+		RLDEBUG("one_para_adr_set_processing: band para table;the size is:%d\r\n", para_table_size);
 #else
 		ptable = NULL;
 		para_table_size = 0;
@@ -8312,7 +8313,6 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 		goto ONE_PARA_ADR_SET_ERR;
 	}
 
-    
     if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
         ptable[adr_index].link_para_a.md_adr = &band_para_a[mod_index].md_adr_t;
         ptable[adr_index].link_para_a.link_para_t.dat += sizeof(band_para)*mod_index;
@@ -8373,11 +8373,11 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 			goto ONE_PARA_ADR_SET_ERR;
 		}
 
-		//RLDEBUG("one_para_adr_set_processing:para type len is:%d \r\n", para_type_len);
-		//RLDEBUG("one_para_adr_set_processing:para type len is:%d \r\n", (_para->para_len / para_type_len));
+		RLDEBUG("one_para_adr_set_processing:para type len is:%d \r\n", para_type_len);
+		RLDEBUG("one_para_adr_set_processing:para type len is:%d \r\n", (_para->para_len / para_type_len));
 		for (cnt = 0; cnt < (_para->para_len / para_type_len); cnt++) {
 
-			//RLDEBUG("one_para_adr_set_processing:para range check index is:%d \r\n", cnt);
+			RLDEBUG("one_para_adr_set_processing:para range check index is:%d \r\n", cnt);
 			if (check_para_range(&(ptable[adr_index].link_para_a.link_para_t), (void*)(src + sizeof(para) + cnt * para_type_len))) {
 				RLDEBUG("one_para_adr_set_processing:para range err\r\n");
 				SET_PARA_ERR_CODE(err, PARA_OVERRANGE);

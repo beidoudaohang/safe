@@ -1,6 +1,6 @@
 /*
  * File      : main.c
- * 
+ *
  *
  *
  * Change Logs:
@@ -32,7 +32,7 @@ int main(int argc, char const *argv[])
 {
     s32 err;
 
-    RLDEBUG("start system...\r\n"); 
+    RLDEBUG("start system...\r\n");
 
 	//protocol sem init
 	err = sem_init(&(protocol_sem_t.protocol_send_sem), 0, 0);
@@ -68,7 +68,6 @@ int main(int argc, char const *argv[])
         RLDEBUG("creat pamod thread false!\r\n");
     }
 
-	#if 0
 	//creat local recv task
 	pthread_attr_init(&local_recv_ts_attr);
 	pthread_attr_setdetachstate(&local_recv_ts_attr, PTHREAD_CREATE_DETACHED);
@@ -77,6 +76,7 @@ int main(int argc, char const *argv[])
 		RLDEBUG("creat local recv task false!\r\n");
 	}
 
+	#if 1
 	//creat protocol send task
 	pthread_attr_init(&frame_send_ts_attr);
 	pthread_attr_setdetachstate(&frame_send_ts_attr, PTHREAD_CREATE_DETACHED);
@@ -85,7 +85,7 @@ int main(int argc, char const *argv[])
 		RLDEBUG("creat frame send task false!\r\n");
 	}
 	#endif
-	
+
 	//creat protocol processing task
 	pthread_attr_init(&protocol_ts_attr);
 	pthread_attr_setdetachstate(&protocol_ts_attr, PTHREAD_CREATE_DETACHED);
@@ -100,6 +100,6 @@ int main(int argc, char const *argv[])
 
 
     return 0;
-    
+
 }
 
