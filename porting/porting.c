@@ -656,19 +656,19 @@ s32 band_file_write(band_para *bp, u8 mod_index)
 
 	//RLDEBUG("band_file_write:band file code len is:%d\r\n", read_len);
 	memset(file_buf, 0, sizeof(file_buf));
-	memcpy(file_buf, (void*)bp, MOD_NUM_IN_ONE_PCB * sizeof(band_para));
-	err = file_encode(file_buf, sizeof(file_buf), MOD_NUM_IN_ONE_PCB * sizeof(band_para));
+	memcpy(file_buf, (void*)bp, sizeof(band_para));
+	err = file_encode(file_buf, sizeof(file_buf), sizeof(band_para));
 	if (err < 0) {
 		RLDEBUG("band_file_write:write band file code false\r\n");
 		goto BAND_FILE_WRITE_ERR;
 	}
-	read_len = write(file_cur, (const void*)file_buf, ((sizeof(band_para) * MOD_NUM_IN_ONE_PCB) + MD5_CODE_SIZE));
+	read_len = write(file_cur, (const void*)file_buf, ((sizeof(band_para)) + MD5_CODE_SIZE));
 	if (read_len < 0) {
 		RLDEBUG("band_file_write:write band file false\r\n");
 		goto BAND_FILE_WRITE_ERR;
 	}
 
-	RLDEBUG("band_file_write:write_len=%d ,file_len=%d\r\n", read_len, ((sizeof(band_para) * MOD_NUM_IN_ONE_PCB) + MD5_CODE_SIZE));
+	RLDEBUG("band_file_write:write_len=%d ,file_len=%d\r\n", read_len, ((sizeof(band_para) ) + MD5_CODE_SIZE));
 
 	read_len = fsync(file_cur);
 	if (read_len < 0)

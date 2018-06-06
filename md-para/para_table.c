@@ -20,7 +20,7 @@ description:
 //#include "adi_api.h"
 #include "log.h"
 #include "common_api.h"
-
+#include "data_task_def.h"
 /*****************************para define*************************/
 //monitor
 #if MONITOR_MODULE_ENABLE
@@ -37,6 +37,8 @@ md_alarm_c m_alarm_a[MOD_NUM_IN_ONE_PCB];
 //pcb
 pcb_share_para pcb_share;
 usr_authorize usr_auth;
+
+const u16 pcb_share_para_table[] = {0x29, 0x2a, 0x2b};
 
 
 /*****************************static funs define********************/
@@ -8244,12 +8246,42 @@ ONE_PARA_ADR_READ_ERR:
 	return 0;
 }
 
+
+void set_table_para_dat(void ** des, void * src, u32 offset, u16 adr)
+{
+    u16 i;
+    
+    for(i=0; i<sizeof(pcb_share_para_table); i++){
+        if(adr == pcb_share_para_table[i]) return;
+    }
+
+    *des = src + offset;
+}
+
+void set_write_data_file_flag(u8 mod_type, u16 adr)
+{
+    u16 i;
+
+    if (MOD_TYPE_MONITOR == (mod_type)) {
+        data_update(DATA_TYPE_UNIT);
+    }else{
+        for(i=0; i<sizeof(pcb_share_para_table); i++){
+            if(adr == pcb_share_para_table[i]){
+                data_update(DATA_TYPE_PCB);
+                return;
+            } 
+        }
+
+        data_update(DATA_TYPE_MOD);
+    }
+
+}
+
 /*
 return:
 	0---sus
 	-1---err
  */
-
 s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 {
 	s32 adr_index, mod_index = 0;
@@ -8318,7 +8350,8 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 
     if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
         ptable_para_adr = &band_para_a[mod_index].md_adr_t;
-        ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat + sizeof(band_para)*mod_index;
+        // ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat + sizeof(band_para)*mod_index;
+        set_table_para_dat(&ptable_para_dat, ptable[adr_index].link_para_a.link_para_t.dat, sizeof(band_para)*mod_index, _para->para_adr);
     }
 
 	/*check permission*/
@@ -8412,11 +8445,15 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	if (ptable[adr_index].dig_adr) {
 		set_adr_add(ptable[adr_index].dig_adr , ptable_para_adr);
 	}
+
+    set_write_data_file_flag(ps->md_adr.mod_type, _para->para_adr);
+
 	ps->next = ps->next + (ptable[adr_index].link_para_a.link_para_t.len);
 
 	return 0;
-
+    
 ONE_PARA_ADR_SET_ERR:
+    //err return format:para adr,err + data type, data len
 	RLDEBUG("one_para_adr_set_processing err,the err adr is:%x \r\n", _para->para_adr);
 	*(u16*)(ps->next) = _para->para_adr;	//para adr
 	ps->next = ps->next + 2;
