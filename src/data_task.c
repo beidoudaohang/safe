@@ -97,7 +97,7 @@ s32 data_init(void)
 		band_para_a[0].md_adr_t.mod_adr_t.mod_sub_adr.mod_mimo = MOD_MIMO_REV;
 		band_para_a[0].md_adr_t.mod_adr_t.mod_sub_adr.mod_id = MOD_ID_0;
 	}
-
+	#if PA_MODULE_ENABLE
 	if (MOD_TYPE_PA != (band_para_a[1].md_adr_t.mod_type)) {
 		band_para_a[1].md_adr_t.mod_type = MOD_TYPE_PA;
 		band_para_a[1].md_adr_t.mod_band = 1;
@@ -113,6 +113,7 @@ s32 data_init(void)
 		band_para_a[2].md_adr_t.mod_adr_t.mod_sub_adr.mod_mimo = MOD_MIMO_REV;
 		band_para_a[2].md_adr_t.mod_adr_t.mod_sub_adr.mod_id = MOD_ID_0;
 	}
+	#endif
 
 	band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dig_pa_sw = DIG_PA_UL_OFF_DL_OFF;
 
@@ -150,7 +151,7 @@ s32 data_update_check(void)
 void *data_task(void* arg)
 {
 	s32 cnt;
-
+	u8 mod_index;
 	//RLDEBUG("data task start!\r\n");
 	arg = arg;
 
@@ -163,9 +164,10 @@ void *data_task(void* arg)
 		}
 		if (GETBIT(data_update_flag, DATA_TYPE_MOD)) {
 			RLDEBUG("data task:sava band file\r\n");
-			band_file_write(&band_para_a[0], 0);
-			band_file_write(&band_para_a[1], 1);
-			band_file_write(&band_para_a[2], 2);
+			for(mod_index=0; mod_index<MOD_NUM_IN_ONE_PCB; mod_index++){
+				band_file_write(&band_para_a[mod_index], mod_index);
+			}
+			
 			CLRBIT(data_update_flag, DATA_TYPE_MOD);
 		}
 		if (GETBIT(data_update_flag, DATA_TYPE_PCB)) {

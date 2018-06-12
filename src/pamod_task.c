@@ -53,7 +53,7 @@ s32 dl_pa_alarm_deal()
 
 void *pamod_thread(void *arg)
 {
-    RLDEBUG("start pamod thread...\r\n"); 
+    // RLDEBUG("start pamod thread...\r\n"); 
 
 
     while(1){

@@ -15,7 +15,9 @@
                 "${workspaceFolder}/digmod",
                 "${workspaceFolder}/porting",
                 "${workspaceFolder}/md-para",
-                "${workspaceFolder}/minilzo-2.10"
+                "${workspaceFolder}/minilzo-2.10",
+                "${workspaceFolder}/digmod/ad9370",
+                "/usr/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

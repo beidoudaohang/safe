@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "data_task.h": "c",
+        "mykonos_gpio.h": "c",
+        "t_mykonos_gpio.h": "c",
+        "common_ad9370.h": "c",
+        "stdlib.h": "c"
+    }
+}

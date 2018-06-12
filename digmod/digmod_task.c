@@ -9,8 +9,11 @@
 */
 #include <pthread.h>
 #include <unistd.h>
+
 #include "helios.h"
 #include "log.h"
+#include "ad9528.h"
+#include "ad9370.h"
 
 pthread_t digmod_tid;
 pthread_attr_t digmod_attr;
@@ -33,11 +36,17 @@ s32 fpga_monitor()
     return 0;
 }
 
-s32 ad9370_config()
-{
-    //TODO: ad9370 Config
-    return 0;
-}
+// s32 ad9528_config()
+// {
+//     //TODO: ad9528 Config
+//     return 0;
+// }
+
+// s32 ad9370_config()
+// {
+//     //TODO: ad9370 Config
+//     return 0;
+// }
 
 s32 dig_temp_monitor()
 {
@@ -59,7 +68,7 @@ s32 dig_alarm_deal()
 
 void *digmod_thread(void *arg)
 {
-    RLDEBUG("start digmod thread...\r\n"); 
+    // RLDEBUG("start digmod thread...\r\n"); 
 
     while(fpga_load()){
         RLDEBUG("fpga load fail!");
@@ -77,7 +86,13 @@ void *digmod_thread(void *arg)
         RLDEBUG("fpga monitor fail!");
     }
 
-    ad9370_config();
+    // if(ad9528_config()){
+    //     RLDEBUG("ad9528 config fail!");
+    // }
+
+    // if(ad9370_config()){
+    //     RLDEBUG("ad9370 config fail!");
+    // }
 
     while(1){
         dig_temp_monitor();

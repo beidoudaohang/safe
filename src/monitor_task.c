@@ -107,7 +107,7 @@ void *local_web_thread(void *arg)
     fd_set rset, mainset;
     u16 ready, i;
 
-    RLDEBUG("start local web thread...\r\n"); 
+    // RLDEBUG("start local web thread...\r\n"); 
 
     unlink(WEB_SOCK_FILE);  
 
@@ -162,7 +162,7 @@ void *monitor_thread(void *arg)
 {
     s32 err;
 
-    RLDEBUG("start monitor thread...\r\n"); 
+    // RLDEBUG("start monitor thread...\r\n"); 
 
     //modem Remote controls
 
