@@ -17,6 +17,7 @@
                 "${workspaceFolder}/md-para",
                 "${workspaceFolder}/minilzo-2.10",
                 "${workspaceFolder}/digmod/ad9370",
+                "/usr/include",
                 "/usr/include"
             ],
             "defines": [],

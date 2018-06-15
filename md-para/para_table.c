@@ -8258,6 +8258,7 @@ void set_table_para_dat(void ** des, void * src, u32 offset, u16 adr)
     *des = src + offset;
 }
 
+
 void set_write_data_file_flag(u8 mod_type, u16 adr)
 {
     u16 i;
@@ -8445,7 +8446,8 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	if (ptable[adr_index].dig_adr) {
 		set_adr_add(ptable[adr_index].dig_adr , ptable_para_adr);
 	}
-
+    
+    //TODO: need to move it out
     set_write_data_file_flag(ps->md_adr.mod_type, _para->para_adr);
 
 	ps->next = ps->next + (ptable[adr_index].link_para_a.link_para_t.len);
