@@ -36,7 +36,7 @@ return：
 	>0---用户名对应的权限
 	-1---err
 */
-static s32 usr_name_to_auth(s8* name)
+s32 usr_name_to_auth(s8* name)
 {
 	s32 err;
 
@@ -81,7 +81,7 @@ return：
 	-1:err
 	0:sus
  */
-static s32 usr_dynamic_pwd_creat(const s8* auth, const s8* sn, s8* dest)
+s32 usr_dynamic_pwd_creat(const s8* auth, const s8* sn, s8* dest)
 {
 	s8 buf[24];
 	s32 err;

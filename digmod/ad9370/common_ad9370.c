@@ -170,7 +170,7 @@ commonErr_t CMB_SPIReadByte(spiSettings_t *spiSettings, u16 addr, u8 *readdata)
     return(COMMONERR_OK);
 }
 
-commonErr_t CMB_SPIWriteField(spiSettings_t *spiSettings, u16 addr, u8 field_val, VSW_BYTE mask, VSW_BYTE start_bit)
+commonErr_t CMB_SPIWriteField(spiSettings_t *spiSettings, u16 addr, u8 field_val, u8 mask, u8 start_bit)
 {
     u8 Val=0;
 
@@ -192,7 +192,7 @@ commonErr_t CMB_SPIWriteField(spiSettings_t *spiSettings, u16 addr, u8 field_val
 }
 
 /* read a field in a single register space (not multibyte fields) */
-commonErr_t CMB_SPIReadField(spiSettings_t *spiSettings, u16 addr, u8 *field_val, VSW_BYTE mask, VSW_BYTE start_bit)
+commonErr_t CMB_SPIReadField(spiSettings_t *spiSettings, u16 addr, u8 *field_val, u8 mask, u8 start_bit)
 {
     u8 data;
 

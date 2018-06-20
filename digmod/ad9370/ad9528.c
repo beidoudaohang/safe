@@ -123,7 +123,7 @@ static const AD9528_REG_STRUC ad9528_conf[] =
 u8 bspAd9528Reset(void)
 {
     RLDEBUG("Reset AD9528...... \n");
-    //  ÔÚresetÒý½Å²úÉúÒ»¸ö1msµÄµÍµçÆ½Âö³å
+    //  ï¿½ï¿½resetï¿½ï¿½ï¿½Å²ï¿½ï¿½ï¿½Ò»ï¿½ï¿½1msï¿½ÄµÍµï¿½Æ½ï¿½ï¿½ï¿½ï¿½
     DevFpgaWrite(AD9528_RST_REG, 1);
     usleep(10); 
     DevFpgaWrite(AD9528_RST_REG, 0);
@@ -224,7 +224,7 @@ u8 ad9528_config (void)
     bspAd9528Write(0x00f, 0x01, 1);  //update
 
 
-    //ÔÙÐ´Ò»´Î£¬0.6144MHz ²ÅÓÐÊä³ö
+    //ï¿½ï¿½Ð´Ò»ï¿½Î£ï¿½0.6144MHz ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     bspAd9528Write(0x403, 0x91, 1);
     bspAd9528Write(0x00f, 0x01, 1); //update
 #endif
@@ -254,10 +254,11 @@ u8 ad9528_config (void)
     // b. Write REG0x32A=0x00, Write REG0x00F=0x01
     //bspAd9528SynSet();
 
-    //return bspAd9528LockStat();    /*Ëø¶¨ or Ê§Ëø*/
+    //return bspAd9528LockStat();    
 
     RLDEBUG("Done.\n");
-	typeflag = DevEepromByteRead(EEPROM_ADDR_MAINOPT_FLAG);
+	//TODO:read eeprom para
+	//typeflag = DevEepromByteRead(EEPROM_ADDR_MAINOPT_FLAG);
 
 	if(1==typeflag)
 	{

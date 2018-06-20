@@ -8166,7 +8166,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	adr_index = find_para_adr(ptable, para_table_size, adr);
 
 	if (0 > adr_index) {
-		RLDEBUG("one_para_adr_read_processing can't find para adr\r\n");
+		RLDEBUG("one_para_adr_read_processing can't find para adr:%x\r\n", adr);
 		SET_PARA_ERR_CODE(err, PARA_ADR_INVALID);
 		goto ONE_PARA_ADR_READ_ERR;
 	}
@@ -8259,23 +8259,41 @@ void set_table_para_dat(void ** des, void * src, u32 offset, u16 adr)
 }
 
 
-void set_write_data_file_flag(u8 mod_type, u16 adr)
+void set_write_data_file_flag(u8 mod_type, u8 mod_index, u16 adr)
 {
     u16 i;
 
+#ifdef MONITOR_MODULE_ENABLE
     if (MOD_TYPE_MONITOR == (mod_type)) {
         data_update(DATA_TYPE_UNIT);
-    }else{
+    }
+#endif
+#ifdef OTHER_MODULE_ENABLE
+    if(MOD_TYPE_MONITOR != (mod_type)){
         for(i=0; i<sizeof(pcb_share_para_table); i++){
             if(adr == pcb_share_para_table[i]){
                 data_update(DATA_TYPE_PCB);
                 return;
             } 
         }
-
-        data_update(DATA_TYPE_MOD);
+        
+        switch (mod_index)
+        {
+            case 0:
+                data_update(DATA_TYPE_MOD1);
+                break;
+            case 1:
+                data_update(DATA_TYPE_MOD2);
+                break;
+            case 2:
+                data_update(DATA_TYPE_MOD3);
+                break;
+            default:
+                break;
+        }
+        
     }
-
+#endif
 }
 
 /*
@@ -8447,8 +8465,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 		set_adr_add(ptable[adr_index].dig_adr , ptable_para_adr);
 	}
     
-    //TODO: need to move it out
-    set_write_data_file_flag(ps->md_adr.mod_type, _para->para_adr);
+    set_write_data_file_flag(ps->md_adr.mod_type, mod_index, _para->para_adr);
 
 	ps->next = ps->next + (ptable[adr_index].link_para_a.link_para_t.len);
 

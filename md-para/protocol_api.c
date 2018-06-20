@@ -373,7 +373,7 @@ struct read_md_info_s {
 //	md_adr_info *adr;
 };
 #pragma pack()
-static s8 read_md_info_deal(para_stream *ps)
+s8 read_md_info_deal(para_stream *ps)
 {
     u16 cnt;
     struct read_md_info_s *read_md;
@@ -644,17 +644,7 @@ s8 frame_recv_deal(s8 *str, u16 len, FRAME_SOURCE source, para_stream *ps)
     }
     case FRAME_CMD_SET_PARA: {
         set_para_deal(pf, ps);
-#ifdef MONITOR_MODULE_ENABLE
-        if (MOD_TYPE_MONITOR == (pf->cmd.md_adr.mod_type)) {
-            //data_update(DATA_TYPE_UNIT);
-        }
-#endif
-#ifdef OTHER_MODULE_ENABLE
-        if (MOD_TYPE_MONITOR != (pf->cmd.md_adr.mod_type)) {
-            //data_update(DATA_TYPE_MOD);
-        }
-
-#endif
+        sem_post(&(data_write_sem));
         break;
     }
     case FRAME_CMD_LOGIN: {

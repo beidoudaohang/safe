@@ -4,6 +4,9 @@
         "mykonos_gpio.h": "c",
         "t_mykonos_gpio.h": "c",
         "common_ad9370.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "cstdlib": "c",
+        "para_table.h": "c",
+        "unistd.h": "c"
     }
 }

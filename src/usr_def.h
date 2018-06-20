@@ -54,5 +54,6 @@ s8 autorize_update(frame *pf);
 s32 usr_login(frame *pf);
 void usr_auth_lapse(void);
 s32 itimer_init(void);
-
+s32 usr_name_to_auth(s8* name);
+s32 usr_dynamic_pwd_creat(const s8* auth, const s8* sn, s8* dest);
 #endif //USR_DEF_H_

@@ -15,13 +15,13 @@ typedef double f64;
 
 typedef unsigned char  			bool_t;
 typedef unsigned char  			uint8_t;                    /* Unsigned  8 bit quantity       */
-typedef signed   char  				int8_t;                    /* Signed    8 bit quantity       */
+typedef signed   char  			int8_t;                    /* Signed    8 bit quantity       */
 typedef unsigned short 			uint16_t;                   /* Unsigned 16 bit quantity       */
-typedef signed   short 				int16_t;                   /* Signed   16 bit quantity       */
-typedef unsigned int  				uint32_t;                   /* Unsigned 32 bit quantity       */
-typedef signed   int   				int32_t;                   /* Signed   32 bit quantity       */
-// typedef unsigned long long 			uint64_t; 
-// typedef signed   long long 			int64_t; 
+typedef signed   short 			int16_t;                   /* Signed   16 bit quantity       */
+typedef unsigned int  			uint32_t;                   /* Unsigned 32 bit quantity       */
+typedef signed   int   			int32_t;                   /* Signed   32 bit quantity       */
+typedef unsigned long int 		uint64_t; 
+typedef signed   long int 		int64_t; 
 // typedef float 						fp32_t;
 // typedef double 					fp64_t;
 
@@ -65,6 +65,6 @@ typedef signed   int   				int32_t;                   /* Signed   32 bit quantit
 
 //#define PROTOCOL_ENCRYPT_LZO        1
 
-#define TEST_DATA
-
+//#define TEST_DATA
+#define TEST_WEB_DATA
 #endif //__HELIOS_H__

@@ -12,6 +12,7 @@ description:
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <semaphore.h>
 #include "porting.h"
 #include "para_table.h"
 #include "data_task.h"
@@ -19,6 +20,7 @@ description:
 /****************************data def********************************/
 pthread_t data_ts_id;
 pthread_attr_t data_ts_attr;
+sem_t data_write_sem;
 
 static volatile u32 data_update_flag = 0;
 /*****************************funs***********************************/
@@ -38,6 +40,12 @@ s32 data_init(void)
 	memset(&unit_dynamic_para_t, 0, sizeof(unit_dynamic_para));
 	memset(&band_para_a, 0, (MOD_NUM_IN_ONE_PCB * sizeof(band_para)));
 	memset(&band_dynamic_para_a, 0, (MOD_NUM_IN_ONE_PCB * sizeof(band_dynamic_para)));
+
+	err = sem_init(&(data_write_sem), 0, 0);
+	if (err) {
+		RLDEBUG("data_init:creat data_write_sem sem err\r\n");
+		exit(EXIT_FAILURE);
+	}
 
 	//first run,para file need init
 	err = unit_file_init();
@@ -139,41 +147,48 @@ return:
 	0---no data need save
 	1---something need save
  */
-s32 data_update_check(void)
-{
-	if ((GETBIT(data_update_flag, DATA_TYPE_UNIT)) || (GETBIT(data_update_flag, DATA_TYPE_MOD)) || (GETBIT(data_update_flag, DATA_TYPE_PCB))) {
-		return 1;
-	}
-	return 0;
-}
+// s32 data_update_check(void)
+// {
+// 	if ((GETBIT(data_update_flag, DATA_TYPE_UNIT)) || (GETBIT(data_update_flag, DATA_TYPE_MOD)) || (GETBIT(data_update_flag, DATA_TYPE_PCB))) {
+// 		return 1;
+// 	}
+// 	return 0;
+// }
 
 
 void *data_task(void* arg)
 {
-	s32 cnt;
+	s32 cnt, err;
 	u8 mod_index;
 	//RLDEBUG("data task start!\r\n");
 	arg = arg;
 
 	while (1) {
-		timedelay(0, 0, 100, 0);
-		if (GETBIT(data_update_flag, DATA_TYPE_UNIT)) {
-			RLDEBUG("data task:sava unit file\r\n");
-			unit_file_write(&unit_para_t);
-			CLRBIT(data_update_flag, DATA_TYPE_UNIT);
-		}
-		if (GETBIT(data_update_flag, DATA_TYPE_MOD)) {
-			RLDEBUG("data task:sava band file\r\n");
-			for(mod_index=0; mod_index<MOD_NUM_IN_ONE_PCB; mod_index++){
-				band_file_write(&band_para_a[mod_index], mod_index);
+		//timedelay(0, 0, 100, 0);
+		err = sem_wait(&(data_write_sem));
+		if (err) {
+			RLDEBUG("data_task:sem_wait() false \r\n");
+			timedelay(0, 0, 100, 0);
+			continue;
+		}else{
+			if (GETBIT(data_update_flag, DATA_TYPE_UNIT)) {
+				RLDEBUG("data task:sava unit file\r\n");
+				unit_file_write(&unit_para_t);
+				CLRBIT(data_update_flag, DATA_TYPE_UNIT);
 			}
-			
-			CLRBIT(data_update_flag, DATA_TYPE_MOD);
-		}
-		if (GETBIT(data_update_flag, DATA_TYPE_PCB)) {
-			RLDEBUG("data task:sava pcb file\r\n");
-			pcb_file_write(&pcb_share);
-			CLRBIT(data_update_flag, DATA_TYPE_PCB);
+			for(mod_index=0; mod_index<MOD_NUM_IN_ONE_PCB; mod_index++){
+				if (GETBIT(data_update_flag, mod_index)) {
+					RLDEBUG("data task:sava band file\r\n");
+					band_file_write(&band_para_a[mod_index], mod_index);
+					CLRBIT(data_update_flag, mod_index);
+				}
+			}
+
+			if (GETBIT(data_update_flag, DATA_TYPE_PCB)) {
+				RLDEBUG("data task:sava pcb file\r\n");
+				pcb_file_write(&pcb_share);
+				CLRBIT(data_update_flag, DATA_TYPE_PCB);
+			}
 		}
 	}
 }

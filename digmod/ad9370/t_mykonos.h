@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#include "common_api.h"
+#include "common_ad9370.h"
 
 
 /**

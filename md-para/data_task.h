@@ -13,6 +13,7 @@ description:
 #include "helios.h"
 #include <unistd.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <arpa/inet.h>
 #include "data_task_def.h"
 /*****************************para define*************************/
@@ -22,6 +23,7 @@ description:
 /*****************************data struct define******************/
 extern pthread_t data_ts_id;
 extern pthread_attr_t data_ts_attr;
+extern sem_t data_write_sem;
 /*****************************funs********************************/
 s32 data_init(void);
 void data_update(DATA_TYPE type);

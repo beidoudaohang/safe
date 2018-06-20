@@ -73,7 +73,7 @@ void *protocol_task(void* arg)
 		}
 		
 		//switch frame source
-		memset(&para_stream_t, 0, sizeof(para_stream));
+
 		if (frame_info_t.local_recv_len) {
 			frame_source = FRAME_SOURCE_LOCAL;
 		} else if (frame_info_t.remote_recv_len) {
@@ -89,6 +89,7 @@ void *protocol_task(void* arg)
 
 			err--;
 		}
+		memset(&para_stream_t, 0, sizeof(para_stream));
 		if (err > 0) {
 			if (FRAME_SOURCE_LOCAL == frame_source) {
 
@@ -100,11 +101,13 @@ void *protocol_task(void* arg)
 			}
 		} else {
 			RLDEBUG("protocol_task:para stream busy\r\n");
+
 			continue;
 		}
 		//data processing err
 		if (err < 0) {
 			RLDEBUG("protocol_task:recv data processing err\r\n");
+			para_stream_t.flag = PARA_STREAM_NORMAL;
 			continue;
 		}
 
@@ -123,6 +126,7 @@ void *protocol_task(void* arg)
 		if (err > 0) {
 			memset(&frame_send, 0, sizeof(frame));
 			cnt = (s32)frame_pack((const para_stream*)&para_stream_t, (frame*)&frame_send);
+			para_stream_t.flag = PARA_STREAM_NORMAL;
 		} else {
 			RLDEBUG("protocol_task:send buf full\r\n");
 			continue;

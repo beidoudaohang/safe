@@ -1,5 +1,5 @@
 /**
- * \file common_api.h
+ * \file common_ad9370.h
  * \brief Contains type definitions and prototype declarations for common.c
  */
 

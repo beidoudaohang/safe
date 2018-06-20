@@ -17,9 +17,11 @@ description:
 /*****************************para define*************************/
 typedef enum
 {
-	DATA_TYPE_UNIT = 1,
-	DATA_TYPE_MOD = 2,
-	DATA_TYPE_PCB = 4
+	DATA_TYPE_MOD1,
+	DATA_TYPE_MOD2,
+	DATA_TYPE_MOD3,
+	DATA_TYPE_UNIT,
+	DATA_TYPE_PCB 
 } DATA_TYPE;
 
 

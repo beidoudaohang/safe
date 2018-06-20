@@ -568,7 +568,7 @@ BAND_FILE_READ_TRY:
 		}
 	}
 
-	RLDEBUG("band_file_read:newer band file done: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) , read_len, read_len - MD5_CODE_SIZE);
+	//RLDEBUG("band_file_read:newer band file done: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) , read_len, read_len - MD5_CODE_SIZE);
 
 	memcpy(bp, file_buf, read_len - MD5_CODE_SIZE);
 

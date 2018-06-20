@@ -8,12 +8,25 @@
  * 2018-06-15      sujj      first version
 */
 
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <pthread.h>
+#include <errno.h>
+#include <string.h>
 
 #include "helios.h"
 #include "log.h"
 #include "web_protocol.h"
 #include "para_table.h"
+#include "usr_def.h"
+#include "data_task.h"
 
+
+#define WEBMSGPATHNAME "/tmp/webmsg"  
+#define ID 27  
+#define MODE IPC_CREAT|0666
+#define SENDMSG 1  
+#define RECVMSG 2  
 
 static s8 web_md_adr_check(web_msg_t *pf)
 {
@@ -50,7 +63,7 @@ return：
 	-2：密码错误
 	-3: err
  */
-s32 web_usr_login(web_msg_t *pf)
+static s32 web_usr_login(web_msg_t *pf)
 {
 	s32 cnt = 0;
 	s8 dy_pwd[12] = {0};
@@ -192,28 +205,27 @@ static s8 web_read_para_deal(const web_msg_t *pf, para_stream *ps)
     return 0;
 }
 
-s8 web_recv_deal(s8 *str, u16 len, para_stream *ps)
+s8 web_recv_deal(s8 *str, para_stream *ps)
 {
     u16 cnt;
     web_msg_t *pf = NULL;
-    u32 frame_len;
+
 
     if ((NULL == str) || (NULL == ps))
         return -1;
 
-    frame_len = 0;
 
 
     pf = (web_msg_t*)str;
 
     /*远控读取模块地址信息的指令，不做地址判断*/
-    if (FRAME_CMD_READ_MOD_INFO != (pf->cmd))
+    if (FRAME_CMD_READ_MOD_INFO != (pf->data.cmd))
         if (web_md_adr_check(pf)) {
             RLDEBUG("frame module adr err\r\n");
             goto WEB_RCV_ERR;
         }
 
-    ps->cmd = pf->cmd;
+    ps->cmd = pf->data.cmd;
     ps->device_id = unit_para_t.unit_sundry.device_id;
     ps->flag = PARA_STREAM_BUSY;
     memcpy((void*) & (ps->md_adr), (void*) & (pf->data.md_adr), sizeof(md_adr_info));
@@ -222,7 +234,7 @@ s8 web_recv_deal(s8 *str, u16 len, para_stream *ps)
     ps->authority = pf->data.authority;
     ps->next = (s8*)(ps->data);
 
-    switch (pf->cmd) {
+    switch (pf->data.cmd) {
     case FRAME_CMD_READ_MOD_INFO: {
         read_md_info_deal(ps);
         goto WEB_RCV_DONE;
@@ -255,7 +267,7 @@ s8 web_recv_deal(s8 *str, u16 len, para_stream *ps)
     }
 #endif
 
-    switch (pf->cmd) {
+    switch (pf->data.cmd) {
     case FRAME_CMD_ALARM: {
 
         break;
@@ -276,7 +288,7 @@ s8 web_recv_deal(s8 *str, u16 len, para_stream *ps)
     case FRAME_CMD_SET_PARA: {
         web_set_para_deal(pf, ps);
 
-        //TODO:add save flash
+        sem_post(&(data_write_sem));
         break;
     }
     case FRAME_CMD_LOGIN: {
@@ -299,4 +311,129 @@ WEB_RCV_DONE:
     return 0;
 WEB_RCV_ERR:
     return -1;
+}
+
+
+s16 web_pack(const para_stream *ps, web_msg_t *pf)
+{
+    s32 cnt;
+
+    if (NULL == ps)
+        return -1;
+    if (NULL == pf) {
+        return -1;
+    }
+
+    if ((ps->paralen) > 1024)
+        return -1;
+
+    //cnt = one_frame_pack(para, pf);
+    memcpy((void*)(pf->data.para), (void*)(ps->data), (ps->paralen));
+
+    printf("ps->paralen=%d\n",ps->paralen);
+
+    pf->data.len = ps->paralen;
+    pf->data.cmd = ps->cmd;
+    memcpy((void*) &(pf->data.md_adr), (void*) &(ps->md_adr), sizeof(md_adr_info));
+    pf->data.authority = ps->authority;
+    pf->data.ack = ps->ack;
+
+    cnt = pf->data.len + WEB_PROTOCOL_HEAD_LEN;
+    if (cnt < 0)
+        return -1;
+
+    /**/
+    return cnt;
+}
+
+
+s8 web_msg_debug(s8 *f, u16 len)
+{
+	u16 i;
+    RLDEBUG("web data:");
+	for(i=0; i<len; i++){
+		RLDEBUG("0x%x,", (u8)f[i]);
+	}
+	RLDEBUG("\r\n");
+    return 1;
+}
+
+extern para_stream para_stream_t;
+
+void *local_web_thread(void *arg)
+{
+    s32 err, cnt;
+    int msgid;
+    ssize_t recv_len;
+    web_msg_t web_msg_recv, web_msg_send;
+    
+    key_t key;
+    key = ftok(WEBMSGPATHNAME, ID);  
+    /*创建消息队列*/
+    msgid = msgget(key, MODE);
+    // msgid = msgget((key_t)1234, MODE);
+    if (msgid == -1)
+    {
+        RLDEBUG("msgget failed with error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /*循环从消息队列中接收消息*/
+    while (1)
+    {
+        /*读取消息*/
+        if (recv_len = msgrcv(msgid, (void *)&web_msg_recv, sizeof(web_protocol_t), RECVMSG, 0) == -1)
+        {
+            RLDEBUG("msgrcv failed with error\n");
+            exit(EXIT_FAILURE);
+        }
+
+        RLDEBUG("return:%d, len:%d\r\n", recv_len, web_msg_recv.data.len);
+
+		//check para_stream_t is busy?
+		err = 10;
+		while (err > 0) {
+			if (PARA_STREAM_BUSY == para_stream_t.flag) {
+				timedelay(0, 0, 50, 0);
+			} else
+				break;
+
+			err--;
+		}
+        memset(&para_stream_t, 0, sizeof(para_stream));
+        if(err){
+            err = web_recv_deal((s8*)&web_msg_recv, &para_stream_t);
+        }else{
+			RLDEBUG("local_web_thread:para stream busy\r\n");
+			continue;
+        }
+        
+
+		if (err < 0) {
+			RLDEBUG("local_web_thread:recv data processing err\r\n");
+			continue;
+		}
+
+        memset(&web_msg_send, 0, sizeof(web_msg_send));
+        web_msg_send.type = SENDMSG;
+        cnt = (s32)web_pack((const para_stream*)&para_stream_t, (web_msg_t*)&web_msg_send);
+        para_stream_t.flag = PARA_STREAM_NORMAL;
+        
+        web_msg_debug((s8*)&web_msg_send.data, cnt);
+
+        if (msgsnd(msgid, (void *)&web_msg_send, cnt, 0) == -1)
+        {
+            RLDEBUG("msgsed failed\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    /*从系统内核中移走消息队列*/
+    // if (msgctl(msgid, IPC_RMID, 0) == -1)
+    // {
+    //     fprintf(stderr, "msgctl(IPC_RMID) failed\n");
+    //     exit(EXIT_FAILURE);
+    // }
+    RLDEBUG("close web server\n");
+
 }

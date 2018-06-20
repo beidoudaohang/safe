@@ -296,7 +296,7 @@ u8 DevInit(void)
 {
 	g_iFpgaDevFd = FpgaDevOpen();
 
-	ExternalDevInit();
+	//ExternalDevInit();
 	
 	return RET_SUCC;
 }
