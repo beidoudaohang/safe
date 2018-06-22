@@ -551,7 +551,7 @@ s8 frame_recv_deal(s8 *str, u16 len, FRAME_SOURCE source, para_stream *ps)
     */
 
     //frame decode begin
-    if (frame_protocol_check(str,  len, &begin)) {
+    if (frame_protocol_check(str, len, &begin)) {
         RLDEBUG("frame protocol err\r\n");
         goto FRAME_ERR;
     }

@@ -19,5 +19,6 @@ description:
 
 /*****************************functions***************************/
 u16 crc(const s8 *data,u16 len);
+u16 crc16_2(u8 *d,u8 len,u16 crc);
 
 #endif //CRC_H_

@@ -175,6 +175,7 @@ typedef struct
 	u8 band[BANDS_IN_ONE_MONITOR];	/*该band支持的具体band值*/
 } band_whole_para;
 
+
 typedef struct {
 	site_info site;
 	gps_pen gps_pen_t;
@@ -188,6 +189,7 @@ typedef struct {
 	band_whole_para band_whole;
 	md_adr_info md_adr_t;
 	md_mfrs_info md_mfrs;
+	u8 channel_num[SYS_NUM];
 } unit_para;
 
 /******************************模块信息*********************************/

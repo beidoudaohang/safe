@@ -127,7 +127,7 @@ s32 data_init(void)
 
 	return 0;
 }
-/*
+/*TODO:It needs to be redesigned
 fun: update data flag
 para:
 	type: which data file need to update

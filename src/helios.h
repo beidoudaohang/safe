@@ -52,10 +52,14 @@ typedef signed   long int 		int64_t;
 
 #define PRO_DEBUG_ENABLE        	1
 #define MONITOR_MODULE_ENABLE		1	/*标示是否包含监控模块*/
-#define PA_MODULE_ENABLE			1	/*标示是否包含PA模块*/
+#define PA_MODULE_ENABLE			0	/*标示是否包含PA模块*/
 #define OTHER_MODULE_ENABLE			1	/*标示是否有除监控模块以外的模块*/
 
 //#define RL_PERMISSION_CHECK		1		/*adr access permisson check*/
+#if MONITOR_MODULE_ENABLE
+#define MONITOR_MOD_NUM 			160 //8*10*2	
+#define SYS_NUM 8
+#endif
 
 #if PA_MODULE_ENABLE
 #define MOD_NUM_IN_ONE_PCB 			3	
