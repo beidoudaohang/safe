@@ -11,7 +11,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#include <stdint.h>
 #include "common_ad9370.h"
 
 

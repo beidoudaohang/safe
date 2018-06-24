@@ -20,8 +20,15 @@ typedef unsigned short 			uint16_t;                   /* Unsigned 16 bit quantit
 typedef signed   short 			int16_t;                   /* Signed   16 bit quantity       */
 typedef unsigned int  			uint32_t;                   /* Unsigned 32 bit quantity       */
 typedef signed   int   			int32_t;                   /* Signed   32 bit quantity       */
-typedef unsigned long int 		uint64_t; 
-typedef signed   long int 		int64_t; 
+
+// #ifndef uint64_t
+// #define uint64_t unsigned long 
+// #endif
+// #ifndef int64_t
+// #define int64_t signed long 
+// #endif
+// typedef unsigned long 		uint64_t; 
+// typedef signed   long 		int64_t; 
 // typedef float 						fp32_t;
 // typedef double 					fp64_t;
 

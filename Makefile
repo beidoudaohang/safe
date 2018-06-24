@@ -14,7 +14,7 @@ BIN_DIR=./bin/$(Bin)
 #AllLibs : $(StaticLib)   
 AllLibs : $(BIN_DIR)
   
-CC = gcc  
+CC = arm-none-linux-gnueabi-gcc 
 CXXFLAGS = -g  -Wall  
 CPPFLAGS = $(foreach n,$(AllDirs) , -I$(n))
 LDFLAGS = 

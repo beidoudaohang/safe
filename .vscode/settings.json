@@ -7,6 +7,8 @@
         "stdlib.h": "c",
         "cstdlib": "c",
         "para_table.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "web_protocol.h": "c",
+        "porting.h": "c"
     }
 }

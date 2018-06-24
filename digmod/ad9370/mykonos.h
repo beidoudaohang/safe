@@ -11,7 +11,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-// #include <stdint.h>
+#include <stdint.h>
 #include "helios.h"
 #include "t_mykonos.h"
 #include "mykonos_version.h"

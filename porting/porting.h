@@ -19,7 +19,7 @@ description:
 #define TTY_BAUDRATE				B115200
 #define DIG_TTY_NAME 				"/dev/ttyS0"
 
-
+#define TTY_485NAME 				"/dev/ttymxc1"
 
 /*****************************data struct define******************/
 
@@ -48,4 +48,10 @@ s8 dig_band0_tty_send(s8 *src, u16 len);
 s8 dig_band0_tty_recv(void);
 //debug
 void relay_printf(char* fmt, ...);
+
+s8 rs485_tty_open(void);
+s8 rs485_tty_close(void);
+u8 RS485_SEND(u8 * src ,u32 len);
+u16 RS485_RECV(u8 *RBuf,u16 len,u16 timeout);
+u16 RS485_RECV_TEST(u8 *RBuf,u16 len);
 #endif //PORTING_H_
