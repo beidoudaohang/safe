@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
-
+#include <helios.h>
 #if 1
 void log_printf(char* fmt, ...)
 {
@@ -45,3 +45,13 @@ void log_printf(char* fmt, ...)
     }
 }
 #endif
+
+void hexdata_debug(char *f, int len)
+{
+	int i;
+
+	for(i=0; i<len; i++){
+		log_printf("0x%x,", (u8) *f++);
+	}
+	log_printf("\r\n");
+}

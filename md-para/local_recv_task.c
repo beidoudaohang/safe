@@ -73,7 +73,7 @@ void *local_recv_task(void* arg)
 #ifdef PRO_DEBUG_ENABLE
 		if (cnt < 0) {
 			RLDEBUG("protocol task tty read false!\r\n");
-			timedelay(0, 2, 0, 0);
+			timedelay(0, 30, 0, 0);
 		}
 		///*
 		else {

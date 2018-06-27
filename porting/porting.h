@@ -20,7 +20,7 @@ description:
 #define DIG_TTY_NAME 				"/dev/ttyS0"
 
 #define TTY_485NAME 				"/dev/ttymxc1"
-
+#define TTY_485BAUDRATE				B9600
 /*****************************data struct define******************/
 
 /*****************************funs********************************/
@@ -52,6 +52,6 @@ void relay_printf(char* fmt, ...);
 s8 rs485_tty_open(void);
 s8 rs485_tty_close(void);
 u8 RS485_SEND(u8 * src ,u32 len);
-u16 RS485_RECV(u8 *RBuf,u16 len,u16 timeout);
-u16 RS485_RECV_TEST(u8 *RBuf,u16 len);
+u16 RS485_RECV(u8 *src,u16 len,u16 timeout);
+
 #endif //PORTING_H_

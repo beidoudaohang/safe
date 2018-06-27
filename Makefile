@@ -15,13 +15,17 @@ BIN_DIR=./bin/$(Bin)
 AllLibs : $(BIN_DIR)
   
 CC = arm-none-linux-gnueabi-gcc 
+# CC = arm-i2som-linux-gnueabi-gcc
+
 CXXFLAGS = -g  -Wall  
 CPPFLAGS = $(foreach n,$(AllDirs) , -I$(n))
 LDFLAGS = 
 MYLIB=
+# SYSLIB=-lpthread 
 SYSLIB=-lpthread --static
 
-DBGCFLAGS = -g -O0 -DDEBUG
+DBGCFLAGS =  -O0 -g -DDEBUG
+
 # $(StaticLib) : $(Objs)  
 #     ar rcs $@ $^  
   
@@ -39,6 +43,12 @@ $(BIN_DIR) : $(Objs)
 
 sinclude $(Deps)
 
-.PHONY : clean Debug
+.PHONY : clean Debug install
+install:
+	cp ./bin/safe ../imx-rootfs/home/root/safe
+	chmod 777 ../imx-rootfs/home/root/safe
+
 clean:
 	rm -f $(Objs) $(Deps) $(StaticLib) $(DynamicLib) $(BIN_DIR)
+
+

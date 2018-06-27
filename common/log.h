@@ -10,4 +10,6 @@ void log_printf(char* fmt, ...);
 #define RLDEBUG(fmt,args...)
 #endif
 
+void hexdata_debug(char *f, int len);
+
 #endif //__LOG_H__

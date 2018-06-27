@@ -1035,7 +1035,7 @@ void timedelay(u8 m, u8 s, u16 ms, u16 us)
 }
 
 /*********************uart porting**************/
-static s8 tty_cfg(s32 fd)
+static s8 tty_cfg(s32 fd, u32 baud)
 {
 	struct termios tc;
 
@@ -1046,8 +1046,8 @@ static s8 tty_cfg(s32 fd)
 	cfmakeraw(&tc);
 
 	//set speed
-	cfsetispeed(&tc, TTY_BAUDRATE);
-	cfsetospeed(&tc, TTY_BAUDRATE);
+	cfsetispeed(&tc, baud);
+	cfsetospeed(&tc, baud);
 
 	//
 	tc.c_cflag |= CLOCAL | CREAD;
@@ -1057,8 +1057,8 @@ static s8 tty_cfg(s32 fd)
 	tc.c_cflag &= ~CSTOPB;
 
 	//set waiting time & min char numbers
-	//tc.c_cc[VTIME]=0;
-	//tc.c_cc[VMIN] = 24;
+	// tc.c_cc[VTIME]=0;
+	// tc.c_cc[VMIN] = 0;
 	//clean input&output buffer
 	tcflush(fd, TCIFLUSH);
 
@@ -1086,7 +1086,7 @@ s8 frame_tty_open(void)
 	else
 		monitor_tty_file = err;
 
-	err = tty_cfg(monitor_tty_file);
+	err = tty_cfg(monitor_tty_file, TTY_BAUDRATE);
 	if (err < 0)
 		return -1;
 	frame_tty_flag = 1;
@@ -1177,7 +1177,7 @@ s8 dig_band0_tty_open(void)
 	else
 		dig_band0_tty_file = err;
 
-	err = tty_cfg(dig_band0_tty_file);
+	err = tty_cfg(dig_band0_tty_file, TTY_BAUDRATE);
 	if (err < 0)
 		return -1;
 
@@ -1286,28 +1286,28 @@ s8 dig_band0_tty_recv(void)
 }
 
 static int rs485_tty_file;
-fd_set rs485_recv_fds;
-struct timeval rs485_recv_tv;
-u8 rs485_recv_buf[100];
+// fd_set rs485_recv_fds;
+// struct timeval rs485_recv_tv;
+// u8 rs485_recv_buf[100];
 static volatile int rs485_tty_flag = 0;
 s8 rs485_tty_open(void)
 {
 	s32 err;
 
 	rs485_tty_flag = 0;
-	err = open(TTY_485NAME, O_RDWR | O_NOCTTY);
+	err = open(TTY_485NAME, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (err < 0)
 		return -1;
 	else
 		rs485_tty_file = err;
 
-	err = tty_cfg(rs485_tty_file);
+	err = tty_cfg(rs485_tty_file, TTY_485BAUDRATE);
 	if (err < 0)
 		return -1;
 
-	memset((void*)&rs485_recv_tv, 0, sizeof(rs485_recv_tv));
-	rs485_recv_tv.tv_sec = 0;
-	rs485_recv_tv.tv_usec = 300 * 1000;
+	// memset((void*)&rs485_recv_tv, 0, sizeof(rs485_recv_tv));
+	// rs485_recv_tv.tv_sec = 0;
+	// rs485_recv_tv.tv_usec = 300 * 1000;
 
 	rs485_tty_flag = 1;
 	return 0;
@@ -1347,6 +1347,8 @@ u8 RS485_SEND(u8 * src ,u32 len)
 		return -1;
 	}
 
+	hexdata_debug(src, len);
+
 	err = write(rs485_tty_file, src, len);
 	if (err < 0) {
 		RLDEBUG("rs485_tty_send:write() false \r\n");
@@ -1359,80 +1361,35 @@ u8 RS485_SEND(u8 * src ,u32 len)
 
 	return 0;
 }
-/*
-*********************************************************************************************************
-*	函 数 名: RS485_RECV
-*	功能说明: RS485接收字符串
-*	形    参：RBuf:字符串地址   len:字符串长度 timeout:超时时间
-*	返 回 值: 无
-*********************************************************************************************************
-*/
-#if 0
-u16 RS485_RECV(u8 *RBuf,u16 len,u16 timeout)
+
+u16 RS485_RECV(u8 *src,u16 len, u16 timeout)
 {
 	s32 err;
-	s16 cnt = 0;
-	struct timespec readwaittime;
 
-	if (1 != rs485_tty_flag) {
-		RLDEBUG("rs485_tty_recv:rs485_tty_flag != 0 \r\n");
+	if (NULL == src)
+		return -1;
+
+	if (rs485_tty_file <= 0) {
 		return -1;
 	}
 
-	FD_ZERO(&rs485_recv_fds);
-	FD_SET(rs485_tty_file, &rs485_recv_fds);
-
-	memset((void*)&rs485_recv_buf, 0, sizeof(rs485_recv_buf));
-	memset((void*)&readwaittime, 0, sizeof(readwaittime));
-	readwaittime.tv_sec = timeout;
-	readwaittime.tv_nsec = 0;
-	err = select(rs485_tty_file + 1, &rs485_recv_fds, NULL, NULL, &rs485_recv_tv);
-
-	// if (err < 0) {
-	// 	band_dynamic_para_a[0].alarm.fpga_uart = 1;
-	// 	RLDEBUG("rs485_tty_recv:select() time out \r\n");
-	// 	return -1;
-	// } else {
-	// 	band_dynamic_para_a[0].alarm.fpga_uart = 0;
-	// }
-
-	timedelay(0, 0, 20, 0);
-
-	while (0 < (err = read(rs485_tty_file, (rs485_recv_buf + cnt), (sizeof(rs485_recv_buf) - cnt)))) {
-		cnt += err;
-		//RLDEBUG("rs485_tty_recv:one read len  is:%d \r\n", err);
-		nanosleep(&readwaittime, NULL);
-		if (cnt > (s16)(sizeof(rs485_recv_buf))) {
-			RLDEBUG("rs485_tty_recv:cnt >= (s16)(sizeof(dig_comm_frame)) ---->cnt is:%d \r\n", cnt);
-			break;
-		}
+	if (1 != rs485_tty_flag) {
+		RLDEBUG("rs485_tty_recv:1 != rs485_tty_flag \r\n");
+		return -1;
 	}
-	// if ((err < 0) || (!cnt)) {
-	// 	band_dynamic_para_a[0].alarm.fpga_uart = 1;
-	// 	RLDEBUG("rs485_tty_recv:read() false: err=%d,cnt=%d \r\n", err, cnt);
-	// 	return -1;
-	// } else {
-	// 	band_dynamic_para_a[0].alarm.fpga_uart = 0;
-	// }
 
-	return cnt;
-}
-#else
-u16 RS485_RECV_TEST(u8 *RBuf,u16 len)
-{
-	s32 err;
-
-	err = read(rs485_tty_file, RBuf, len);
+	timedelay(0, 0, timeout, 0);
+	err = read(rs485_tty_file, src, len);
 
 	if(err != -1){
-		//memcpy(RBuf, rs485_recv_buf, err);
+		hexdata_debug(src, err);
 		return err;
 	}
 	
 	return 0;
 
 }
-#endif
+
 
 
 /************************monitor uart task**********************/

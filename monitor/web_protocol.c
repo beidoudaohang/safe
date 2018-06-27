@@ -347,16 +347,7 @@ s16 web_pack(const para_stream *ps, web_msg_t *pf)
 }
 
 
-s8 web_msg_debug(s8 *f, u16 len)
-{
-	u16 i;
-    RLDEBUG("web data:");
-	for(i=0; i<len; i++){
-		RLDEBUG("0x%x,", (u8)f[i]);
-	}
-	RLDEBUG("\r\n");
-    return 1;
-}
+
 
 extern para_stream para_stream_t;
 
@@ -418,8 +409,9 @@ void *local_web_thread(void *arg)
         web_msg_send.type = SENDMSG;
         cnt = (s32)web_pack((const para_stream*)&para_stream_t, (web_msg_t*)&web_msg_send);
         para_stream_t.flag = PARA_STREAM_NORMAL;
-        
-        web_msg_debug((s8*)&web_msg_send.data, cnt);
+
+        RLDEBUG("web data:");
+        hexdata_debug((s8*)&web_msg_send.data, cnt);
 
         if (msgsnd(msgid, (void *)&web_msg_send, cnt, 0) == -1)
         {

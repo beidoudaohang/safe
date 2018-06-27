@@ -45,6 +45,12 @@ typedef signed   int   			int32_t;                   /* Signed   32 bit quantity
 #ifndef ERROR
 #define ERROR -1
 #endif
+#ifndef OFF
+#define OFF (0)
+#endif
+#ifndef ON
+#define ON 1
+#endif
 #ifndef RET_SUCC
 #define RET_SUCC 0
 #endif
@@ -59,7 +65,7 @@ typedef signed   int   			int32_t;                   /* Signed   32 bit quantity
 
 #define PRO_DEBUG_ENABLE        	1
 #define MONITOR_MODULE_ENABLE		1	/*标示是否包含监控模块*/
-#define PA_MODULE_ENABLE			0	/*标示是否包含PA模块*/
+#define PA_MODULE_ENABLE			1	/*标示是否包含PA模块*/
 #define OTHER_MODULE_ENABLE			1	/*标示是否有除监控模块以外的模块*/
 
 //#define RL_PERMISSION_CHECK		1		/*adr access permisson check*/

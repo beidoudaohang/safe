@@ -19,6 +19,7 @@
 #include "log.h"
 #include "web_protocol.h"
 #include "porting.h"
+#include "Module_Comm.h"
 
 pthread_t monitor_tid;
 pthread_attr_t monitor_attr;
@@ -27,7 +28,7 @@ pthread_attr_t local_web_attr;
 pthread_t rs485_tid;
 pthread_attr_t rs485_attr;
 
-#define RS485_SRC "test rs485\r\n"
+/* #define RS485_SRC "\x7E\x13\x02\x11\x00\x00\xB3\x73\x7F"
 
 void *rs485_thread(void *arg)
 {
@@ -40,22 +41,43 @@ void *rs485_thread(void *arg)
     }
 
     while(1){
-        // RLDEBUG(RS485_SRC);
-        // RS485_SEND(RS485_SRC, strlen(RS485_SRC));
-        // timedelay(0, 5, 0, 0);
-        len = RS485_RECV_TEST(str, sizeof(str));
+
+        RS485_SEND(RS485_SRC, sizeof(RS485_SRC));
+
+        len = RS485_RECV(str, sizeof(str), 300);
+     
         if(len > 0){
-            RLDEBUG(str);
             fflush(stdin);
         }
-    }
-}
 
+        timedelay(0, 1, 0, 0);
+    }
+} */
+extern band_para exmod_para_a[MONITOR_MOD_NUM];
+void debug_freq()
+{
+    u8 i=0;
+    u8 index=0;
+    for(i=0; i<MONITOR_MOD_NUM; ++i){
+        if(exmod_para_a[i].md_adr_t.mod_type == MOD_TYPE_DIG){
+            index = i;
+            break;
+        }
+    }
+    
+    if(i >= MONITOR_MOD_NUM) return;
+
+    RLDEBUG("ul freq\tdlfreq");
+    for(i=0; i< FREQ_CHANNEL_NUMS_MAX; ++i){
+        RLDEBUG("%f\t%f", exmod_para_a[index].ch_info_t.ul[i].workfreq, exmod_para_a[index].ch_info_t.dl[i].workfreq);
+    }
+
+}
 
 void *monitor_thread(void *arg)
 {
     s32 err;
-
+    u16 i;
     // RLDEBUG("start monitor thread...\r\n"); 
 
     //modem Remote controls
@@ -77,7 +99,11 @@ void *monitor_thread(void *arg)
 
     while(1){
         //monitor 
-        sleep(1);
+        sleep(10);
+        if(get_rs485_mod_init_state()){
+            debug_freq();
+
+        }
     }
 
 }
