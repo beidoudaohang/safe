@@ -298,12 +298,32 @@ static s8 frame_md_adr_check(frame *pf)
     if (NULL == pf)
         return -1;
 #if MONITOR_MODULE_ENABLE
-    if (((pf->cmd.md_adr.mod_type) == (unit_para_t.md_adr_t.mod_type)) && ((pf->cmd.md_adr.mod_band) == (unit_para_t.md_adr_t.mod_band)) && ((pf->cmd.md_adr.mod_adr_t.dat) == (unit_para_t.md_adr_t.mod_adr_t.dat)))
+    if (((pf->cmd.md_adr.mod_type) == (unit_para_t.md_adr_t.mod_type)) 
+        && ((pf->cmd.md_adr.mod_band) == (unit_para_t.md_adr_t.mod_band)) 
+        && ((pf->cmd.md_adr.mod_adr_t.dat) == (unit_para_t.md_adr_t.mod_adr_t.dat)))
+            flag = 0;
+
+    if(pf->cmd.md_adr.mod_type > 0){
+        cnt = (pf->cmd.md_adr.mod_type-1)<<4;
+    }else{
+        return -1;
+    }
+	for (; cnt < MONITOR_MOD_NUM; cnt++) {
+		if (((pf->cmd.md_adr.mod_type) == (exmod_para_a[cnt].md_adr_t.mod_type)) 
+            && ((pf->cmd.md_adr.mod_band) == (exmod_para_a[cnt].md_adr_t.mod_band)) 
+            && ((pf->cmd.md_adr.mod_adr_t.dat) == (exmod_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
+                    break;
+		}
+	}
+    if (cnt < MONITOR_MOD_NUM) {
         flag = 0;
+    }
 #endif
 #if OTHER_MODULE_ENABLE
     for (cnt = 0; cnt < MOD_NUM_IN_ONE_PCB; cnt++) {
-        if (((pf->cmd.md_adr.mod_type) == (band_para_a[cnt].md_adr_t.mod_type)) && ((pf->cmd.md_adr.mod_band) == (band_para_a[cnt].md_adr_t.mod_band)) && ((pf->cmd.md_adr.mod_adr_t.dat) == (band_para_a[cnt].md_adr_t.mod_adr_t.dat)))
+        if (((pf->cmd.md_adr.mod_type) == (band_para_a[cnt].md_adr_t.mod_type)) 
+            && ((pf->cmd.md_adr.mod_band) == (band_para_a[cnt].md_adr_t.mod_band)) 
+            && ((pf->cmd.md_adr.mod_adr_t.dat) == (band_para_a[cnt].md_adr_t.mod_adr_t.dat)))
             break;
     }
 
@@ -375,7 +395,7 @@ struct read_md_info_s {
 #pragma pack()
 s8 read_md_info_deal(para_stream *ps)
 {
-    u16 cnt;
+    u16 cnt, exmod_cnt = 0;
     struct read_md_info_s *read_md;
 
     if (NULL == ps)
@@ -384,17 +404,21 @@ s8 read_md_info_deal(para_stream *ps)
     read_md = (struct read_md_info_s*)(ps->data);
     read_md->one_adr_len = sizeof(md_adr_info);
 
-#if MONITOR_MODULE_ENABLE
-    read_md->total_len = (MOD_NUM_IN_ONE_PCB + 1) * (read_md->one_adr_len);
-#else
-    read_md->total_len = (MOD_NUM_IN_ONE_PCB) * (read_md->one_adr_len);
-#endif
 
     ps->next += sizeof(struct read_md_info_s);
 
 #if MONITOR_MODULE_ENABLE
     memcpy((void*)(ps->next), (void*) & (unit_para_t.md_adr_t), sizeof(md_adr_info));
     ps->next += sizeof(md_adr_info);
+
+	for (cnt = 0; cnt < MONITOR_MOD_NUM; cnt++) {
+		if ((0 < (exmod_para_a[cnt].md_adr_t.mod_type)) && \
+		    (0 < (exmod_para_a[cnt].md_adr_t.mod_band)) ) {
+                memcpy((void*)(ps->next), (void*) & (exmod_para_a[cnt].md_adr_t), sizeof(md_adr_info));
+                ps->next += sizeof(md_adr_info);
+                exmod_cnt++;
+		}
+	}
 #endif
 
 #if OTHER_MODULE_ENABLE
@@ -403,6 +427,13 @@ s8 read_md_info_deal(para_stream *ps)
         ps->next += sizeof(md_adr_info);
     }
 #endif
+
+#if MONITOR_MODULE_ENABLE
+    read_md->total_len = (MOD_NUM_IN_ONE_PCB + 1 + exmod_cnt) * (read_md->one_adr_len);
+#else
+    read_md->total_len = (MOD_NUM_IN_ONE_PCB) * (read_md->one_adr_len);
+#endif
+
     ps->paralen = read_md->total_len + sizeof(struct read_md_info_s);
     //RLDEBUG("read_md_info_deal:exit!,mod adr len is:%d\r\n", ps->paralen);
     return 0;

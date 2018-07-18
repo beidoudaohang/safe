@@ -48,6 +48,8 @@ void DevGpioOutputSet(u32 pin, s32 value);
 void DevGpioInputSet(u32 pin, s32 value);
 u32 DevGpioValueGet(unsigned int pin);
 u8 DevThunderAlarmGet(void);
+void DevAd9370Write(u16 addr, u8 data);
+u8 DevAd9370Read(u16 addr);
 
 #endif
 

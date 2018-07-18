@@ -21,6 +21,7 @@ description:
 #include "log.h"
 #include "common_api.h"
 #include "data_task_def.h"
+#include "protocol_trans.h"
 /*****************************para define*************************/
 //monitor
 #if MONITOR_MODULE_ENABLE
@@ -2345,7 +2346,8 @@ const para_table u_para_table_a[] =
         .flag = PARA_RW
     },
 };
-
+//=========================================================================//
+//=========================================================================//
 const para_table exmod_table_a[] =
 {
     {
@@ -2390,7 +2392,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+/*     {
         .index = 0x11,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -2410,7 +2412,7 @@ const para_table exmod_table_a[] =
         .authority = USR_MANUFACTURER,
         .dig_adr = 0,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0x21,
         .link_para_a = {
@@ -3752,7 +3754,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+/*      { //@sujj digpico setting dl
         .index = 0xb4,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -3766,13 +3768,13 @@ const para_table exmod_table_a[] =
                     .max = {
                         .f32l = 100000.000,
                     },
-                    .paradeal = check_workfreq,
+                    .paradeal = NULL,
                 },
         },
         .authority = USR_OPERATOR,
         .dig_adr = 0x01,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0xb5,
         .link_para_a = {
@@ -3787,7 +3789,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .f32l = 100000.000,
                     },
-                    .paradeal = check_shiftfreq,
+                    .paradeal = check_shiftfreq_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -3850,7 +3852,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 10,
                     },
-                    .paradeal = check_ch_pin_op_th,
+                    .paradeal = check_ul_ch_pin_op_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -3892,7 +3894,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 10,
                     },
-                    .paradeal = check_ch_pin_lp_th,
+                    .paradeal = check_ch_pin_lp_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -3934,7 +3936,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .u8l = 30, //1 @ccTagOK
                     },
-                    .paradeal = check_ch_lna_att,
+                    .paradeal = check_ul_ch_att_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -3976,7 +3978,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 10,
                     },
-                    .paradeal = check_ch_mute_l_th,
+                    .paradeal = check_ch_mute_l_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -3997,7 +3999,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 10, //1@ccTagOK
                     },
-                    .paradeal = check_ch_mute_h_th,
+                    .paradeal = check_ch_mute_h_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4018,7 +4020,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 53,
                     },
-                    .paradeal = check_ch_agc_th,
+                    .paradeal = check_ul_ch_agc_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4088,7 +4090,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RD
     },
-    {
+/*     {
         .index = 0xc4,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -4339,7 +4341,7 @@ const para_table exmod_table_a[] =
         .authority = USR_MANUFACTURER,
         .dig_adr = 0x3c,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0xd0,
         .link_para_a = {
@@ -4396,7 +4398,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .f32l = 100000.000,
                     },
-                    .paradeal = check_workfreq,
+                    .paradeal = check_workfreq_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4417,7 +4419,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .f32l = 100000.000,
                     },
-                    .paradeal = check_shiftfreq,
+                    .paradeal = check_shiftfreq_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4480,7 +4482,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 10,
                     },
-                    .paradeal = check_ch_pin_op_th,
+                    .paradeal = check_dl_ch_pin_op_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4564,7 +4566,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .u8l = 30,
                     },
-                    .paradeal = check_ch_lna_att,
+                    .paradeal = check_dl_ch_att_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4585,7 +4587,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .u8l = 1,
                     },
-                    .paradeal = check_ch_sw,
+                    .paradeal = check_ch_sw_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4606,7 +4608,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 53,
                     },
-                    .paradeal = check_ch_agc_th,
+                    .paradeal = check_dl_ch_agc_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4655,7 +4657,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RD
     },
-    {
+/*     {
         .index = 0xdf,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -4906,7 +4908,7 @@ const para_table exmod_table_a[] =
         .authority = USR_MANUFACTURER,
         .dig_adr = 0x9a,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0xeb,
         .link_para_a = {
@@ -4991,7 +4993,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RD
     },
-    {
+/*     {
         .index = 0xef,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -5074,7 +5076,7 @@ const para_table exmod_table_a[] =
         .authority = USR_OPERATOR,
         .dig_adr = 0,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0xf3,
         .link_para_a = {
@@ -5222,7 +5224,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0xd2,
         .flag = PARA_RW
     },
-    {
+/*     {
         .index = 0xfa,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -5389,7 +5391,7 @@ const para_table exmod_table_a[] =
         .authority = USR_MANUFACTURER,
         .dig_adr = 0xdf,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0x102,
         .link_para_a = {
@@ -5432,7 +5434,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RD
     },
-    {
+/*     {
         .index = 0x104,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -5473,7 +5475,7 @@ const para_table exmod_table_a[] =
         .authority = USR_TERMINAL,
         .dig_adr = 0,
         .flag = PARA_RD
-    },
+    }, */
     {
         .index = 0x106,
         .link_para_a = {
@@ -5684,132 +5686,132 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
-        .index = 0x110,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x111,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x112,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x113,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x114,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x115,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
+    // {
+    //     .index = 0x110,
+    //     .link_para_a = {
+    //             .md_adr = &(exmod_para_a[0].md_adr_t),
+    //             .link_para_t = {
+    //                 .para_type_t = {PARA_TYPE_FLOAT},
+    //                 .len = 48,
+    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+    //                 .min = {
+    //                     .f32l = -10,
+    //                 },
+    //                 .max = {
+    //                     .f32l = 10,
+    //                 },
+    //                 .paradeal = check_adi_offset_flat,
+    //             },
+    //     },
+    //     .authority = USR_TERMINAL,
+    //     .dig_adr = 0,
+    //     .flag = PARA_RD
+    // },
+    // {
+    //     .index = 0x111,
+    //     .link_para_a = {
+    //             .md_adr = &(exmod_para_a[0].md_adr_t),
+    //             .link_para_t = {
+    //                 .para_type_t = {PARA_TYPE_FLOAT},
+    //                 .len = 48,
+    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+    //                 .min = {
+    //                     .f32l = -120,
+    //                 },
+    //                 .max = {
+    //                     .f32l = 100,
+    //                 },
+    //                 .paradeal = check_adi_offset_pin,
+    //             },
+    //     },
+    //     .authority = USR_TERMINAL,
+    //     .dig_adr = 0,
+    //     .flag = PARA_RD
+    // },
+    // {
+    //     .index = 0x112,
+    //     .link_para_a = {
+    //             .md_adr = &(exmod_para_a[0].md_adr_t),
+    //             .link_para_t = {
+    //                 .para_type_t = {PARA_TYPE_FLOAT},
+    //                 .len = 48,
+    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+    //                 .min = {
+    //                     .f32l = -120,
+    //                 },
+    //                 .max = {
+    //                     .f32l = 100,
+    //                 },
+    //                 .paradeal = check_adi_offset_pout,
+    //             },
+    //     },
+    //     .authority = USR_TERMINAL,
+    //     .dig_adr = 0,
+    //     .flag = PARA_RD
+    // },
+    // {
+    //     .index = 0x113,
+    //     .link_para_a = {
+    //             .md_adr = &(exmod_para_a[0].md_adr_t),
+    //             .link_para_t = {
+    //                 .para_type_t = {PARA_TYPE_FLOAT},
+    //                 .len = 48,
+    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+    //                 .min = {
+    //                     .f32l = -10,
+    //                 },
+    //                 .max = {
+    //                     .f32l = 10,
+    //                 },
+    //                 .paradeal = check_adi_offset_flat,
+    //             },
+    //     },
+    //     .authority = USR_TERMINAL,
+    //     .dig_adr = 0,
+    //     .flag = PARA_RD
+    // },
+    // {
+    //     .index = 0x114,
+    //     .link_para_a = {
+    //             .md_adr = &(exmod_para_a[0].md_adr_t),
+    //             .link_para_t = {
+    //                 .para_type_t = {PARA_TYPE_FLOAT},
+    //                 .len = 48,
+    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+    //                 .min = {
+    //                     .f32l = -120,
+    //                 },
+    //                 .max = {
+    //                     .f32l = 100,
+    //                 },
+    //                 .paradeal = check_adi_offset_pin,
+    //             },
+    //     },
+    //     .authority = USR_TERMINAL,
+    //     .dig_adr = 0,
+    //     .flag = PARA_RD
+    // },
+    // {
+    //     .index = 0x115,
+    //     .link_para_a = {
+    //             .md_adr = &(exmod_para_a[0].md_adr_t),
+    //             .link_para_t = {
+    //                 .para_type_t = {PARA_TYPE_FLOAT},
+    //                 .len = 48,
+    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+    //                 .min = {
+    //                     .f32l = -120,
+    //                 },
+    //                 .max = {
+    //                     .f32l = 100,
+    //                 },
+    //                 .paradeal = check_adi_offset_pout,
+    //             },
+    //     },
+    //     .authority = USR_TERMINAL,
+    //     .dig_adr = 0,
+    //     .flag = PARA_RD
+    // },
     {
         .index = 0x116,
         .link_para_a = {
@@ -5894,7 +5896,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+    /*{
         .index = 0x11b,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -5915,7 +5917,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0x2c,
         .flag = PARA_RW
     },
-    /*{
+    {
         .index = 0x11c,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -6101,7 +6103,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+/*     {
         .index = 0x126,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -6121,7 +6123,7 @@ const para_table exmod_table_a[] =
         .authority = USR_OPERATOR,
         .dig_adr = 0xe5,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0x127,
         .link_para_a = {
@@ -6311,7 +6313,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+/*     {
         .index = 0x131,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -6331,7 +6333,7 @@ const para_table exmod_table_a[] =
         .authority = USR_MANUFACTURER,
         .dig_adr = 0,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0x132,
         .link_para_a = {
@@ -6545,8 +6547,9 @@ const para_table exmod_table_a[] =
 };
 #else
 const para_table u_para_table_a[] = {};
+const para_table exmod_table_a[] = {};
 #endif
-
+//======================================================================================//
 #if OTHER_MODULE_ENABLE
 const para_table para_table_a[] =
 {
@@ -10751,6 +10754,7 @@ const para_table para_table_a[] = {};
 
 /*****************************data struct define******************/
 #define U_PARA_TABLE_SIZE 	(sizeof(u_para_table_a)/sizeof(para_table))
+#define EXMOD_TABLE_SIZE 	(sizeof(exmod_table_a)/sizeof(para_table))
 #define M_PARA_TABLE_SIZE 	(sizeof(para_table_a)/sizeof(para_table))
 /*****************************processing para funs********************************/
 static s16 check_md_adr(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
@@ -12094,7 +12098,7 @@ s32 find_para_adr(const para_table *table, u16 tlen, u16 adr)
 	return -1;
 }
 
-s32 find_para_adr_mod( md_adr_info *md, band_para **ppara_a)
+s32 find_para_adr_mod( md_adr_info *md, u8 *is_exmod)
 {
 	u8 cnt;
 
@@ -12106,17 +12110,22 @@ s32 find_para_adr_mod( md_adr_info *md, band_para **ppara_a)
 		if (((md->mod_type) == (band_para_a[cnt].md_adr_t.mod_type)) && \
 		        ((md->mod_band) == (band_para_a[cnt].md_adr_t.mod_band)) && \
 		        ((md->mod_adr_t.dat) == (band_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
-                    *ppara_a = band_para_a;
+                    *is_exmod = FALSE;
 			        return cnt;
 		}
 	}
     #endif
     #if MONITOR_MODULE_ENABLE
-	for (cnt = 0; cnt < MONITOR_MOD_NUM; cnt++) {
+    if(md->mod_type > 0){
+        cnt = (md->mod_type-1)<<4;
+    }else{
+        return -1;
+    }
+	for (; cnt < MONITOR_MOD_NUM; cnt++) {
 		if (((md->mod_type) == (exmod_para_a[cnt].md_adr_t.mod_type)) && \
 		        ((md->mod_band) == (exmod_para_a[cnt].md_adr_t.mod_band)) && \
 		        ((md->mod_adr_t.dat) == (exmod_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
-                    *ppara_a = exmod_para_a;
+                    *is_exmod = TRUE;
 			        return cnt;
 		}
 	}
@@ -12330,10 +12339,11 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	para *_para = NULL;
 	paradeal parafun = NULL;
 	para_table *ptable = NULL;
-    band_para *ppara_a = NULL;
+    //band_para *ppara_a = NULL;
+    u8 is_exmod = 0; //true: 外部模块
 	u16 para_table_size = 0;
 	USR_AUTHORITY adr_permission = 0;
-    md_adr_info *ptable_para_adr;
+    md_adr_info table_para_adr;
     void *ptable_para_dat;
 
 	if ((NULL == ps) || (NULL == (ps->next)))
@@ -12345,7 +12355,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type))
 		mod_index = 0;
 	else{
-        mod_index = find_para_adr_mod( &(ps->md_adr), &ppara_a);
+        mod_index = find_para_adr_mod( &(ps->md_adr), &is_exmod);
     }
 		
 	if (mod_index < 0)
@@ -12364,13 +12374,22 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 		ptable = NULL;
 #endif
 	} else {
-#if OTHER_MODULE_ENABLE
-		ptable = (para_table*)para_table_a;
-		para_table_size = M_PARA_TABLE_SIZE;
-		//RLDEBUG("one_para_adr_read_processing:match band para table\r\n");
-#else
-		ptable = NULL;
-#endif
+        if(is_exmod){
+            #if MONITOR_MODULE_ENABLE
+            ptable = (para_table*)exmod_table_a;
+            para_table_size = EXMOD_TABLE_SIZE;
+            #else
+            ptable = NULL;
+            #endif
+        }else{
+            #if OTHER_MODULE_ENABLE
+            ptable = (para_table*)para_table_a;
+            para_table_size = M_PARA_TABLE_SIZE;
+            //RLDEBUG("one_para_adr_read_processing:match band para table\r\n");
+            #else
+            ptable = NULL;
+            #endif
+        }
 	}
 
 	if (NULL == ptable) {
@@ -12388,9 +12407,8 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	}
 
 	//RLDEBUG("one_para_adr_read_processing:adr index is:%d\r\n", adr_index);
-	
+	memcpy(&table_para_adr, &ps->md_adr, sizeof(md_adr_info));
     if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
-        ptable_para_adr = &ppara_a[mod_index].md_adr_t;
         ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat + sizeof(band_para)*mod_index;
     }
 
@@ -12438,7 +12456,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	ps->next = ps->next + sizeof(para);
 	if (NULL != (ptable[adr_index].link_para_a.link_para_t.paradeal)) {
 		parafun = (ptable[adr_index].link_para_a.link_para_t.paradeal);
-		para_num = parafun((ptable_para_dat), (ps->next), (ptable_para_adr), (ptable[adr_index].dig_adr), PARA_RD);
+		para_num = parafun((ptable_para_dat), (ps->next), &table_para_adr, (ptable[adr_index].dig_adr), PARA_RD);
 		if (para_num < 0) {
 			//err = ((0xf0 & (PARA_ADR_OTHER_ERR << 4))|(0x0f&((para_table_a[adr_index].link_para_a.link_para_t.para_type_t.dat))));
 			SET_PARA_ERR_CODE(err, PARA_ADR_OTHER_ERR);
@@ -12526,10 +12544,10 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	para *_para = NULL;
 	paradeal parafun = NULL;
 	para_table *ptable = NULL;
-    band_para *ppara_a = NULL;
+    u8 is_exmod = 0;
 	u16 para_table_size = 0;
 	USR_AUTHORITY adr_permission = 0;
-    md_adr_info *ptable_para_adr;
+    md_adr_info table_para_adr;
     void *ptable_para_dat;
 
 	if ((NULL == ps) || (NULL == (ps->next)) || (NULL == src)) {
@@ -12542,7 +12560,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
     if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type)) {
 		mod_index = 0;
 	} else {
-		mod_index = find_para_adr_mod( &(ps->md_adr), &ppara_a);
+		mod_index = find_para_adr_mod( &(ps->md_adr), &is_exmod);
 	}
 
 	if (mod_index < 0) {
@@ -12561,14 +12579,22 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 		para_table_size = 0;
 #endif
 	} else {
-#if OTHER_MODULE_ENABLE
-		ptable = (para_table*)para_table_a;
-		para_table_size = M_PARA_TABLE_SIZE;
-		RLDEBUG("one_para_adr_set_processing: band para table;the size is:%d\r\n", para_table_size);
-#else
-		ptable = NULL;
-		para_table_size = 0;
-#endif
+        if(is_exmod){
+            #if MONITOR_MODULE_ENABLE
+            ptable = (para_table*)exmod_table_a;
+            para_table_size = EXMOD_TABLE_SIZE;
+            #else
+            ptable = NULL;
+            #endif
+        }else{
+            #if OTHER_MODULE_ENABLE
+            ptable = (para_table*)para_table_a;
+            para_table_size = M_PARA_TABLE_SIZE;
+            //RLDEBUG("one_para_adr_read_processing:match band para table\r\n");
+            #else
+            ptable = NULL;
+            #endif
+        }
 	}
 
 	if (NULL == ptable) {
@@ -12584,9 +12610,9 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 		goto ONE_PARA_ADR_SET_ERR;
 	}
 
+
+    memcpy(&table_para_adr, &ps->md_adr, sizeof(md_adr_info));
     if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
-        ptable_para_adr = &ppara_a[mod_index].md_adr_t;
-        // ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat + sizeof(band_para)*mod_index;
         set_table_para_dat(&ptable_para_dat, ptable[adr_index].link_para_a.link_para_t.dat, sizeof(band_para)*mod_index, _para->para_adr);
     }
 
@@ -12659,7 +12685,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 		}
 
 		parafun = (ptable[adr_index].link_para_a.link_para_t.paradeal);
-		para_num = parafun((void*)(ptable_para_dat), (void*)(src + sizeof(para)), (ptable_para_adr), (ptable[adr_index].dig_adr), PARA_RW);
+		para_num = parafun((void*)(ptable_para_dat), (void*)(src + sizeof(para)), &table_para_adr, (ptable[adr_index].dig_adr), PARA_RW);
 		if (para_num < 0) {
 			RLDEBUG("one_para_adr_set_processing:parafun() err\r\n");
 			SET_PARA_ERR_CODE(err, PARA_ADR_OTHER_ERR);
@@ -12679,11 +12705,13 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	}
 
 	if (ptable[adr_index].dig_adr) {
-		set_adr_add(ptable[adr_index].dig_adr , ptable_para_adr);
+		set_adr_add(ptable[adr_index].dig_adr , &table_para_adr);
 	}
-    
-    set_write_data_file_flag(ps->md_adr.mod_type, mod_index, _para->para_adr);
 
+    if(!is_exmod) {
+        set_write_data_file_flag(ps->md_adr.mod_type, mod_index, _para->para_adr);
+    }
+    
 	ps->next = ps->next + (ptable[adr_index].link_para_a.link_para_t.len);
 
 	return 0;

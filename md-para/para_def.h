@@ -189,7 +189,7 @@ typedef struct {
 	band_whole_para band_whole;
 	md_adr_info md_adr_t;
 	md_mfrs_info md_mfrs;
-	u8 channel_num[SYS_NUM];
+	u8 oldsys_band_table[8];
 } unit_para;
 
 /******************************模块信息*********************************/
@@ -458,7 +458,7 @@ typedef struct {
 	u8 ap_init;			/*ap init false alarm*/
 } md_alarm;
 
-#define ADI_ADJUST_TABLE_SIZE 2	/*ad80305У׼µŖѐņµµ㹶˽*/
+#define ADI_ADJUST_TABLE_SIZE 2	/*ad80305У?μ???μμ??*/
 
 
 typedef struct

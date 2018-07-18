@@ -20,7 +20,9 @@
 #include "para_table.h"
 #include "usr_def.h"
 #include "data_task.h"
-
+#include "protocol_api.h"
+#include "porting.h"
+#include "common_api.h"
 
 #define WEBMSGPATHNAME "/tmp/webmsg"  
 #define ID 27  
@@ -38,6 +40,22 @@ static s8 web_md_adr_check(web_msg_t *pf)
 #if MONITOR_MODULE_ENABLE
     if (((pf->data.md_adr.mod_type) == (unit_para_t.md_adr_t.mod_type)) && ((pf->data.md_adr.mod_band) == (unit_para_t.md_adr_t.mod_band)) && ((pf->data.md_adr.mod_adr_t.dat) == (unit_para_t.md_adr_t.mod_adr_t.dat)))
         flag = 0;
+
+    if(pf->data.md_adr.mod_type > 0){
+        cnt = (pf->data.md_adr.mod_type-1)<<4;
+    }else{
+        return -1;
+    }
+	for (; cnt < MONITOR_MOD_NUM; cnt++) {
+		if (((pf->data.md_adr.mod_type) == (exmod_para_a[cnt].md_adr_t.mod_type)) 
+            && ((pf->data.md_adr.mod_band) == (exmod_para_a[cnt].md_adr_t.mod_band)) 
+            && ((pf->data.md_adr.mod_adr_t.dat) == (exmod_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
+                    break;
+		}
+	}
+    if (cnt < MONITOR_MOD_NUM) {
+        flag = 0;
+    }
 #endif
 #if OTHER_MODULE_ENABLE
     for (cnt = 0; cnt < MOD_NUM_IN_ONE_PCB; cnt++) {
@@ -376,7 +394,8 @@ void *local_web_thread(void *arg)
         if (recv_len = msgrcv(msgid, (void *)&web_msg_recv, sizeof(web_protocol_t), RECVMSG, 0) == -1)
         {
             RLDEBUG("msgrcv failed with error\n");
-            exit(EXIT_FAILURE);
+            continue;
+            // exit(EXIT_FAILURE);
         }
 
         RLDEBUG("return:%d, len:%d\r\n", recv_len, web_msg_recv.data.len);
@@ -416,7 +435,8 @@ void *local_web_thread(void *arg)
         if (msgsnd(msgid, (void *)&web_msg_send, cnt, 0) == -1)
         {
             RLDEBUG("msgsed failed\n");
-            exit(EXIT_FAILURE);
+            continue;
+            // exit(EXIT_FAILURE);
         }
     }
 

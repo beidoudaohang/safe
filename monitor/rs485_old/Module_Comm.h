@@ -128,7 +128,7 @@ typedef struct {
 
 void *rs485_thread(void *arg);
 u16 GET_CHN(u32 freq,u8 uldl,u8 type);
-float GET_FREQ(u16 chnum,u8 uldl,u8 type);
+int GET_FREQ(u16 chnum,u8 uldl,u8 type);
 u8 get_rs485_mod_init_state();
 #endif
 

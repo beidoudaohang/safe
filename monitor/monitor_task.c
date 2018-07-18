@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-
+#include "para_table.h"
 #include "helios.h"
 #include "log.h"
 #include "web_protocol.h"
@@ -53,7 +53,7 @@ void *rs485_thread(void *arg)
         timedelay(0, 1, 0, 0);
     }
 } */
-extern band_para exmod_para_a[MONITOR_MOD_NUM];
+//extern band_para exmod_para_a[MONITOR_MOD_NUM];
 void debug_freq()
 {
     u8 i=0;
@@ -67,11 +67,36 @@ void debug_freq()
     
     if(i >= MONITOR_MOD_NUM) return;
 
-    RLDEBUG("ul freq\tdlfreq");
+    RLDEBUG("band:%d\r\n", exmod_para_a[index].md_adr_t.mod_band);
+
+    RLDEBUG("ul freq\t\t\tdl freq\tul att\tdl att\r\n");
     for(i=0; i< FREQ_CHANNEL_NUMS_MAX; ++i){
-        RLDEBUG("%f\t%f", exmod_para_a[index].ch_info_t.ul[i].workfreq, exmod_para_a[index].ch_info_t.dl[i].workfreq);
+        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.enable)
+        RLDEBUG("%f\t\t%f\t%d\t%d\r\n", exmod_para_a[index].ch_info_t.ul[i].workfreq, 
+            exmod_para_a[index].ch_info_t.dl[i].workfreq, 
+            exmod_para_a[index].ch_info_t.ul[i].att,
+            exmod_para_a[index].ch_info_t.dl[i].att);
     }
 
+}
+
+void debug_info()
+{
+    u8 i=0;
+    u8 index=0;
+    for(i=0; i<MONITOR_MOD_NUM; ++i){
+        if(exmod_para_a[i].md_adr_t.mod_type == MOD_TYPE_PA){
+            index = i;
+            break;
+        }
+    }
+    
+    if(i >= MONITOR_MOD_NUM) return;
+
+    RLDEBUG("band:%d\r\n", exmod_para_a[index].md_adr_t.mod_band);
+
+    RLDEBUG("PA TEMP: %d\r\n", exmod_dynamic_para_a[index].md_dynamic_sundry.temperature);
+    RLDEBUG("PA ATT: %d\r\n", exmod_para_a[index].md_basic.att);
 }
 
 void *monitor_thread(void *arg)
@@ -99,10 +124,10 @@ void *monitor_thread(void *arg)
 
     while(1){
         //monitor 
-        sleep(10);
+        sleep(15);
         if(get_rs485_mod_init_state()){
             debug_freq();
-
+            debug_info();
         }
     }
 

@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "helios.h"
 #include "ad9370.h"
@@ -239,7 +240,7 @@ u8 ad9370_config(void)
 		if(retVal !=0 )
 		{
 			RLDEBUG("Get arm code error!\n");
-			return;
+			return RET_FAIL;
 		}
 
 		mykError = MYKONOS_loadArmFromBinary(&mykDevice, &binary[0], count);

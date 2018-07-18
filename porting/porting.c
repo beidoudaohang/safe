@@ -1347,7 +1347,7 @@ u8 RS485_SEND(u8 * src ,u32 len)
 		return -1;
 	}
 
-	hexdata_debug(src, len);
+	//hexdata_debug(src, len);
 
 	err = write(rs485_tty_file, src, len);
 	if (err < 0) {

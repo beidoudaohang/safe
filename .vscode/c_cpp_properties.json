@@ -18,7 +18,8 @@
                 "${workspaceFolder}/minilzo-2.10",
                 "${workspaceFolder}/digmod/ad9370",
                 "/usr/include",
-                "${workspaceFolder}/monitor/rs485"
+                "${workspaceFolder}/monitor/rs485_old",
+                "${workspaceFolder}/monitor"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

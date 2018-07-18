@@ -23,6 +23,10 @@ description:
 extern unit_para unit_para_t;
 extern unit_dynamic_para unit_dynamic_para_t;
 extern unit_alarm_c u_alarm_t;
+
+extern band_para exmod_para_a[MONITOR_MOD_NUM];
+extern band_dynamic_para exmod_dynamic_para_a[MONITOR_MOD_NUM];
+extern md_alarm_c exmod_alarm_a[MONITOR_MOD_NUM];
 #endif
 #if OTHER_MODULE_ENABLE
 extern band_para band_para_a[MOD_NUM_IN_ONE_PCB];
@@ -38,7 +42,7 @@ extern usr_authorize usr_auth;
 /*****************************funs********************************/
 s16 get_para_table_size(void);
 s32 find_para_adr(const para_table *table, u16 tlen, u16 adr);
-s32 find_para_adr_mod( md_adr_info *md, band_para **ppara_a);
+s32 find_para_adr_mod( md_adr_info *md, u8 *is_exmod);
 s8 one_para_adr_read_processing(const u16 adr, para_stream *ps);
 s8 one_para_adr_set_processing(const s8 *src, para_stream *ps);
 

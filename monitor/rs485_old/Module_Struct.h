@@ -173,10 +173,12 @@ typedef struct {
     s8 tp;    //模块温度
 
 } _DLMPA_RP;
+#pragma pack(1)
 typedef union {
     float a;
     u32 b;
 } FREQ;
+#pragma pack()
 /*
 *微放信道模块回应数据
 */

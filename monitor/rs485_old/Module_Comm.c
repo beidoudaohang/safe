@@ -44,7 +44,7 @@ int RecvPackIndex ;
 PASW_FLAG pasw_flag_t[SYS_NUM] = {PASW_NORMAL};
 u8 DelayFlag = 0;
 
-extern unit_para unit_para_t;
+//extern unit_para unit_para_t;
 
 s8 FillPollData(u8 *buf, CheckComm *data, u8 type);
 u8 Mod_RP_Handle(u8 *SendBuf, u8 *RecvBuf, u8 RecvLen);
@@ -90,167 +90,168 @@ u8 Mod_RP_Handle(u8 *SendBuf, u8 *RecvBuf, u8 RecvLen);
 */
 u16 GET_CHN(u32 freq,u8 uldl,u8 type)
 {
- u16 chnum = 0;
- static FREQ temp;
+    u16 chnum = 0xffff;
+    static FREQ temp;
 
+    temp.b = freq;
+    memcpy((u8 *)&temp.b, (u8 *)&freq, 4);
 
- temp.b = freq;
- memcpy((u8*)&temp.b,(u8*)&freq,4);
- if(type == RP_WCDMA)
-   temp.a = temp.a + 0.02;
- /*        DCS频率转换信道号处理　　　　　*/
- if(type == RP_DCS)
-   {
-    temp.a = temp.a + 0.1;
-	if(uldl == UL)
-	  {
-	   if(temp.a >= DCS_UL_FREQ )
-	     chnum = (temp.a - DCS_UL_FREQ) / FREQ_SKIP + 512;
-	  }
-	else if(uldl == DL)
-	  {
-	   if(temp.a >= DCS_DL_FREQ )
-	     chnum = (temp.a - DCS_DL_FREQ) / FREQ_SKIP + 512;
-	  }
-   }
- /*        WCDMA频率转换信道号处理　　　　　*/
- else if(type == RP_WCDMA)
-   {
-	if(uldl == UL)
-	  {
-	   if(temp.a >= WCDMA_FREQ_START)
-	     chnum = (temp.a + 190.0) / FREQ_SKIP;
-		 /*20140109 GSM信道并入WCDMA*/
-	   else if(temp.a >= GSM_UL_FREQ )
-		  chnum = (temp.a - GSM_UL_FREQ) / FREQ_SKIP ;
-	   else if(temp.a >= EGSM_UL_FREQ )
-		  chnum = (temp.a - EGSM_UL_FREQ) / FREQ_SKIP + 975;
-		 
-	   else if(temp.a >= WCDMA_UL_FREQ)
-	     chnum = (temp.a - WCDMA_UL_FREQ ) / FREQ_SKIP + 4120;
-	  }
-	else if(uldl == DL)
-	  {
-	   if(temp.a >= WCDMA_FREQ_START)
-	     chnum = temp.a  / FREQ_SKIP;
-	   else if(temp.a >= GSM_DL_FREQ )
-		  chnum = (temp.a - GSM_DL_FREQ) / FREQ_SKIP ;
-	   else if(temp.a >= EGSM_DL_FREQ )
-		  chnum = (temp.a - EGSM_DL_FREQ) / FREQ_SKIP + 975;
-	   else if(temp.a >= WCDMA_DL_FREQ)
-	     chnum = (temp.a - WCDMA_DL_FREQ ) / FREQ_SKIP + 4345;
-	  }
-   }
- /*        GSM频率转换信道号处理　　　　　*/
- else if(type == RP_GSM)
-   {
-    temp.a = temp.a + 0.1;
-	/*20131010把DCS 信道也并入GSM 中*/
-	if(uldl == UL)
-	  {
-	   if(temp.a >= DCS_UL_FREQ )
-	     chnum = (temp.a - DCS_UL_FREQ) / FREQ_SKIP + 512;
-	   else if(temp.a >= GSM_UL_FREQ )
-		  chnum = (temp.a - GSM_UL_FREQ) / FREQ_SKIP ;
-	   else if(temp.a >= EGSM_UL_FREQ )
-		  chnum = (temp.a - EGSM_UL_FREQ) / FREQ_SKIP + 975;
-	   
-	  }
-	else if(uldl == DL)
-	  {
-	   if(temp.a >= DCS_DL_FREQ )
-	     chnum = (temp.a - DCS_DL_FREQ) / FREQ_SKIP + 512;
-	   else if(temp.a >= GSM_DL_FREQ )
-		  chnum = (temp.a - GSM_DL_FREQ) / FREQ_SKIP ;
-	   else if(temp.a >= EGSM_DL_FREQ )
-		  chnum = (temp.a - EGSM_DL_FREQ) / FREQ_SKIP + 975;
-	  }
-   }
- /*        CDMA800和CELL频率转换信道号处理　　　　　*/
- else if((type == RP_LTE800)/*||(type == RP_Cell)*/)
-   {
-	if(uldl == UL)
-	  {
-		if((temp.a >= 832.00)&&(temp.a <=861.9))
-		  chnum = (temp.a + 0.005 - 832.00) / 0.1 + 24150;
-	  }
-	else if(uldl == DL)
-	  {
-	   if((temp.a >= 791.0)&&(temp.a <=821.0)){
-		  chnum = (temp.a + 0.005 - 791.0) / 0.1 + 6150;
-			 if(chnum>6449)
-				 chnum = 6449;
-		}
-	  }
-   }
- /*        PCS频率转换信道号处理　　　　　*/
- else if(type == RP_LTE700)
-   {
-	if(uldl == UL)
-	  {
-			if((temp.a >= 777.00)&&(temp.a<=786.9))
-		  chnum = (temp.a + 0.005 - 777.00) / 0.1 + 23180;
-	  }
-	else if(uldl == DL)
-	  {
-		 if((temp.a >= 746.00)&&(temp.a <= 755.9)){
-		  	chnum = (temp.a + 0.005 - 746.00) / 0.1 + 5180;
-		 }
-	  }
-   }
- /*        LTE频率转换信道号处理　　　　　*/
- else if(type == RP_LTE1800)
-   {
-	if(uldl == UL)
-	  {
-		if((temp.a >= 1710.00)&&(temp.a <=1784.9))
-		  chnum = (temp.a + 0.005 - 1710.00) / 0.1 + 19200;
-	  }
-	else if(uldl == DL)
-	  {
-	   if((temp.a >= 1805.0)&&(temp.a <=1879.9)){
-		  chnum = (temp.a + 0.005 - 1805.0) / 0.1 + 1200;
-		}
-	  }
-   }
- /*        AWS频率转换信道号处理　　　　　*/
- else if(type == RP_LTE2600)
-   {
-	if(uldl == UL)
-	  {
-		if((temp.a >= 2500.00)&&(temp.a <= 2569.9))
-		  chnum = (temp.a +0.005- 2500.00) / 0.1+ 20750;
-	  }
-	else if(uldl == DL)
-	  {
-	   	if((temp.a >= 2620.00)&&(temp.a <= 2689.90))
-		  	chnum = (temp.a +0.005- 2620.00) / 0.1+2750;
-	  }
-   }
-  /*        CDMA400频率转换信道号处理　　　　　*/
- else if(type == RP_TETRA)
-   {
-		if(uldl == UL)
-			{
-			if(temp.a >= 451.00)
-				chnum = (temp.a - 451.00) / 0.02 + 1024;
-			else if(temp.a >= CELL_UL_FREQ )
-					chnum = (temp.a - 290 - 0.0125) / FREQ_SKIP_CELL ;
-			}
-		else if(uldl == DL)
-			{
-			 if(temp.a >= 461.00)
-				chnum = (temp.a - 461.00) / 0.02 + 1024;
-			 else if(temp.a >= CELL_DL_FREQ )
-					chnum = (temp.a - 300 - 0.0125) / FREQ_SKIP_CELL;
-			}
-   }
- else if(type == RP_OTHER)
-   {
+    if (type == RP_WCDMA)
+        temp.a = temp.a + 0.02;
+    /*        DCS频率转换信道号处理　　　　　*/
+    if (type == RP_DCS)
+    {
+        temp.a = temp.a + 0.1;
+        if (uldl == UL)
+        {
+            if (temp.a >= DCS_UL_FREQ)
+                chnum = (temp.a - DCS_UL_FREQ) / FREQ_SKIP + 512;
+        }
+        else if (uldl == DL)
+        {
+            if (temp.a >= DCS_DL_FREQ)
+                chnum = (temp.a - DCS_DL_FREQ) / FREQ_SKIP + 512;
+        }
+    }
+    /*        WCDMA频率转换信道号处理　　　　　*/
+    else if (type == RP_WCDMA)
+    {
+        if (uldl == UL)
+        {
+            if (temp.a >= WCDMA_FREQ_START)
+                chnum = (temp.a + 190.0) / FREQ_SKIP;
+            /*20140109 GSM信道并入WCDMA*/
+            else if (temp.a >= GSM_UL_FREQ)
+                chnum = (temp.a - GSM_UL_FREQ) / FREQ_SKIP;
+            else if (temp.a >= EGSM_UL_FREQ)
+                chnum = (temp.a - EGSM_UL_FREQ) / FREQ_SKIP + 975;
 
-   }
+            else if (temp.a >= WCDMA_UL_FREQ)
+                chnum = (temp.a - WCDMA_UL_FREQ) / FREQ_SKIP + 4120;
+        }
+        else if (uldl == DL)
+        {
+            if (temp.a >= WCDMA_FREQ_START)
+                chnum = temp.a / FREQ_SKIP;
+            else if (temp.a >= GSM_DL_FREQ)
+                chnum = (temp.a - GSM_DL_FREQ) / FREQ_SKIP;
+            else if (temp.a >= EGSM_DL_FREQ)
+                chnum = (temp.a - EGSM_DL_FREQ) / FREQ_SKIP + 975;
+            else if (temp.a >= WCDMA_DL_FREQ)
+                chnum = (temp.a - WCDMA_DL_FREQ) / FREQ_SKIP + 4345;
+        }
+    }
+    /*        GSM频率转换信道号处理　　　　　*/
+    else if (type == RP_GSM)
+    {
+        temp.a = temp.a + 0.1;
+        /*20131010把DCS 信道也并入GSM 中*/
+        if (uldl == UL)
+        {
+            if (temp.a >= DCS_UL_FREQ)
+                chnum = (temp.a - DCS_UL_FREQ) / FREQ_SKIP + 512;
+            else if (temp.a >= GSM_UL_FREQ)
+                chnum = (temp.a - GSM_UL_FREQ) / FREQ_SKIP;
+            else if (temp.a >= EGSM_UL_FREQ)
+                chnum = (temp.a - EGSM_UL_FREQ) / FREQ_SKIP + 975;
+        }
+        else if (uldl == DL)
+        {
+            if (temp.a >= DCS_DL_FREQ)
+                chnum = (temp.a - DCS_DL_FREQ) / FREQ_SKIP + 512;
+            else if (temp.a >= GSM_DL_FREQ)
+                chnum = (temp.a - GSM_DL_FREQ) / FREQ_SKIP;
+            else if (temp.a >= EGSM_DL_FREQ)
+                chnum = (temp.a - EGSM_DL_FREQ) / FREQ_SKIP + 975;
+        }
+    }
+    /*        CDMA800和CELL频率转换信道号处理　　　　　*/
+    else if ((type == RP_LTE800) /*||(type == RP_Cell)*/)
+    {
+        if (uldl == UL)
+        {
+            if ((temp.a >= 832.00) && (temp.a <= 861.9))
+                chnum = (temp.a + 0.005 - 832.00) / 0.1 + 24150;
+        }
+        else if (uldl == DL)
+        {
+            if ((temp.a >= 791.0) && (temp.a <= 821.0))
+            {
+                chnum = (temp.a + 0.005 - 791.0) / 0.1 + 6150;
+                if (chnum > 6449)
+                    chnum = 6449;
+            }
+        }
+    }
+    /*        PCS频率转换信道号处理　　　　　*/
+    else if (type == RP_LTE700)
+    {
+        if (uldl == UL)
+        {
+            if ((temp.a >= 777.00) && (temp.a <= 786.9))
+                chnum = (temp.a + 0.005 - 777.00) / 0.1 + 23180;
+        }
+        else if (uldl == DL)
+        {
+            if ((temp.a >= 746.00) && (temp.a <= 755.9))
+            {
+                chnum = (temp.a + 0.005 - 746.00) / 0.1 + 5180;
+            }
+        }
+    }
+    /*        LTE频率转换信道号处理　　　　　*/
+    else if (type == RP_LTE1800)
+    {
+        if (uldl == UL)
+        {
+            if ((temp.a >= 1710.00) && (temp.a <= 1784.9))
+                chnum = (temp.a + 0.005 - 1710.00) / 0.1 + 19200;
+        }
+        else if (uldl == DL)
+        {
+            if ((temp.a >= 1805.0) && (temp.a <= 1879.9))
+            {
+                chnum = (temp.a + 0.005 - 1805.0) / 0.1 + 1200;
+            }
+        }
+    }
+    /*        AWS频率转换信道号处理　　　　　*/
+    else if (type == RP_LTE2600)
+    {
+        if (uldl == UL)
+        {
+            if ((temp.a >= 2500.00) && (temp.a <= 2569.9))
+                chnum = (temp.a + 0.005 - 2500.00) / 0.1 + 20750;
+        }
+        else if (uldl == DL)
+        {
+            if ((temp.a >= 2620.00) && (temp.a <= 2689.90))
+                chnum = (temp.a + 0.005 - 2620.00) / 0.1 + 2750;
+        }
+    }
+    /*        CDMA400频率转换信道号处理　　　　　*/
+    else if (type == RP_TETRA)
+    {
+        if (uldl == UL)
+        {
+            if (temp.a >= 451.00)
+                chnum = (temp.a - 451.00) / 0.02 + 1024;
+            else if (temp.a >= CELL_UL_FREQ)
+                chnum = (temp.a - 290 - 0.0125) / FREQ_SKIP_CELL;
+        }
+        else if (uldl == DL)
+        {
+            if (temp.a >= 461.00)
+                chnum = (temp.a - 461.00) / 0.02 + 1024;
+            else if (temp.a >= CELL_DL_FREQ)
+                chnum = (temp.a - 300 - 0.0125) / FREQ_SKIP_CELL;
+        }
+    }
+    else if (type == RP_OTHER)
+    {
+    }
 
- return chnum;
+    return chnum;
 }
 /*
 *********************************************************************************************************
@@ -260,151 +261,156 @@ u16 GET_CHN(u32 freq,u8 uldl,u8 type)
 *	返 回 值: 信道号对应的中心频率
 *********************************************************************************************************
 */
-float GET_FREQ(u16 chnum,u8 uldl,u8 type)
+int GET_FREQ(u16 chnum, u8 uldl, u8 type)
 {
- float freq;
+    f32 freq;
 
- freq = 0;
+    if(chnum == 0xffff) return 0;
 
- if(type == RP_DCS)
-   {
-	if(uldl == UL)
-	  {
-	   if(chnum >= 512)
-	     freq = (chnum - 512) * FREQ_SKIP + DCS_UL_FREQ;
-	  }
-	else if(uldl == DL)
-	  {
-	   if(chnum >= 512)
-	     freq = (chnum - 512) * FREQ_SKIP + DCS_DL_FREQ;
-	  }
-   }
- else if(type == RP_WCDMA)
-   {
-   	if(uldl == UL)
-	  {
-	   if(chnum >= 10000)
-	     freq = chnum * FREQ_SKIP - 190.00;
-	   else if(chnum >= 4120)
-	     freq = (chnum - 4120) * FREQ_SKIP + WCDMA_UL_FREQ;
-		 else if((chnum >= 975) && (chnum <=1023) )
-		   freq = (chnum - 975) * FREQ_SKIP + EGSM_UL_FREQ;
-	   else
-	     freq = (chnum ) * FREQ_SKIP + GSM_UL_FREQ;
-	  }
-	else if(uldl == DL)
-	  {
-	   if(chnum >= 10000)
-	     freq = chnum * FREQ_SKIP;
-	   else if(chnum >= 4345)
-	     freq = (chnum - 4345) * FREQ_SKIP + WCDMA_DL_FREQ;
-		 else if((chnum >= 975) && (chnum <=1023) )
-		   freq = (chnum - 975) * FREQ_SKIP + EGSM_DL_FREQ;
-	   else
-	     freq = (chnum ) * FREQ_SKIP + GSM_DL_FREQ;
-	  }
-   }
- else if(type == RP_GSM)
-   {
-    if(uldl == UL)
-	  {
-   	   if((chnum >= 975) && (chnum <=1023) )
-		 freq = (chnum - 975) * FREQ_SKIP + EGSM_UL_FREQ;
-	   else if(chnum >= 512)
-	     freq = (chnum - 512) * FREQ_SKIP + DCS_UL_FREQ;
-	   else /*if(chnum >= 0)*/
-	     freq = (chnum ) * FREQ_SKIP + GSM_UL_FREQ;
-	  }
-	else if(uldl == DL)
-	  {
-   	   if((chnum >= 975) && (chnum <=1023) )
-		 freq = (chnum - 975) * FREQ_SKIP + EGSM_DL_FREQ;
-	   else if(chnum >= 512)
-	     freq = (chnum - 512) * FREQ_SKIP + DCS_DL_FREQ;
-	   else /*if(chnum >= 0)*/
-	     freq = (chnum ) * FREQ_SKIP + GSM_DL_FREQ;
-	  } 
-   }
- else if((type == RP_LTE800)/*||(type == RP_Cell)*/)
-   {
-   	if(uldl == DL)
-	  {
-		 if((chnum>=6150)&&(chnum<=6449)){
-			freq = (chnum - 6150) * 0.1 + 791.0;
-		}
-	  }
-	else if(uldl == UL)
-	  {
-	   if((chnum >= 24150)&&(chnum<=24449))
-	     	freq = (chnum - 24150) * 0.1 + 832.0;
-	  }
-   }
-  else if(type == RP_LTE700)
-   {
-	 if(uldl == DL)
-	  {
-		 if((chnum>=5180)&&(chnum<=5279)){
-			freq = (chnum - 5180) * 0.1 + 746.0;
-		}
-	  }
-	else if(uldl == UL)
-	  {
-	   if((chnum >= 23180)&&(chnum<=23279))
-	     	freq = (chnum - 23180) * 0.1 + 777.0;
-	  }
-   }
- else if(type == RP_LTE1800)
-   {
-	 if(uldl == UL)
-	  {
-		 if((chnum>=19200)&&(chnum<=19949)){
-			freq = (chnum - 19200) * 0.1 + 1710.0;
-		}
-	  }
-	else if(uldl == DL)
-	  {
-	   if((chnum >= 1200)&&(chnum<=1949))
-	     	freq = (chnum - 1200) * 0.1 + 1805.0;
-	  }
-   }
- else if(type == RP_LTE2600)
-   {
-	 if(uldl == DL)
-	  {
-		 if((chnum>=2750)&&(chnum<=3449)){
-			freq = (chnum - 2750) * 0.1 + 2620.0;
-		}
-	  }
-	else if(uldl == UL)
-	  {
-	   if((chnum >= 20750)&&(chnum<=21449))
-	     	freq = (chnum - 20750) * 0.1 + 2500.0;
-	  }
-   }
- /*        CDMA400频率转换信道号处理　　　　　*/
- else if(type == RP_TETRA)
-   {
-   if(uldl == UL)
-	  {
-	   if((chnum >= 1024)&&(chnum <= 1473) )
-	     freq = (chnum - 1024) * 0.02 + 451.000;
-		 else if((chnum >= 3600)&&(chnum <= 3999) )
-			 freq = 290 +  chnum  * FREQ_SKIP_CELL + 0.0125;
-	  }
-	else if(uldl == DL)
-	  {
-	   if((chnum >= 1024)&&(chnum <= 1473) )
-	     freq = (chnum - 1024) * 0.02 + 461.000;
-		 else if((chnum >= 3600)&&(chnum <= 3999) )
-			 freq = 300 +  chnum  * FREQ_SKIP_CELL + 0.0125;
-	  }
-   }	 
- else if(type == RP_OTHER)
-   {
-   
-   }
+    freq = 0;
 
-   return freq ;
+    if (type == RP_DCS)
+    {
+        if (uldl == UL)
+        {
+            if (chnum >= 512)
+                freq = (chnum - 512) * FREQ_SKIP + DCS_UL_FREQ;
+        }
+        else if (uldl == DL)
+        {
+            if (chnum >= 512)
+                freq = (chnum - 512) * FREQ_SKIP + DCS_DL_FREQ;
+        }
+    }
+    else if (type == RP_WCDMA)
+    {
+        if (uldl == UL)
+        {
+            if (chnum >= 10000)
+                freq = chnum * FREQ_SKIP - 190.00;
+            else if (chnum >= 4120)
+                freq = (chnum - 4120) * FREQ_SKIP + WCDMA_UL_FREQ;
+            else if ((chnum >= 975) && (chnum <= 1023))
+                freq = (chnum - 975) * FREQ_SKIP + EGSM_UL_FREQ;
+            else
+                freq = (chnum)*FREQ_SKIP + GSM_UL_FREQ;
+        }
+        else if (uldl == DL)
+        {
+            if (chnum >= 10000)
+                freq = chnum * FREQ_SKIP;
+            else if (chnum >= 4345)
+                freq = (chnum - 4345) * FREQ_SKIP + WCDMA_DL_FREQ;
+            else if ((chnum >= 975) && (chnum <= 1023))
+                freq = (chnum - 975) * FREQ_SKIP + EGSM_DL_FREQ;
+            else
+                freq = (chnum)*FREQ_SKIP + GSM_DL_FREQ;
+        }
+    }
+    else if (type == RP_GSM)
+    {
+        if (uldl == UL)
+        {
+            if ((chnum >= 975) && (chnum <= 1023))
+                freq = (chnum - 975) * FREQ_SKIP + EGSM_UL_FREQ;
+            else if (chnum >= 512)
+                freq = (chnum - 512) * FREQ_SKIP + DCS_UL_FREQ;
+            else /*if(chnum >= 0)*/
+                freq = (chnum)*FREQ_SKIP + GSM_UL_FREQ;
+        }
+        else if (uldl == DL)
+        {
+            if ((chnum >= 975) && (chnum <= 1023))
+                freq = (chnum - 975) * FREQ_SKIP + EGSM_DL_FREQ;
+            else if (chnum >= 512)
+                freq = (chnum - 512) * FREQ_SKIP + DCS_DL_FREQ;
+            else /*if(chnum >= 0)*/
+                freq = (chnum)*FREQ_SKIP + GSM_DL_FREQ;
+        }
+    }
+    else if ((type == RP_LTE800) /*||(type == RP_Cell)*/)
+    {
+        if (uldl == DL)
+        {
+            if ((chnum >= 6150) && (chnum <= 6449))
+            {
+                freq = (chnum - 6150) * 0.1 + 791.0;
+            }
+        }
+        else if (uldl == UL)
+        {
+            if ((chnum >= 24150) && (chnum <= 24449))
+                freq = (chnum - 24150) * 0.1 + 832.0;
+        }
+    }
+    else if (type == RP_LTE700)
+    {
+        if (uldl == DL)
+        {
+            if ((chnum >= 5180) && (chnum <= 5279))
+            {
+                freq = (chnum - 5180) * 0.1 + 746.0;
+            }
+        }
+        else if (uldl == UL)
+        {
+            if ((chnum >= 23180) && (chnum <= 23279))
+                freq = (chnum - 23180) * 0.1 + 777.0;
+        }
+    }
+    else if (type == RP_LTE1800)
+    {
+        if (uldl == UL)
+        {
+            if ((chnum >= 19200) && (chnum <= 19949))
+            {
+                freq = (chnum - 19200) * 0.1 + 1710.0;
+            }
+        }
+        else if (uldl == DL)
+        {
+            if ((chnum >= 1200) && (chnum <= 1949))
+                freq = (chnum - 1200) * 0.1 + 1805.0;
+        }
+    }
+    else if (type == RP_LTE2600)
+    {
+        if (uldl == DL)
+        {
+            if ((chnum >= 2750) && (chnum <= 3449))
+            {
+                freq = (chnum - 2750) * 0.1 + 2620.0;
+            }
+        }
+        else if (uldl == UL)
+        {
+            if ((chnum >= 20750) && (chnum <= 21449))
+                freq = (chnum - 20750) * 0.1 + 2500.0;
+        }
+    }
+    /*        CDMA400频率转换信道号处理　　　　　*/
+    else if (type == RP_TETRA)
+    {
+        if (uldl == UL)
+        {
+            if ((chnum >= 1024) && (chnum <= 1473))
+                freq = (chnum - 1024) * 0.02 + 451.000;
+            else if ((chnum >= 3600) && (chnum <= 3999))
+                freq = 290 + chnum * FREQ_SKIP_CELL + 0.0125;
+        }
+        else if (uldl == DL)
+        {
+            if ((chnum >= 1024) && (chnum <= 1473))
+                freq = (chnum - 1024) * 0.02 + 461.000;
+            else if ((chnum >= 3600) && (chnum <= 3999))
+                freq = 300 + chnum * FREQ_SKIP_CELL + 0.0125;
+        }
+    }
+    else if (type == RP_OTHER)
+    {
+    }
+
+    return (int)freq;
 }
 
 /*
@@ -417,11 +423,11 @@ float GET_FREQ(u16 chnum,u8 uldl,u8 type)
 */
 void ByteSwap(u8 *Addr)
 {
- u8 temp,temp1;
- temp = *Addr;
- temp1 = *(Addr+1);
- *Addr = temp1;
- *(Addr+1) = temp;
+    u8 temp,temp1;
+    temp = *Addr;
+    temp1 = *(Addr+1);
+    *Addr = temp1;
+    *(Addr+1) = temp;
 }
 /*
 *********************************************************************************************************
@@ -561,7 +567,6 @@ void Only_Check_Module_Online(void)
         }
     }
 
-    return;
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     memset((u8 *)&CheckCommArr, 0x00, sizeof(CheckCommArr));
     for( i = 0; i < SYS_NUM; i++) {
@@ -616,17 +621,17 @@ void Only_Check_Module_Online(void)
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的工作信道号
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i] * 2;
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num * 2;
                     OnlyCheck->data1 = 0x32;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的移频信道号
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i] * 2;
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num * 2;
                     OnlyCheck->data1 = 0x4a;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的信道开关
@@ -634,7 +639,7 @@ void Only_Check_Module_Online(void)
                     OnlyCheck->Cmd = SETICS;
                     OnlyCheck->Clen = 0x06;
                     OnlyCheck->data1 = 0x01;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的上行静噪开关等信息
@@ -661,33 +666,33 @@ void Only_Check_Module_Online(void)
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的上行ATT
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i];
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     OnlyCheck->data1 = 0xe0;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的下行ATT
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i];
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     OnlyCheck->data1 = 0xe1;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的上行AGC
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i];
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     OnlyCheck->data1 = 0xe2;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的下行AGC
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i];
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     OnlyCheck->data1 = 0xe3;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的阻塞最大补偿值
@@ -701,9 +706,9 @@ void Only_Check_Module_Online(void)
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS下行工作信道频率设置
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i] * 4;
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num * 4;
                     OnlyCheck->data1 = 0x02;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS下行信道开关
@@ -711,7 +716,7 @@ void Only_Check_Module_Online(void)
                     OnlyCheck->Cmd = SETICS;
                     OnlyCheck->Clen = 0x06;
                     OnlyCheck->data1 = 0x06;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS上行可见参数
@@ -739,33 +744,33 @@ void Only_Check_Module_Online(void)
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的上行ATT
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i];
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     OnlyCheck->data1 = 0xe0;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的下行ATT
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i];
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     OnlyCheck->data1 = 0xe1;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的上行AGC
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i];
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     OnlyCheck->data1 = 0xe2;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的下行AGC
                     OnlyCheck->Addr = DLModAddr;
                     OnlyCheck->Cmd = SETICS;
-                    OnlyCheck->Clen = 0x03 + unit_para_t.channel_num[i];
+                    OnlyCheck->Clen = 0x03 + SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     OnlyCheck->data1 = 0xe3;
-                    OnlyCheck->data2 = unit_para_t.channel_num[i];
+                    OnlyCheck->data2 = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
                     CheckCommArr.CheckNum += 1;
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的阻塞最大补偿值
@@ -1101,14 +1106,15 @@ void GET_DIG_PICO_POWER(void)
 
     for( i = 0; i < SYS_NUM; i++) {
         DLModAddr = SYS_ADDR_BASE + i * SYS_ADDR_SKIP + DL;
-        if(SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Online == 0x01) { //??PICO?2??????????????
+        //if(SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Online == 0x01) 
+        { 
             SetModArr.Arr[SetModArr.SetNum].Func = ICS_HT_FUNC;
             SetModArr.Arr[SetModArr.SetNum].Addr = DLModAddr;
             SetModArr.Arr[SetModArr.SetNum].Cmd  = SETICS;
             SetModArr.Arr[SetModArr.SetNum].Clen = 0x03;
             SetModArr.Arr[SetModArr.SetNum].data[0] = 0x00;
             SetModArr.Arr[SetModArr.SetNum].data[1] = 0x15;
-            SetModArr.Arr[SetModArr.SetNum].data[2] = unit_para_t.channel_num[i];
+            SetModArr.Arr[SetModArr.SetNum].data[2] = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
             SetModArr.SetNum += 1;
             SetModArr.Arr[SetModArr.SetNum].Func = ICS_HT_FUNC;
             SetModArr.Arr[SetModArr.SetNum].Addr = DLModAddr;
@@ -1116,7 +1122,7 @@ void GET_DIG_PICO_POWER(void)
             SetModArr.Arr[SetModArr.SetNum].Clen = 0x03;
             SetModArr.Arr[SetModArr.SetNum].data[0] = 0x00;
             SetModArr.Arr[SetModArr.SetNum].data[1] = 0x16;
-            SetModArr.Arr[SetModArr.SetNum].data[2] = unit_para_t.channel_num[i];
+            SetModArr.Arr[SetModArr.SetNum].data[2] = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
             SetModArr.SetNum += 1;
 
 
@@ -1136,7 +1142,7 @@ void Query_RP(Rs485Comm *data)
     u8 sys_num, sys_sel, submod, i;
     s16 IPTemp;
 
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     sys_sel = (data->Addr & 0xf0) / SEL_ADDR_SKIP - SYS_ADDR_BASE ; /*选频选带模块的地址区分与其它模块的地址区分不一致*/
     submod  = data->Addr & 0x07;                                  /*选频选带模块的子地址*/
 
@@ -1290,7 +1296,7 @@ void Query_RP(Rs485Comm *data)
     case DIG_PICO: /*京奥公司数字PICO模块*/
         ICS_HT_FUNC = DIG_PICO;
         // for( i = 0; i < SYS_NUM; i++) {
-        //     unit_para_t.channel_num[i] = 2;
+        //     SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num = 2;
         // }
 
         memcpy((u8 *)&MOD_RP[sys_num].ICS_HT_RP.QueryRP, data->Data, 6);
@@ -1344,7 +1350,7 @@ void Query_RP(Rs485Comm *data)
 
         //@sujj 西班牙移频机初始化信道数6
         // for( i = 0; i < SYS_NUM; i++) {
-        //     unit_para_t.channel_num[i] = 6;
+        //     SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num = 6;
         // }
 
 
@@ -1390,7 +1396,7 @@ void Query_RP(Rs485Comm *data)
 void SETATT_RP(Rs485Comm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     switch(data->Func) {
     case XFP_FUNC:/*光模块*/
         MOD_RP[sys_num].XFP_RP.att = data->Data[0];
@@ -1456,7 +1462,7 @@ void SETATT_RP(Rs485Comm *data)
 void SETFREQ_RP(Rs485Comm *data)
 {
     u8 sys_num/*,sys_sel,submod*/;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     //sys_sel = (data->Addr & 0xf0)/SEL_ADDR_SKIP - SYS_ADDR_BASE ; /*选频选带模块的地址区分与其它模块的地址区分不一致*/
     //submod  = data->Addr & 0x07;                                  /*选频选带模块的子地址*/
 
@@ -1544,7 +1550,7 @@ void SETFREQ_RP(Rs485Comm *data)
 void SETSW_RP(Rs485Comm *data)
 {
     u8 sys_num, sys_sel, submod;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     sys_sel = (data->Addr & 0xf0) / SEL_ADDR_SKIP - SYS_ADDR_BASE ; /*选频选带模块的地址区分与其它模块的地址区分不一致*/
     submod  = data->Addr & 0x07;                                  /*选频选带模块的子地址*/
     switch(data->Func) {
@@ -1604,7 +1610,7 @@ void SETSW_RP(Rs485Comm *data)
 void SETGA_RP(Rs485Comm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
 
     switch(data->Func) {
     case PA_FUNC:   /*功放模块*/
@@ -1632,7 +1638,7 @@ void SETGA_RP(Rs485Comm *data)
 void SETAGCGA_RP(Rs485Comm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
 
     switch(data->Func) {
     case PA_FUNC:   /*功放模块*/
@@ -1663,7 +1669,7 @@ void SETAGCGA_RP(Rs485Comm *data)
 void UNDERPT_RP(Rs485Comm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
 
     switch(data->Func) {
     case MPA_FUNC:  /*微放模块*/
@@ -1687,7 +1693,7 @@ void UNDERPT_RP(Rs485Comm *data)
 void SETAGCSW_RP(Rs485Comm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
 
     switch(data->Func) {
     case PA_FUNC:   /*功放模块*/
@@ -1713,7 +1719,7 @@ void SETAGCSW_RP(Rs485Comm *data)
 void GETIP_RP(Rs485Comm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
 
     switch(data->Func) {
     case PA_FUNC:   /*功放模块*/
@@ -1761,7 +1767,7 @@ void GETIP_RP(Rs485Comm *data)
 void GETOP_RP(Rs485Comm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
 
     switch(data->Func) {
     case PA_FUNC:   /*功放模块*/
@@ -1796,7 +1802,7 @@ void SETICS_RP(Rs485Comm *data)
     u8 sys_num , i;
     u16 Temp16;
 
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
 
     switch(data->Func) {
     case ICS_FUNC:
@@ -1980,7 +1986,7 @@ void SETICS_RP(Rs485Comm *data)
 void SETODU_RP(Rs485Comm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
 
     switch(data->Func) {
     case ODU_FUNC:
@@ -2008,7 +2014,7 @@ void SETODU_RP(Rs485Comm *data)
 void HEGETTOTALATT_RP(Rs485Comm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
 
     switch(data->Func) {
     case LNA_FUNC:   /*低噪模块*/
@@ -2043,7 +2049,7 @@ void HEGETTOTALATT_RP(Rs485Comm *data)
 void SET_BANDSW_RP(Rs485Comm *data)
 {
     u8 sys_sel, submod;
-    //sys_num = (data->Addr & 0xf7)/SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    //sys_num = (data->Addr & 0x07)/SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     sys_sel = (data->Addr & 0xf0) / SEL_ADDR_SKIP - SYS_ADDR_BASE ; /*选频选带模块的地址区分与其它模块的地址区分不一致*/
     submod  = data->Addr & 0x07;
     switch(data->Func) {
@@ -2095,7 +2101,7 @@ void SET_SN_RP(Rs485Comm *data)
 {
     u8 sys_num, sys_sel/*,submod*/;
     u8 i, j;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     sys_sel = (data->Addr & 0xf0) / SEL_ADDR_SKIP - SYS_ADDR_BASE ; /*选频选带模块的地址区分与其它模块的地址区分不一致*/
     //submod  = data->Addr & 0x07;                                  /*选频选带模块的子地址*/
 
@@ -2294,7 +2300,7 @@ u8 Mod_RP_Handle(u8 *SendBuf, u8 *RecvBuf, u8 RecvLen)
 void  ClearModStatus(CheckComm *data)
 {
     u8 sys_num;
-    sys_num = (data->Addr & 0xf7) / SYS_ADDR_SKIP - SYS_ADDR_BASE ;
+    sys_num = (data->Addr & 0x07) / SYS_ADDR_SKIP - SYS_ADDR_BASE ;
 
     if(SYS_Var[sys_num].RF_SYS.MOD_ONLINE.ODU_Online == 0x01)
         return;
@@ -2363,12 +2369,15 @@ void *rs485_thread(void *arg)
     u8 i;
     DelayFlag = 0;
     for( i = 0; i < SYS_NUM; i++) {
-        unit_para_t.channel_num[i] = 6;
+        SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num = 6;
     }
     if(rs485_tty_open()) {
         RLDEBUG("rs485 open tty faild\r\n");
         return ;
     }
+
+    //初始化旧地址转BAND
+    oldsys_band_table_init();
 
     sem_init(&(SetSem.SetSem), 0, 0);
 

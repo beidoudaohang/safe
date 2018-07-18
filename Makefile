@@ -46,7 +46,6 @@ sinclude $(Deps)
 .PHONY : clean Debug install
 install:
 	cp ./bin/safe ../imx-rootfs/home/root/safe
-	chmod 777 ../imx-rootfs/home/root/safe
 
 clean:
 	rm -f $(Objs) $(Deps) $(StaticLib) $(DynamicLib) $(BIN_DIR)

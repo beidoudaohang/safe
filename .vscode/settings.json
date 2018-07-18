@@ -10,5 +10,6 @@
         "unistd.h": "c",
         "web_protocol.h": "c",
         "porting.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

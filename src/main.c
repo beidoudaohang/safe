@@ -34,6 +34,7 @@ int main(int argc, char const *argv[])
     s32 err;
 
     RLDEBUG("start system...\r\n");
+	RLDEBUG("software version: 0.0.2\r\n");
 
 	//init data
 	err = data_init();
