@@ -30,26 +30,26 @@
 #define SENDMSG 1  
 #define RECVMSG 2  
 
-static s8 web_md_adr_check(web_msg_t *pf)
+static s8 web_md_adr_check(web_protocol_t *pw)
 {
     u8 cnt;
     s8 flag = -1;
 
-    if (NULL == pf)
+    if (NULL == pw)
         return -1;
 #if MONITOR_MODULE_ENABLE
-    if (((pf->data.md_adr.mod_type) == (unit_para_t.md_adr_t.mod_type)) && ((pf->data.md_adr.mod_band) == (unit_para_t.md_adr_t.mod_band)) && ((pf->data.md_adr.mod_adr_t.dat) == (unit_para_t.md_adr_t.mod_adr_t.dat)))
+    if (((pw->md_adr.mod_type) == (unit_para_t.md_adr_t.mod_type)) && ((pw->md_adr.mod_band) == (unit_para_t.md_adr_t.mod_band)) && ((pw->md_adr.mod_adr_t.dat) == (unit_para_t.md_adr_t.mod_adr_t.dat)))
         flag = 0;
 
-    if(pf->data.md_adr.mod_type > 0){
-        cnt = (pf->data.md_adr.mod_type-1)<<4;
+    if(pw->md_adr.mod_type > 0){
+        cnt = (pw->md_adr.mod_type-1)<<4;
     }else{
         return -1;
     }
 	for (; cnt < MONITOR_MOD_NUM; cnt++) {
-		if (((pf->data.md_adr.mod_type) == (exmod_para_a[cnt].md_adr_t.mod_type)) 
-            && ((pf->data.md_adr.mod_band) == (exmod_para_a[cnt].md_adr_t.mod_band)) 
-            && ((pf->data.md_adr.mod_adr_t.dat) == (exmod_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
+		if (((pw->md_adr.mod_type) == (exmod_para_a[cnt].md_adr_t.mod_type)) 
+            && ((pw->md_adr.mod_band) == (exmod_para_a[cnt].md_adr_t.mod_band)) 
+            && ((pw->md_adr.mod_adr_t.dat) == (exmod_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
                     break;
 		}
 	}
@@ -59,7 +59,7 @@ static s8 web_md_adr_check(web_msg_t *pf)
 #endif
 #if OTHER_MODULE_ENABLE
     for (cnt = 0; cnt < MOD_NUM_IN_ONE_PCB; cnt++) {
-        if (((pf->data.md_adr.mod_type) == (band_para_a[cnt].md_adr_t.mod_type)) && ((pf->data.md_adr.mod_band) == (band_para_a[cnt].md_adr_t.mod_band)) && ((pf->data.md_adr.mod_adr_t.dat) == (band_para_a[cnt].md_adr_t.mod_adr_t.dat)))
+        if (((pw->md_adr.mod_type) == (band_para_a[cnt].md_adr_t.mod_type)) && ((pw->md_adr.mod_band) == (band_para_a[cnt].md_adr_t.mod_band)) && ((pw->md_adr.mod_adr_t.dat) == (band_para_a[cnt].md_adr_t.mod_adr_t.dat)))
             break;
     }
 
@@ -74,43 +74,43 @@ static s8 web_md_adr_check(web_msg_t *pf)
 /*
 fun：用户登录
 para：
-	pf：登录信息
+	pw：登录信息
 return：
 	0---sus
 	-1：用户不存在
 	-2：密码错误
 	-3: err
  */
-static s32 web_usr_login(web_msg_t *pf)
+static s32 web_usr_login(web_protocol_t *pw)
 {
 	s32 cnt = 0;
 	s8 dy_pwd[12] = {0};
 	s8* sn = NULL;
 	s32 err;
 
-	if (NULL == pf) {
+	if (NULL == pw) {
 		return -1;
 	}
 
-	err = usr_name_to_auth((s8*)(pf->data.para + 1));
+	err = usr_name_to_auth((s8*)(pw->para + 1));
 	if (err < 0) {
 		return -1;
 	}
-	if (!(pf->data.para[0])) {
+	if (!(pw->para[0])) {
 		//固定密码校验
 		cnt = err - 1;
-		if ((!strncmp((const char*)(pf->data.para + 1), (const char*)(pcb_share.usr.usr[cnt].name), USR_NAME_SIZE)) && \
-		        (!strncmp((const char*)((pf->data.para + 1) + USR_NAME_SIZE), (const char*)(pcb_share.usr.usr[cnt].pass), USR_PASS_SIZE))) {
+		if ((!strncmp((const char*)(pw->para + 1), (const char*)(pcb_share.usr.usr[cnt].name), USR_NAME_SIZE)) && \
+		        (!strncmp((const char*)((pw->para + 1) + USR_NAME_SIZE), (const char*)(pcb_share.usr.usr[cnt].pass), USR_PASS_SIZE))) {
 			RLDEBUG("usr_login:name & pwd match! \r\n");
 		} else {
 			//动态密码校验
 			//find mod
 #if MONITOR_MODULE_ENABLE
-			if (((pf->data.md_adr.mod_type) == (unit_para_t.md_adr_t.mod_type)) && ((pf->data.md_adr.mod_band) == (unit_para_t.md_adr_t.mod_band)) && ((pf->data.md_adr.mod_adr_t.dat) == (unit_para_t.md_adr_t.mod_adr_t.dat)))
+			if (((pw->md_adr.mod_type) == (unit_para_t.md_adr_t.mod_type)) && ((pw->md_adr.mod_band) == (unit_para_t.md_adr_t.mod_band)) && ((pw->md_adr.mod_adr_t.dat) == (unit_para_t.md_adr_t.mod_adr_t.dat)))
 				sn = (s8*) & (unit_para_t.u_mfrs.sn);
 #endif
 			if (NULL == sn) {
-				cnt = md_adr_to_index(&(pf->data.md_adr));
+				cnt = md_adr_to_index(&(pw->md_adr));
 				if (cnt < 0) {
 					return -3;
 				}
@@ -125,7 +125,7 @@ static s32 web_usr_login(web_msg_t *pf)
 			if (err < 0) {
 				return -3;
 			}
-			if (strncmp((const char*)dy_pwd, (const char*)((pf->data.para + 1) + USR_NAME_SIZE), 8)) {
+			if (strncmp((const char*)dy_pwd, (const char*)((pw->para + 1) + USR_NAME_SIZE), 8)) {
 				usr_auth.timeout = 0;
 				usr_auth.authorize = USR_UNLOGIN;
 				return -2;
@@ -138,24 +138,24 @@ static s32 web_usr_login(web_msg_t *pf)
 	usr_auth.timeout = USR_AUTHORIZE_TIME;
 	usr_auth.authorize = cnt + 1;
 
-	RLDEBUG("usr_login: usr name:%s,usr authorize:%d \r\n", (pf->data.para + 1), usr_auth.authorize);
+	RLDEBUG("usr_login: usr name:%s,usr authorize:%d \r\n", (pw->para + 1), usr_auth.authorize);
 
 	return 0;
 }
 
-static s16 web_get_para_num(const web_msg_t *pf)
+static s16 web_get_para_num(const web_protocol_t *pw)
 {
     s16 len, cnt, nums;
     para *_para;
 
-    if (NULL == pf)
+    if (NULL == pw)
         return -1;
 
-    len = pf->data.len;
+    len = pw->len;
     cnt = 0;
     nums = 0;
     while (cnt < len) {
-        _para = (para*)((pf->data.para) + cnt);
+        _para = (para*)((pw->para) + cnt);
         nums++;
         cnt += ((_para->para_len) + sizeof(para));
     }
@@ -163,26 +163,26 @@ static s16 web_get_para_num(const web_msg_t *pf)
     return nums;
 }
 
-static s16 web_set_para_deal(const web_msg_t *pf, para_stream *ps)
+static s16 web_set_para_deal(const web_protocol_t *pw, para_stream *ps)
 {
     u16 cnt;
     u16 para_lens, para_nums;
     para *_para;
     s32 err;
 
-    if (NULL == pf)
+    if (NULL == pw)
         return -1;
     if (NULL == ps)
         return -1;
 
     //RLDEBUG("set_para_deal processing\r\n");
 
-    para_lens = pf->data.len;
+    para_lens = pw->len;
     RLDEBUG("set_para_deal para len is:%d\r\n", para_lens);
-    para_nums = web_get_para_num(pf);
+    para_nums = web_get_para_num(pw);
     RLDEBUG("set_para_deal para numbers is:%d\r\n", para_nums);
 
-    _para = (para*)(pf->data.para);
+    _para = (para*)(pw->para);
     para_lens = 0;
     for (cnt = 0; cnt < para_nums; cnt++) {
         RLDEBUG("set_para_deal para adr is:%x\r\n", (_para->para_adr));
@@ -191,32 +191,32 @@ static s16 web_set_para_deal(const web_msg_t *pf, para_stream *ps)
             RLDEBUG("set_para_deal:one_para_adr_set_processing() false \r\n");
         }
         para_lens += sizeof(para) + (_para->para_len);
-        _para = (para*)((pf->data.para) + para_lens);
+        _para = (para*)((pw->para) + para_lens);
     }
 
     return 0;
 }
 
-static s8 web_read_para_deal(const web_msg_t *pf, para_stream *ps)
+static s8 web_read_para_deal(const web_protocol_t *pw, para_stream *ps)
 {
     u16 cnt;
     u16 para_nums;
     u16 adr;
 
-    if (NULL == pf)
+    if (NULL == pw)
         return -1;
     if (NULL == ps)
         return -1;
 
     //RLDEBUG("read_para_deal\r\n");
 
-    para_nums = pf->data.len;
+    para_nums = pw->len;
     para_nums >>= 1;
 
     //RLDEBUG("read_para_deal para numbers:%d\r\n", para_nums);
 
     for (cnt = 0; cnt < para_nums; cnt++) {
-        memcpy((void*)&adr, (pf->data.para + cnt * 2), sizeof(u16));
+        memcpy((void*)&adr, (pw->para + cnt * 2), sizeof(u16));
         //RLDEBUG("read_para_deal para adr:%d\r\n", adr);
         one_para_adr_read_processing(adr, ps);
     }
@@ -226,7 +226,7 @@ static s8 web_read_para_deal(const web_msg_t *pf, para_stream *ps)
 s8 web_recv_deal(s8 *str, para_stream *ps)
 {
     u16 cnt;
-    web_msg_t *pf = NULL;
+    web_protocol_t *pw = NULL;
 
 
     if ((NULL == str) || (NULL == ps))
@@ -234,38 +234,38 @@ s8 web_recv_deal(s8 *str, para_stream *ps)
 
 
 
-    pf = (web_msg_t*)str;
+    pw = (web_protocol_t*)str;
 
     /*远控读取模块地址信息的指令，不做地址判断*/
-    if (FRAME_CMD_READ_MOD_INFO != (pf->data.cmd))
-        if (web_md_adr_check(pf)) {
+    if (FRAME_CMD_READ_MOD_INFO != (pw->cmd))
+        if (web_md_adr_check(pw)) {
             RLDEBUG("frame module adr err\r\n");
             goto WEB_RCV_ERR;
         }
 
-    ps->cmd = pf->data.cmd;
+    ps->cmd = pw->cmd;
     ps->device_id = unit_para_t.unit_sundry.device_id;
     ps->flag = PARA_STREAM_BUSY;
-    memcpy((void*) & (ps->md_adr), (void*) & (pf->data.md_adr), sizeof(md_adr_info));
+    memcpy((void*) & (ps->md_adr), (void*) & (pw->md_adr), sizeof(md_adr_info));
     ps->remote_code = 0;
     ps->source = FRAME_SOURCE_LOCAL;
-    ps->authority = pf->data.authority;
+    ps->authority = pw->authority;
     ps->next = (s8*)(ps->data);
 
-    switch (pf->data.cmd) {
+    switch (pw->cmd) {
     case FRAME_CMD_READ_MOD_INFO: {
         read_md_info_deal(ps);
         goto WEB_RCV_DONE;
         break;
     }
     case FRAME_CMD_LOGIN: {
-        if (0x00 == pf->data.para[0]) {	//login
-            if (web_usr_login(pf)) {
+        if (0x00 == pw->para[0]) {	//login
+            if (web_usr_login(pw)) {
                 ps->ack = FRAME_ACK_USR_PASS_ERR;
             }
-        } else if (0x01 == (pf->data.para[0])) {	//pwd changed
+        } else if (0x01 == (pw->para[0])) {	//pwd changed
 
-        } else if (0x02 == (pf->data.para[0])) {	//pwd reset
+        } else if (0x02 == (pw->para[0])) {	//pwd reset
 
         }
         
@@ -285,7 +285,7 @@ s8 web_recv_deal(s8 *str, para_stream *ps)
     }
 #endif
 
-    switch (pf->data.cmd) {
+    switch (pw->cmd) {
     case FRAME_CMD_ALARM: {
 
         break;
@@ -296,7 +296,7 @@ s8 web_recv_deal(s8 *str, para_stream *ps)
         break;
     }
     case FRAME_CMD_READ_PARA: {
-        web_read_para_deal(pf, ps);
+        web_read_para_deal(pw, ps);
         break;
     }
     case FRAME_CMD_READ_MOD_INFO: {
@@ -304,13 +304,13 @@ s8 web_recv_deal(s8 *str, para_stream *ps)
         break;
     }
     case FRAME_CMD_SET_PARA: {
-        web_set_para_deal(pf, ps);
+        web_set_para_deal(pw, ps);
 
         sem_post(&(data_write_sem));
         break;
     }
     case FRAME_CMD_LOGIN: {
-        if (web_usr_login(pf)) {
+        if (web_usr_login(pw)) {
             ps->ack = FRAME_ACK_USR_PASS_ERR;
         }
         break;
@@ -332,31 +332,31 @@ WEB_RCV_ERR:
 }
 
 
-s16 web_pack(const para_stream *ps, web_msg_t *pf)
+s16 web_pack(const para_stream *ps, web_protocol_t *pw)
 {
     s32 cnt;
 
     if (NULL == ps)
         return -1;
-    if (NULL == pf) {
+    if (NULL == pw) {
         return -1;
     }
 
     if ((ps->paralen) > 1024)
         return -1;
 
-    //cnt = one_frame_pack(para, pf);
-    memcpy((void*)(pf->data.para), (void*)(ps->data), (ps->paralen));
+    //cnt = one_frame_pack(para, pw);
+    memcpy((void*)(pw->para), (void*)(ps->data), (ps->paralen));
 
-    printf("ps->paralen=%d\n",ps->paralen);
+    RLDEBUG("ps->paralen=%d\n",ps->paralen);
 
-    pf->data.len = ps->paralen;
-    pf->data.cmd = ps->cmd;
-    memcpy((void*) &(pf->data.md_adr), (void*) &(ps->md_adr), sizeof(md_adr_info));
-    pf->data.authority = ps->authority;
-    pf->data.ack = ps->ack;
+    pw->len = ps->paralen;
+    pw->cmd = ps->cmd;
+    memcpy((void*) &(pw->md_adr), (void*) &(ps->md_adr), sizeof(md_adr_info));
+    pw->authority = ps->authority;
+    pw->ack = ps->ack;
 
-    cnt = pf->data.len + WEB_PROTOCOL_HEAD_LEN;
+    cnt = pw->len + WEB_PROTOCOL_HEAD_LEN;
     if (cnt < 0)
         return -1;
 
@@ -364,8 +364,74 @@ s16 web_pack(const para_stream *ps, web_msg_t *pf)
     return cnt;
 }
 
+s16 web_protocol_to_new_protocol(web_protocol_t *pw, frame *pf)
+{
+    s32 len;
+
+    if (NULL == pf)
+        return -1;
+    if (NULL == pw)
+        return -1;
+
+    memcpy((void*)(pf->cmd.data), (void*)(pw->para), (pw->len));
+
+    pf->cmd.total = 1;
+    pf->cmd.index = 1;
+    pf->cmd.ver = PROTOCOL_VER;
+    pf->cmd.cmd = pw->cmd;
+    memcpy((void*) & (pf->cmd.md_adr), (void*) & (pw->md_adr), sizeof(md_adr_info));
+    pf->cmd.authority = pw->authority;
+    pf->cmd.ack = pw->ack;
+
+    memcpy((pf->header.start), FRAME_START, sizeof(FRAME_START));
+    pf->header.remote_code = 0;
+    pf->header.crc = crc((const s8*)(pf->header.data), ((pw->len) + FRAME_CMD_LEN));
+    pf->header.device_id = unit_para_t.unit_sundry.device_id;
+    pf->header.len = 5 + (pw->len) + FRAME_CMD_LEN;
+
+    #if 1
+    //compress
+    if(protocol_encrypt_lzo(pf) == -1){
+        return -1;
+    }
+    #else
+    RLDEBUG("pf->header.len = %d\r\n", pf->header.len);
+    memcpy((pf->arr + pf->header.len + FRAME_START_LEN + 2), FRAME_END, sizeof(FRAME_END));
+    #endif
+
+    return ((pf->header.len) + FRAME_START_LEN + 2 + FRAME_END_LEN );
+}
+
+void frame_to_web_protocol(frame *pf, web_protocol_t *pw)
+{
+    pw->cmd = pf->cmd.cmd;
+    pw->authority = pf->cmd.authority;
+    pw->ack = pf->cmd.ack;
+    memcpy(&pw->md_adr, &pf->cmd.md_adr, sizeof(md_adr_info));
+    pw->len = pf->header.len - 5 - FRAME_CMD_LEN;
+    memcpy(pw->para, pf->cmd.data, pw->len);
+}
+
+s16 new_protocol_to_web_protocol(s8 *str, u16 len, web_protocol_t *pw)
+{
+    frame *pf = NULL;
+    s8 *begin = NULL;
+
+    if(protocol_decode_unlzo(str, len) == -1){
+        return -1;
+    }
 
 
+    if (frame_protocol_check(str, len, &begin)) {
+        RLDEBUG("frame protocol err\r\n");
+        return -1;
+    }
+    pf = (frame*)(begin);
+
+    frame_to_web_protocol(pf, pw);
+
+    return 0;
+}
 
 extern para_stream para_stream_t;
 
@@ -398,38 +464,47 @@ void *local_web_thread(void *arg)
             // exit(EXIT_FAILURE);
         }
 
-        RLDEBUG("return:%d, len:%d\r\n", recv_len, web_msg_recv.data.len);
+        // RLDEBUG("return:%d, len:%d\r\n", recv_len, web_msg_recv.data.len);
+        RLDEBUG("web recv data:");
+        hexdata_debug((s8*)&web_msg_recv.data, web_msg_recv.data.len + WEB_PROTOCOL_HEAD_LEN);
 
-		//check para_stream_t is busy?
-		err = 10;
-		while (err > 0) {
-			if (PARA_STREAM_BUSY == para_stream_t.flag) {
-				timedelay(0, 0, 50, 0);
-			} else
-				break;
+        if(web_msg_recv.data.md_adr.mod_type == MOD_TYPE_RELAY){
+            //RELAY模块是新协议，需要把web数据包打包成新协议发送，再把收到的数据包重新打包成web数据包返回给CGI程序
 
-			err--;
-		}
-        memset(&para_stream_t, 0, sizeof(para_stream));
-        if(err){
-            err = web_recv_deal((s8*)&web_msg_recv, &para_stream_t);
         }else{
-			RLDEBUG("local_web_thread:para stream busy\r\n");
-			continue;
-        }
-        
+            //check para_stream_t is busy?
+            err = 10;
+            while (err > 0) {
+                if (PARA_STREAM_BUSY == para_stream_t.flag) {
+                    timedelay(0, 0, 50, 0);
+                } else
+                    break;
 
-		if (err < 0) {
-			RLDEBUG("local_web_thread:recv data processing err\r\n");
-			continue;
-		}
+                err--;
+            }
+            memset(&para_stream_t, 0, sizeof(para_stream));
+            if(err){
+                err = web_recv_deal((s8*)&web_msg_recv.data, &para_stream_t);
+            }else{
+                RLDEBUG("local_web_thread:para stream busy\r\n");
+                continue;
+            }
+            
+
+            if (err < 0) {
+                RLDEBUG("local_web_thread:recv data processing err\r\n");
+                continue;
+            }
+        }
+
+
 
         memset(&web_msg_send, 0, sizeof(web_msg_send));
         web_msg_send.type = SENDMSG;
-        cnt = (s32)web_pack((const para_stream*)&para_stream_t, (web_msg_t*)&web_msg_send);
+        cnt = (s32)web_pack((const para_stream*)&para_stream_t, (web_protocol_t*)&web_msg_send.data);
         para_stream_t.flag = PARA_STREAM_NORMAL;
 
-        RLDEBUG("web data:");
+        RLDEBUG("web send data:");
         hexdata_debug((s8*)&web_msg_send.data, cnt);
 
         if (msgsnd(msgid, (void *)&web_msg_send, cnt, 0) == -1)

@@ -9,7 +9,10 @@
         "para_table.h": "c",
         "unistd.h": "c",
         "web_protocol.h": "c",
-        "porting.h": "c"
+        "porting.h": "c",
+        "usr_def.h": "c",
+        "module_adr_def.h": "c"
     },
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "C_Cpp.dimInactiveRegions": false
 }

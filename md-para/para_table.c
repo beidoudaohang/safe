@@ -32,6 +32,8 @@ unit_alarm_c u_alarm_t;
 band_para exmod_para_a[MONITOR_MOD_NUM];
 band_dynamic_para exmod_dynamic_para_a[MONITOR_MOD_NUM];
 md_alarm_c exmod_alarm_a[MONITOR_MOD_NUM];
+
+pthread_mutex_t exmod_para_mutex;
 #endif
 //band
 #if OTHER_MODULE_ENABLE
@@ -109,6 +111,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 10,
                     .dat = (void*)(unit_para_t.md_mfrs.para_table_ver),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -130,6 +133,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 40,
                     .dat = (void*)(unit_para_t.md_mfrs.factory),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -151,6 +155,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 15,
                     .dat = (void*) & (unit_para_t.u_mfrs.sn),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -172,6 +177,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.u_mfrs.type),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -193,6 +199,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.u_mfrs.model_no),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -214,6 +221,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.u_mfrs.part_no),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -235,6 +243,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (unit_para_t.gps_point_t.Longitude),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .f32l = -180.0,
                     },
@@ -256,6 +265,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (unit_para_t.gps_point_t.Latitude),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .f32l = -90.0,
                     },
@@ -277,6 +287,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (unit_para_t.gps_pen_t.left_top.Longitude),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .f32l = -180.0,
                     },
@@ -298,6 +309,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (unit_para_t.gps_pen_t.left_top.Latitude),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .f32l = -90.0,
                     },
@@ -319,6 +331,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (unit_para_t.gps_pen_t.right_bottom.Longitude),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .f32l = -180.0,
                     },
@@ -340,6 +353,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (unit_para_t.gps_pen_t.right_bottom.Latitude),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .f32l = -90.0,
                     },
@@ -361,6 +375,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.gps_offline),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -382,6 +397,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 30,
                     .dat = (void*) & (unit_para_t.site.creat_time),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -395,24 +411,6 @@ const para_table u_para_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    /*{
-        .index = 0x1e,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_para_t.usr.),
-                    .min = 0,
-                    .max = 0,
-                    .paradeal = NULL,
-                },
-            }
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .
-    },*/
     {
         .index = 0x20,
         .link_para_a = {
@@ -421,6 +419,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 30,
                     .dat = (void*) & (unit_dynamic_para_t.time),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -442,6 +441,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.md_mfrs.hv),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -463,6 +463,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.md_mfrs.sv),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -484,6 +485,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 50,
                     .dat = (void*) & (unit_para_t.site.name),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -505,6 +507,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 100,
                     .dat = (void*) & (unit_para_t.site.addr),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -526,6 +529,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.site.site_no),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -547,6 +551,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.site.proprietor),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -568,6 +573,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.site.asset),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -589,6 +595,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.site.manager),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -610,6 +617,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_dynamic_para_t.gprs_t.status),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -631,6 +639,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 50,
                     .dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.net_info.apn),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -652,6 +661,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.net_info.usr),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -673,6 +683,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.net_info.pw),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -694,6 +705,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 25,
                     .dat = (void*) & (unit_dynamic_para_t.gprs_t.wlan_ip),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -715,6 +727,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 25,
                     .dat = (void*) & (unit_para_t.monitor_cfg_t.nms.ip),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -736,6 +749,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (unit_para_t.monitor_cfg_t.nms.port),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -757,6 +771,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.monitor_cfg_t.nms.sim),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -778,6 +793,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.site.sim),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -799,6 +815,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.monitor_cfg_t.nms.alarm_sim),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -820,6 +837,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.monitor_cfg_t.monitor_mode),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -841,6 +859,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.timeout),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -862,6 +881,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1 * 12,
                     .dat = (void*) & (unit_para_t.band_whole.passive_offset),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -883,6 +903,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1 * 12, //1 @ccTagOK
                     .dat = (void*) & (unit_para_t.band_whole.passive_offset),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -904,6 +925,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (unit_dynamic_para_t.temperature),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -925,6 +947,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.unit_sundry.case_temp_regulator),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = -25,
                     },
@@ -946,6 +969,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (unit_para_t.unit_sundry.device_id),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -967,6 +991,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8}, //@ccTagOK
                     .len = 12, //1 @ccTagOK
                     .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = -100,
                     },
@@ -988,6 +1013,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8}, //PARA_TYPE_U8 @ccTagOK
                     .len = 12, //1 @ccTagOK
                     .dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = -100,
                     },
@@ -1009,6 +1035,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12, //1 @ccTagOK
                     .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -1030,6 +1057,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12, //1 @ccTagOK
                     .dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -1051,6 +1079,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48, //4 @ccTagOK
                     .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -1072,6 +1101,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48, //4 @ccTagOK
                     .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -1093,6 +1123,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.door_open),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1114,6 +1145,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.power_ac),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1135,6 +1167,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.power_dc),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1156,6 +1189,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.movement),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1177,6 +1211,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.gps_offline),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1198,6 +1233,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.bat_low_volt),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1219,6 +1255,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_1),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1240,6 +1277,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_2),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1261,6 +1299,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_3),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1282,6 +1321,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_4),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1303,6 +1343,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_1),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1324,6 +1365,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_2),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1345,6 +1387,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_3),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1366,6 +1409,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_4),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1387,6 +1431,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_5),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1408,6 +1453,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_6),
+                    .dat_size = sizeof(unit_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -1429,6 +1475,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_1),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1450,6 +1497,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_2),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1471,6 +1519,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_3),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1492,6 +1541,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_4),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1513,6 +1563,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_5),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1534,6 +1585,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_6),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1555,6 +1607,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.door_open),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1576,6 +1629,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.power_ac),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1597,6 +1651,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.power_dc),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1618,6 +1673,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.movement),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1639,6 +1695,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.gps_offline),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1660,6 +1717,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.bat_low_volt),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1681,6 +1739,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_1),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1702,6 +1761,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_2),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1723,6 +1783,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_3),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1744,6 +1805,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_4),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1765,6 +1827,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_1),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1786,6 +1849,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_2),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1807,6 +1871,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_3),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1828,6 +1893,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_4),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1849,6 +1915,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_5),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1870,6 +1937,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_6),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1891,6 +1959,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_dynamic_para_t.fan.fan1),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1912,6 +1981,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_dynamic_para_t.fan.fan2),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1933,6 +2003,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_dynamic_para_t.fan.fan3),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1954,6 +2025,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_dynamic_para_t.fan.fan4),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -1975,6 +2047,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.fan_ctrl_t.fan_temp_h),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 30,
                     },
@@ -1996,6 +2069,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.fan_ctrl_t.fan_temp_l),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 20,
                     },
@@ -2017,6 +2091,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.bat_in_t.ctrl_mode),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -2038,6 +2113,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_para_t.bat_in_t.cut_out_time),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -2059,6 +2135,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_dynamic_para_t.bat_status),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -2080,6 +2157,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 10,
                     .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.plmn),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2101,6 +2179,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 10,
                     .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.tech),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2122,6 +2201,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.band),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -2143,6 +2223,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.cell),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -2164,6 +2245,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.arfcn),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -2185,6 +2267,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.rxlev),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -2206,6 +2289,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.rsq),
+                    .dat_size = sizeof(unit_dynamic_para),
                     .min = {
                         .f32l = -50,
                     },
@@ -2227,6 +2311,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (unit_para_t.gps_point_t.altitude),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .f32l = -100,
                     },
@@ -2248,6 +2333,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 15,
                     .dat = (void*) & (unit_para_t.md_mfrs.para_table_date),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2269,6 +2355,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 15,
                     .dat = (void*) & (unit_para_t.unit_sundry.prj_code),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2290,6 +2377,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.md_mfrs.model_no),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2311,6 +2399,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (unit_para_t.md_mfrs.part_no),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2332,6 +2421,7 @@ const para_table u_para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (unit_para_t.band_whole.band),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 1,
                     },
@@ -2358,6 +2448,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 10,
                     .dat = (void*)(exmod_para_a[0].md_mfrs.para_table_ver),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2379,6 +2470,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 40,
                     .dat = (void*)(exmod_para_a[0].md_mfrs.factory),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2400,6 +2492,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 3,
                     .dat = (void*) & (exmod_para_a[0].md_adr_t),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2421,6 +2514,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (exmod_para_a[0].md_mfrs.hv),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2442,6 +2536,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (exmod_para_a[0].md_mfrs.sv),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -2455,7 +2550,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+/*     {
         .index = 0x29,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -2517,7 +2612,7 @@ const para_table exmod_table_a[] =
         .authority = USR_OPERATOR,
         .dig_adr = 0,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0x38,
         .link_para_a = {
@@ -2526,6 +2621,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1, //12 @ccTagOK
                     .dat = (void*) & (exmod_para_a[0].md_sundry.agc_mod),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -2547,6 +2643,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.shutdown_ul),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120, //120 @ccTagOK
                     },
@@ -2568,6 +2665,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_basic.max_gain),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -100,
                     },
@@ -2589,6 +2687,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.reset_para),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -2610,6 +2709,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_residue_t.reset_para),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = 0,
                     .max = 0,
                     .paradeal = NULL,
@@ -2628,6 +2728,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_basic.sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -2649,6 +2750,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_basic.att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -2670,6 +2772,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.temperature),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -2691,6 +2794,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_regulator),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -25,
                     },
@@ -2712,6 +2816,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pin),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -2733,6 +2838,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pout),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -2754,6 +2860,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.rpout),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -2775,6 +2882,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.cur_gain),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -100,
                     },
@@ -2796,6 +2904,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.rl),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = 1,
                     },
@@ -2817,6 +2926,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.rl_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 1,
                     },
@@ -2838,6 +2948,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_para_a[0].md_basic.pout.p_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -2859,6 +2970,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -2880,6 +2992,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_rate_pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -2901,6 +3014,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -2922,6 +3036,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_rate_pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -2943,6 +3058,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_l_th_pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -2964,6 +3080,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_h_th_pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -2985,6 +3102,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_l_th_pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -3006,6 +3124,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_h_th_pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -3027,6 +3146,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1 * 40,
                     .dat = (void*) & (exmod_para_a[0].md_basic.pin.table),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -3048,6 +3168,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 40,
                     .dat = (void*) & (exmod_para_a[0].md_basic.pin.table),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -3069,6 +3190,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1 * 40,
                     .dat = (void*) & (exmod_para_a[0].md_basic.pout.table[0]), //.table
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -3090,6 +3212,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 40,
                     .dat = (void*) & (exmod_para_a[0].md_basic.pout.table[0]), //.table
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -3111,6 +3234,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1 * 40,
                     .dat = (void*) & (exmod_para_a[0].md_basic.rpout.table[0]), //.table
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -3132,6 +3256,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 40,
                     .dat = (void*) & (exmod_para_a[0].md_basic.rpout.table[0]), //.table
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -3153,6 +3278,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pin.max_v),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -3174,6 +3300,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pout.max_v),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -3195,6 +3322,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.rpout.max_v),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -3216,6 +3344,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.rl),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -3237,6 +3366,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.pout),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -3258,6 +3388,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.pout_pre),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -3279,6 +3410,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.temp_h),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -3300,6 +3432,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.pa1),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -3321,6 +3454,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.pa2),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -3342,6 +3476,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.rl),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3363,6 +3498,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.pout),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3384,6 +3520,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.pout_pre),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3405,6 +3542,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.temp_h),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3426,6 +3564,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3447,6 +3586,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3468,6 +3608,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3489,6 +3630,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.wk_mode),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3510,6 +3652,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.major),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3531,6 +3674,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.minor),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3552,6 +3696,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.dl_ul_config),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3573,6 +3718,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.cp),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3594,6 +3740,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.sf_config),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3615,6 +3762,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sync_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -3636,6 +3784,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.tdd_dynamic_sundry.sync_st),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3657,6 +3806,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.tdd_sync_lost),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -3678,6 +3828,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.tdd_sync_lost),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3699,6 +3850,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sync_keep),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3720,6 +3872,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S16},
                     .len = 2,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sync_offset),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s16l = -100,
                     },
@@ -3741,6 +3894,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U32},
                     .len = 4,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.guard_time),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3754,7 +3908,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-/*      { //@sujj digpico setting dl
+    { //@sujj digpico setting dl
         .index = 0xb4,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -3762,19 +3916,20 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
                     .max = {
                         .f32l = 100000.000,
                     },
-                    .paradeal = NULL,
+                    .paradeal = check_ul_workfreq_exmod,
                 },
         },
         .authority = USR_OPERATOR,
         .dig_adr = 0x01,
         .flag = PARA_RW
-    }, */
+    },
     {
         .index = 0xb5,
         .link_para_a = {
@@ -3783,6 +3938,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -3793,7 +3949,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x0d,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -3804,6 +3960,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -3825,6 +3982,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -3846,17 +4004,18 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
-                        .s8l = -120,
+                        .s8l = -80,
                     },
                     .max = {
-                        .s8l = 10,
+                        .s8l = 0,
                     },
                     .paradeal = check_ul_ch_pin_op_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x19,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -3867,6 +4026,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_ul_op),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -3888,6 +4048,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -3898,7 +4059,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x19,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -3909,6 +4070,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_ul_lp),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -3930,6 +4092,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3940,7 +4103,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x2f,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -3951,6 +4114,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -3961,7 +4125,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x25,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -3972,6 +4136,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -3982,7 +4147,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x35,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -3993,6 +4158,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,//0 @ccTagOK
                     },
@@ -4003,7 +4169,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x35,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4014,6 +4180,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -4024,7 +4191,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x26,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4035,6 +4202,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -4056,6 +4224,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -4077,6 +4246,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 12,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -4350,6 +4520,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_ul),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -1,
                     },
@@ -4360,7 +4531,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3b,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4371,6 +4542,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_ul.adc_att),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u32l = 0,
                     },
@@ -4392,13 +4564,14 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
                     .max = {
                         .f32l = 100000.000,
                     },
-                    .paradeal = check_workfreq_exmod,
+                    .paradeal = check_dl_workfreq_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4413,6 +4586,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -4423,7 +4597,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x74,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4434,6 +4608,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -4455,6 +4630,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -4476,17 +4652,18 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
-                        .s8l = -120,
+                        .s8l = -80,
                     },
                     .max = {
-                        .s8l = 10,
+                        .s8l = 0,
                     },
                     .paradeal = check_dl_ch_pin_op_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x80,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4497,6 +4674,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_dl_op[0]),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -4518,6 +4696,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -4528,7 +4707,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x80,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4539,6 +4718,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_dl_lp),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -4560,6 +4740,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -4570,7 +4751,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x93,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4581,6 +4762,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -4591,7 +4773,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x8c,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4602,6 +4784,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -4612,7 +4795,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x8d,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4623,6 +4806,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -4644,6 +4828,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -4917,6 +5102,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_dl),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -1,
                     },
@@ -4927,7 +5113,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0x99,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4938,6 +5124,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_dl.adc_att),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -4959,6 +5146,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.ics_sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -4969,7 +5157,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x8c,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -4980,6 +5168,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.ics_iso_dl),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5085,6 +5274,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_ul_op),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5106,6 +5296,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_ul_lp),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5127,6 +5318,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_dl_op),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5148,6 +5340,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_dl_lp),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5169,6 +5362,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U32},
                     .len = 48,
                     .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.feature[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u32l = 0,
                     },
@@ -5190,6 +5384,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING10},
                     .len = 120,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ch_remark[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -5211,6 +5406,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.work_mode),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5221,7 +5417,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd2,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
 /*     {
@@ -5242,7 +5438,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd3,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -5263,7 +5459,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd3,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -5284,7 +5480,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd4,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -5305,7 +5501,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd4,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -5326,7 +5522,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0xdd,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -5347,7 +5543,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0xdd,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -5368,7 +5564,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0xdf,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -5389,7 +5585,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_MANUFACTURER,
-        .dig_adr = 0xdf,
+        .dig_adr = 0,
         .flag = PARA_RW
     }, */
     {
@@ -5400,6 +5596,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.relay_sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5410,7 +5607,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0xd0,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -5421,6 +5618,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.temp_l),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -5442,6 +5640,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.fpga_loaded),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -5454,7 +5653,7 @@ const para_table exmod_table_a[] =
         .authority = USR_TERMINAL,
         .dig_adr = 0,
         .flag = PARA_RD
-    },
+    },*/
     {
         .index = 0x105,
         .link_para_a = {
@@ -5463,6 +5662,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.fpga_uart),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -5475,7 +5675,7 @@ const para_table exmod_table_a[] =
         .authority = USR_TERMINAL,
         .dig_adr = 0,
         .flag = PARA_RD
-    }, */
+    }, 
     {
         .index = 0x106,
         .link_para_a = {
@@ -5484,6 +5684,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.fpga_spi),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -5505,6 +5706,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.net_status),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5526,6 +5728,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dig_pa_sw),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5547,6 +5750,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 40,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.ser_cell),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -5568,6 +5772,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 388,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.nei_cell),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -5589,6 +5794,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 388,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.after_relay),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -5610,6 +5816,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 250,
                     .dat = (void*) & (exmod_para_a[0].tel_operator.plmn_t.plmn),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -5631,6 +5838,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].tel_operator.band),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5652,6 +5860,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.scan_tech),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 1,
                     },
@@ -5673,6 +5882,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.swn_manual_cell),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -5820,6 +6030,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.cell_resel_sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5833,7 +6044,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+/*    {
         .index = 0x117,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -5853,7 +6064,7 @@ const para_table exmod_table_a[] =
         .authority = USR_OPERATOR,
         .dig_adr = 0,
         .flag = PARA_RW //PARA_RD @ccTagOK
-    },
+    },*/
     /*{
         .index = 0x118,
         .link_para_a = {
@@ -5883,6 +6094,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.temp_l),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5896,7 +6108,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    /*{
+    {
         .index = 0x11b,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -5904,6 +6116,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -5914,10 +6127,10 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0x2c,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+    /*{
         .index = 0x11c,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -5925,6 +6138,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = 0,
                     .max = 0,
                     .paradeal = check_ch_traffic_th,
@@ -5933,8 +6147,8 @@ const para_table exmod_table_a[] =
         },
         .authority = USR_MANUFACTURER,
         .dig_adr = 0,
-        .
-    },*/
+        .flag = PARA_RW
+    }, */
     {
         .index = 0x11e,
         .link_para_a = {
@@ -5943,6 +6157,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 15,
                     .dat = (void*) & (exmod_para_a[0].md_mfrs.para_table_date),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -5964,6 +6179,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.iso_alarm_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5985,6 +6201,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.iso_alarm),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -6006,6 +6223,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_over_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -6027,6 +6245,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_over_clean),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -6048,6 +6267,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_lower_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -6069,6 +6289,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_lower_clean),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -6090,6 +6311,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_rf_sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6111,6 +6333,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.uldl_mix_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6132,6 +6355,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.iso_alarm),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6153,6 +6377,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1 * 250, //@ccTag20170803
                     .dat = (void*) & (exmod_para_a[0].tel_operator.plmn_t.enable),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6174,6 +6399,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (exmod_para_a[0].md_mfrs.model_no),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6195,6 +6421,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (exmod_para_a[0].md_mfrs.part_no),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6216,6 +6443,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_ul.lna_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6226,7 +6454,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0xee,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -6237,6 +6465,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_dl.lna_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6247,7 +6476,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0xee,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -6258,6 +6487,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_ul.pa_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6268,7 +6498,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0xee,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -6279,6 +6509,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_dl.pa_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6289,7 +6520,7 @@ const para_table exmod_table_a[] =
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0xee,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -6300,20 +6531,21 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.center_freq.ul),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
                     .max = {
                         .f32l = 100000.00,
                     },
-                    .paradeal = check_center_freq,
+                    .paradeal = check_ul_center_freq_exmod,
                 },
         },
         .authority = USR_MANUFACTURER,
         .dig_adr = 0,
         .flag = PARA_RW
     },
-/*     {
+    {
         .index = 0x131,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -6321,19 +6553,20 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.center_freq.dl),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
                     .max = {
                         .f32l = 100000.00,
                     },
-                    .paradeal = check_center_freq,
+                    .paradeal = check_dl_center_freq_exmod,
                 },
         },
         .authority = USR_MANUFACTURER,
         .dig_adr = 0,
         .flag = PARA_RW
-    }, */
+    },
     {
         .index = 0x132,
         .link_para_a = {
@@ -6342,6 +6575,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.mflag),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 1,
                     },
@@ -6363,6 +6597,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.tech),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 1,
                     },
@@ -6384,6 +6619,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.modem_tech_a),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 1,
                     },
@@ -6405,6 +6641,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.cp_init),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -6426,6 +6663,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.cp_init),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6447,6 +6685,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.ap_init),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -6468,6 +6707,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.ap_init),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6481,7 +6721,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+/*     {
         .index = 0x139,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -6501,7 +6741,7 @@ const para_table exmod_table_a[] =
         .authority = USR_OPERATOR,
         .dig_adr = 0,
         .flag = PARA_RW
-    },
+    }, */
     {
         .index = 0x13a,
         .link_para_a = {
@@ -6510,17 +6750,18 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (exmod_para_a[0].ch_info_t.bandwidth),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0, //.u8l = 0, //@ccTag20170808
                     },
                     .max = {
                         .f32l = 100.00, //.u8l = 100,
                     },
-                    .paradeal = check_ch_bandwidth,
+                    .paradeal = check_ch_bandwidth_exmod,
                 },
         },
         .authority = USR_OPERATOR,
-        .dig_adr = 0xe8,
+        .dig_adr = 0,
         .flag = PARA_RW
     },
     {
@@ -6531,6 +6772,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].md_augment.after_relay_rsrp_revise),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -127,
                     },
@@ -6543,13 +6785,50 @@ const para_table exmod_table_a[] =
         .authority = USR_MANUFACTURER,
         .dig_adr = 0,
         .flag = PARA_RW
+    },
+    {
+        .index = 0x14e,
+        .link_para_a = {
+                .md_adr = &(exmod_para_a[0].md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_U8},
+                    .len = 1,
+                    .dat = (void*) & (exmod_para_a[0].md_basic.blocking_compensation),
+                    .dat_size = sizeof(band_para),
+                    .min = {
+                        .s8l = 0,
+                    },
+                    .max = {
+                        .s8l = 20,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
     }
 };
 #else
 const para_table u_para_table_a[] = {};
 const para_table exmod_table_a[] = {};
 #endif
+
 //======================================================================================//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #if OTHER_MODULE_ENABLE
 const para_table para_table_a[] =
 {
@@ -6561,6 +6840,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 10,
                     .dat = (void*)(band_para_a[0].md_mfrs.para_table_ver),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6582,6 +6862,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 40,
                     .dat = (void*)(band_para_a[0].md_mfrs.factory),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6603,6 +6884,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 3,
                     .dat = (void*) & (band_para_a[0].md_adr_t),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6624,6 +6906,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (band_para_a[0].md_mfrs.hv),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6645,6 +6928,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (band_para_a[0].md_mfrs.sv),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -6658,7 +6942,7 @@ const para_table para_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
-    {
+/*    {
         .index = 0x29,
         .link_para_a = {
                 .md_adr = &(band_para_a[0].md_adr_t),
@@ -6720,7 +7004,7 @@ const para_table para_table_a[] =
         .authority = USR_OPERATOR,
         .dig_adr = 0,
         .flag = PARA_RW
-    },
+    },*/
     {
         .index = 0x38,
         .link_para_a = {
@@ -6729,6 +7013,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1, //12 @ccTagOK
                     .dat = (void*) & (band_para_a[0].md_sundry.agc_mod),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6750,6 +7035,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.shutdown_ul),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120, //120 @ccTagOK
                     },
@@ -6771,6 +7057,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_basic.max_gain),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -100,
                     },
@@ -6792,6 +7079,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.reset_para),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6813,6 +7101,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_residue_t.reset_para),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = 0,
                     .max = 0,
                     .paradeal = NULL,
@@ -6831,6 +7120,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_basic.sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6852,6 +7142,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_basic.att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -6873,6 +7164,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.temperature),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -6894,6 +7186,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_regulator),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -25,
                     },
@@ -6915,6 +7208,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pin),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -6936,6 +7230,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pout),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -6957,6 +7252,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.rpout),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -6978,6 +7274,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.cur_gain),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -100,
                     },
@@ -6999,6 +7296,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.rl),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = 1,
                     },
@@ -7020,6 +7318,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.rl_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 1,
                     },
@@ -7041,6 +7340,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].md_basic.pout.p_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -7062,6 +7362,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7083,6 +7384,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_rate_pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -7104,6 +7406,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7125,6 +7428,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_rate_pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -7146,6 +7450,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_l_th_pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7167,6 +7472,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_h_th_pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7188,6 +7494,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_l_th_pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7209,6 +7516,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_h_th_pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7230,6 +7538,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1 * 40,
                     .dat = (void*) & (band_para_a[0].md_basic.pin.table),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -7251,6 +7560,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 40,
                     .dat = (void*) & (band_para_a[0].md_basic.pin.table),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7272,6 +7582,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1 * 40,
                     .dat = (void*) & (band_para_a[0].md_basic.pout.table[0]), //.table
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -7293,6 +7604,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 40,
                     .dat = (void*) & (band_para_a[0].md_basic.pout.table[0]), //.table
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7314,6 +7626,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1 * 40,
                     .dat = (void*) & (band_para_a[0].md_basic.rpout.table[0]), //.table
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -7335,6 +7648,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 40,
                     .dat = (void*) & (band_para_a[0].md_basic.rpout.table[0]), //.table
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7356,6 +7670,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pin.max_v),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7377,6 +7692,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pout.max_v),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7398,6 +7714,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.rpout.max_v),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -7419,6 +7736,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.rl),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -7440,6 +7758,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.pout),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -7461,6 +7780,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.pout_pre),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -7482,6 +7802,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.temp_h),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -7503,6 +7824,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.pa1),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -7524,6 +7846,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.pa2),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -7545,6 +7868,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.rl),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7566,6 +7890,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.pout),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7587,6 +7912,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.pout_pre),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7608,6 +7934,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.temp_h),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7629,6 +7956,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.pa1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7650,6 +7978,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.pa2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7671,6 +8000,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7692,6 +8022,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.wk_mode),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7713,6 +8044,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.major),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7734,6 +8066,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.minor),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7755,6 +8088,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.dl_ul_config),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7776,6 +8110,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.cp),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7797,6 +8132,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.sf_config),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7818,6 +8154,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.sync_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -7839,6 +8176,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.tdd_dynamic_sundry.sync_st),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7860,6 +8198,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.tdd_sync_lost),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -7881,6 +8220,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.tdd_sync_lost),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7902,6 +8242,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.sync_keep),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7923,6 +8264,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S16},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.sync_offset),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s16l = -100,
                     },
@@ -7944,6 +8286,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U32},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].md_sundry.td_unique.guard_time),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -7965,6 +8308,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -7986,6 +8330,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8007,6 +8352,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8028,6 +8374,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8049,6 +8396,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -8070,6 +8418,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_ul_op),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -8091,6 +8440,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -8112,6 +8462,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_ul_lp),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -8133,6 +8484,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -8154,6 +8506,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -8175,6 +8528,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -8196,6 +8550,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,//0 @ccTagOK
                     },
@@ -8217,6 +8572,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -8238,6 +8594,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -8259,6 +8616,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -8280,6 +8638,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 12,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -8301,6 +8660,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.freq_rx),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8322,6 +8682,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.freq_tx),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8343,6 +8704,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8364,6 +8726,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -10,
                     },
@@ -8385,6 +8748,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8406,6 +8770,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8427,6 +8792,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.freq_rx),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8448,6 +8814,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.freq_tx),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8469,6 +8836,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8490,6 +8858,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -10,
                     },
@@ -8511,6 +8880,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8532,6 +8902,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8553,6 +8924,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_ul),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -1,
                     },
@@ -8574,6 +8946,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_ul.adc_att),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u32l = 0,
                     },
@@ -8595,6 +8968,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8616,6 +8990,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8637,6 +9012,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8658,6 +9034,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8679,6 +9056,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -8700,6 +9078,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_dl_op[0]),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -8721,6 +9100,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -8742,6 +9122,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_dl_lp),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -8763,6 +9144,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -8784,6 +9166,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -8805,6 +9188,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -8826,6 +9210,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -8847,6 +9232,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -8868,6 +9254,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.freq_rx),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8889,6 +9276,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.freq_tx),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8910,6 +9298,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -8931,6 +9320,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -10,
                     },
@@ -8952,6 +9342,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8973,6 +9364,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -8994,6 +9386,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.freq_rx),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -9015,6 +9408,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.freq_tx),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -9036,6 +9430,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -9057,6 +9452,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -10,
                     },
@@ -9078,6 +9474,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -9099,6 +9496,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 80,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -9120,6 +9518,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_dl),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = -1,
                     },
@@ -9141,6 +9540,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_dl.adc_att),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9162,6 +9562,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.ics_sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9183,6 +9584,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.ics_iso_dl),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9204,6 +9606,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.ad80305_1),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -9225,6 +9628,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.ad80305_2),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -9246,6 +9650,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.ad80305_1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9267,6 +9672,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.ad80305_2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9288,6 +9694,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_ul_op),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9309,6 +9716,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_ul_lp),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9330,6 +9738,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_dl_op),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9351,6 +9760,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_dl_lp),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9372,6 +9782,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U32},
                     .len = 48,
                     .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.feature[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u32l = 0,
                     },
@@ -9393,6 +9804,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING10},
                     .len = 120,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ch_remark[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -9414,6 +9826,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.work_mode),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9435,6 +9848,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.gain_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9456,6 +9870,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.gain_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9477,6 +9892,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.gain_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9498,6 +9914,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 2,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.gain_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9519,6 +9936,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.dc_image),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -100,
                     },
@@ -9540,6 +9958,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.dc_image),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -100,
                     },
@@ -9561,6 +9980,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.dc_image),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -100,
                     },
@@ -9582,6 +10002,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.dc_image),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -100,
                     },
@@ -9603,6 +10024,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.relay_sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9624,6 +10046,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.temp_l),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -9645,6 +10068,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.fpga_loaded),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -9666,6 +10090,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.fpga_uart),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -9687,6 +10112,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.fpga_spi),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -9708,6 +10134,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.net_status),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9729,6 +10156,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dig_pa_sw),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9750,6 +10178,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 40,
                     .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.ser_cell),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -9771,6 +10200,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 388,
                     .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.nei_cell),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -9792,6 +10222,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 388,
                     .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.after_relay),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -9813,6 +10244,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2 * 250,
                     .dat = (void*) & (band_para_a[0].tel_operator.plmn_t.plmn),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -9834,6 +10266,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].tel_operator.band),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -9855,6 +10288,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.scan_tech),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 1,
                     },
@@ -9876,6 +10310,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U16},
                     .len = 2,
                     .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.swn_manual_cell),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u16l = 0,
                     },
@@ -9897,6 +10332,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -10,
                     },
@@ -9918,6 +10354,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -9939,6 +10376,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -9960,6 +10398,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -10,
                     },
@@ -9981,6 +10420,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -10002,6 +10442,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 48,
                     .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .f32l = -120,
                     },
@@ -10023,6 +10464,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.cell_resel_sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -10044,6 +10486,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 15,
                     .dat = (void*) & (unit_para_t.md_mfrs.sn),
+                    .dat_size = sizeof(unit_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -10086,6 +10529,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.temp_l),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -10107,6 +10551,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -120,
                     },
@@ -10128,6 +10573,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+                    .dat_size = sizeof(band_para),
                     .min = 0,
                     .max = 0,
                     .paradeal = check_ch_traffic_th,
@@ -10146,6 +10592,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 15,
                     .dat = (void*) & (band_para_a[0].md_mfrs.para_table_date),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -10167,6 +10614,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.iso_alarm_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -10188,6 +10636,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.iso_alarm),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -10209,6 +10658,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_over_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -10230,6 +10680,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_over_clean),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -10251,6 +10702,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_lower_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -10272,6 +10724,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_lower_clean),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -50,
                     },
@@ -10293,6 +10746,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_rf_sw),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -10314,6 +10768,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.uldl_mix_th),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -10335,6 +10790,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.iso_alarm),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -10356,6 +10812,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1 * 250, //@ccTag20170803
                     .dat = (void*) & (band_para_a[0].tel_operator.plmn_t.enable),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -10377,6 +10834,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (band_para_a[0].md_mfrs.model_no),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -10398,6 +10856,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_STRING},
                     .len = 20,
                     .dat = (void*) & (band_para_a[0].md_mfrs.part_no),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -10419,6 +10878,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_ul.lna_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -10440,6 +10900,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_dl.lna_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -10461,6 +10922,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_ul.pa_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -10482,6 +10944,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_dl.pa_att),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = 0,
                     },
@@ -10503,6 +10966,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.ul),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -10524,6 +10988,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4,
                     .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.dl),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0,
                     },
@@ -10545,6 +11010,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.mflag),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 1,
                     },
@@ -10566,6 +11032,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.tech),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 1,
                     },
@@ -10587,6 +11054,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 12,
                     .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.modem_tech_a),
+                    .dat_size = sizeof(band_dynamic_para),
                     .min = {
                         .u8l = 1,
                     },
@@ -10608,6 +11076,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.cp_init),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -10629,6 +11098,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.cp_init),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -10650,6 +11120,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (m_alarm_a[0].m_alarm.ap_init),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -10671,6 +11142,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].alarm_sw.ap_init),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -10692,6 +11164,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_sundry.relay_mode),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 1,
                     },
@@ -10713,6 +11186,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_FLOAT},
                     .len = 4 * 12,
                     .dat = (void*) & (band_para_a[0].ch_info_t.bandwidth),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .f32l = 0, //.u8l = 0, //@ccTag20170808
                     },
@@ -10734,6 +11208,7 @@ const para_table para_table_a[] =
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
                     .dat = (void*) & (band_para_a[0].md_augment.after_relay_rsrp_revise),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -127,
                     },
@@ -12100,7 +12575,7 @@ s32 find_para_adr(const para_table *table, u16 tlen, u16 adr)
 
 s32 find_para_adr_mod( md_adr_info *md, u8 *is_exmod)
 {
-	u8 cnt;
+	u16 cnt;
 
 	if (NULL == md)
 		return -1;
@@ -12115,12 +12590,14 @@ s32 find_para_adr_mod( md_adr_info *md, u8 *is_exmod)
 		}
 	}
     #endif
+
     #if MONITOR_MODULE_ENABLE
     if(md->mod_type > 0){
         cnt = (md->mod_type-1)<<4;
     }else{
         return -1;
     }
+  
 	for (; cnt < MONITOR_MOD_NUM; cnt++) {
 		if (((md->mod_type) == (exmod_para_a[cnt].md_adr_t.mod_type)) && \
 		        ((md->mod_band) == (exmod_para_a[cnt].md_adr_t.mod_band)) && \
@@ -12130,6 +12607,7 @@ s32 find_para_adr_mod( md_adr_info *md, u8 *is_exmod)
 		}
 	}
     #endif
+
 	return -1;
 }
 
@@ -12344,7 +12822,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	u16 para_table_size = 0;
 	USR_AUTHORITY adr_permission = 0;
     md_adr_info table_para_adr;
-    void *ptable_para_dat;
+    void *ptable_para_dat=NULL;
 
 	if ((NULL == ps) || (NULL == (ps->next)))
 		return -1;
@@ -12357,7 +12835,8 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	else{
         mod_index = find_para_adr_mod( &(ps->md_adr), &is_exmod);
     }
-		
+    // printf("mod_index = %d\n", mod_index);
+
 	if (mod_index < 0)
 	{
 		RLDEBUG("one_para_adr_read_processing can't find para adr system\r\n");
@@ -12378,6 +12857,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
             #if MONITOR_MODULE_ENABLE
             ptable = (para_table*)exmod_table_a;
             para_table_size = EXMOD_TABLE_SIZE;
+
             #else
             ptable = NULL;
             #endif
@@ -12385,6 +12865,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
             #if OTHER_MODULE_ENABLE
             ptable = (para_table*)para_table_a;
             para_table_size = M_PARA_TABLE_SIZE;
+ 
             //RLDEBUG("one_para_adr_read_processing:match band para table\r\n");
             #else
             ptable = NULL;
@@ -12409,7 +12890,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	//RLDEBUG("one_para_adr_read_processing:adr index is:%d\r\n", adr_index);
 	memcpy(&table_para_adr, &ps->md_adr, sizeof(md_adr_info));
     if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
-        ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat + sizeof(band_para)*mod_index;
+        ptable_para_dat = (void*)(ptable[adr_index].link_para_a.link_para_t.dat + ptable[adr_index].link_para_a.link_para_t.dat_size*mod_index);
     }
 
 
@@ -12451,10 +12932,13 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 		_para->para_type_t.st_t.st = 0;
 		_para->para_type_t.st_t.type = (u8)(0x000f & cnt);
 	}
+
 	//read dat
 	//RLDEBUG("one_para_adr_read_processing:begin read para,para len is:%d\r\n", ptable[adr_index].link_para_a.link_para_t.len);
 	ps->next = ps->next + sizeof(para);
+
 	if (NULL != (ptable[adr_index].link_para_a.link_para_t.paradeal)) {
+
 		parafun = (ptable[adr_index].link_para_a.link_para_t.paradeal);
 		para_num = parafun((ptable_para_dat), (ps->next), &table_para_adr, (ptable[adr_index].dig_adr), PARA_RD);
 		if (para_num < 0) {
@@ -12464,9 +12948,12 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 			goto ONE_PARA_ADR_READ_ERR;
 		}
 	} else {
-		memcpy((void*)(ps->next), (void*)(ptable_para_dat), (ptable[adr_index].link_para_a.link_para_t.len));
+        // printf("ptable_para_dat=%d\n", *((u8*)ptable_para_dat));
+        // RLDEBUG("ptable[adr_index].link_para_a.link_para_t.len=%d\n", ptable[adr_index].link_para_a.link_para_t.len);
+		memcpy((ps->next), (ptable_para_dat), (ptable[adr_index].link_para_a.link_para_t.len));
 	}
 	ps->next = ps->next + (ptable[adr_index].link_para_a.link_para_t.len);
+
 	ps->paralen += (sizeof(para) + (ptable[adr_index].link_para_a.link_para_t.len));
 
 	return 0;
@@ -12685,7 +13172,9 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 		}
 
 		parafun = (ptable[adr_index].link_para_a.link_para_t.paradeal);
+        //pthread_mutex_lock(&exmod_para_mutex);
 		para_num = parafun((void*)(ptable_para_dat), (void*)(src + sizeof(para)), &table_para_adr, (ptable[adr_index].dig_adr), PARA_RW);
+        //pthread_mutex_unlock(&exmod_para_mutex);
 		if (para_num < 0) {
 			RLDEBUG("one_para_adr_set_processing:parafun() err\r\n");
 			SET_PARA_ERR_CODE(err, PARA_ADR_OTHER_ERR);
@@ -12700,8 +13189,10 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 			SET_PARA_TYPE(err, _para->para_type_t.dat);
 			goto ONE_PARA_ADR_SET_ERR;
 		}
+        //pthread_mutex_lock(&exmod_para_mutex);
 		/*复制参数*/
 		memcpy((void*)(ptable_para_dat), (void*)(src + sizeof(para)), (ptable[adr_index].link_para_a.link_para_t.len));
+        //pthread_mutex_unlock(&exmod_para_mutex);
 	}
 
 	if (ptable[adr_index].dig_adr) {

@@ -26,7 +26,7 @@
 #include "data_task_def.h"
 #include "local_recv_task.h"
 #include "data_task.h"
-
+#include "usr_def.h"
 
 
 int main(int argc, char const *argv[])
@@ -55,6 +55,9 @@ int main(int argc, char const *argv[])
 		RLDEBUG("main:creat protocol_recv_sem sem err\r\n");
 		exit(EXIT_FAILURE);
 	}
+
+	pthread_mutex_init(&exmod_para_mutex, NULL);
+
 
     pthread_attr_init(&digmod_attr);
     pthread_attr_setdetachstate(&digmod_attr, PTHREAD_CREATE_DETACHED);
@@ -113,6 +116,7 @@ int main(int argc, char const *argv[])
 
     while(1){
         sleep(1);
+		usr_auth_lapse();//授权计时
     }
 
 

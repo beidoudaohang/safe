@@ -88,15 +88,14 @@ typedef struct {
 typedef union {
 	u32 data;
 	struct {
-		u32 enable: 1;			/*信道是否有效*/
-		u32 bandsel_type: 1;	/*信道是可变选带还是固定选带*/
-		u32 index: 4;			/*信道序号*/
-		u32 band_min_int: 8;	/*信道最小带宽*/
-		u32 band_min_float: 4;
-		u32 band_max_int: 8;	/*信道最大带宽*/
+		u32 rev: 2;				/*保留*/
 		u32 band_max_float: 4;
-		u32 band_start_end: 1;	/*信道是起始还是终止*/
-		u32 rev: 1;				/*保留*/
+		u32 band_max_int: 8;	/*信道最大带宽*/
+		u32 band_min_float: 4;
+		u32 band_min_int: 8;	/*信道最小带宽*/
+		u32 index: 4;			/*信道序号*/
+		u32 bandsel_type: 1;	/*信道是可变选带还是固定选带*/
+		u32 enable: 1;			/*信道是否有效*/
 	} FEATURE;
 } ch_feature;
 typedef struct {

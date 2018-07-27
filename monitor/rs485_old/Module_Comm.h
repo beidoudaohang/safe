@@ -8,8 +8,8 @@
 //#define GETTIME       180          /*轮询延时时间*/
 //#define SETTIME       180          /*设置延时时间*/
 
-#define GETTIME       300
-#define SETTIME       300          /*设置延时时间*/
+#define GETTIME       250
+#define SETTIME       250          /*设置延时时间*/
 
 #define POLLSKIP      2            /*轮询间隔*/
 #define SPECSKIP      1            /*特殊事件间隔*/

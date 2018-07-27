@@ -69,16 +69,49 @@ void debug_freq()
 
     RLDEBUG("band:%d\r\n", exmod_para_a[index].md_adr_t.mod_band);
 
-    RLDEBUG("ul freq\t\t\tdl freq\tul att\tdl att\r\n");
+    RLDEBUG("ul freq\t\t\tdl freq\tbandwidth\tsw\tul att\tdl att\r\n");
     for(i=0; i< FREQ_CHANNEL_NUMS_MAX; ++i){
         if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.enable)
-        RLDEBUG("%f\t\t%f\t%d\t%d\r\n", exmod_para_a[index].ch_info_t.ul[i].workfreq, 
+        RLDEBUG("%f\t\t%f\t%f\t%d\t%d\t%d\r\n", exmod_para_a[index].ch_info_t.ul[i].workfreq, 
             exmod_para_a[index].ch_info_t.dl[i].workfreq, 
+            exmod_para_a[index].ch_info_t.bandwidth[i],
+            exmod_para_a[index].ch_info_t.dl[i].sw,
             exmod_para_a[index].ch_info_t.ul[i].att,
             exmod_para_a[index].ch_info_t.dl[i].att);
     }
 
+    RLDEBUG("ul center freq: %f\r\n", exmod_para_a[index].md_sundry.dig_sundry.center_freq.ul);
+    RLDEBUG("dl center freq: %f\r\n", exmod_para_a[index].md_sundry.dig_sundry.center_freq.dl);
+    RLDEBUG("dig temp: %d\r\n", exmod_dynamic_para_a[index].md_dynamic_sundry.temperature);
+
 }
+
+/* void debug_freq()
+{
+    u8 i=0;
+    u8 index=0;
+    for(i=0; i<1; ++i){
+        if(band_para_a[i].md_adr_t.mod_type == MOD_TYPE_DIG){
+            index = i;
+            break;
+        }
+    }
+    
+    if(i >= 1) return;
+
+    RLDEBUG("band:%d\r\n", band_para_a[index].md_adr_t.mod_band);
+
+    RLDEBUG("ul freq\t\t\tdl freq\tbandwidth\tul att\tdl att\r\n");
+    for(i=0; i< FREQ_CHANNEL_NUMS_MAX; ++i){
+        if(band_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.enable)
+        RLDEBUG("%f\t\t%f\t%f\t%d\t%d\r\n", band_para_a[index].ch_info_t.ul[i].workfreq, 
+            band_para_a[index].ch_info_t.dl[i].workfreq, 
+            band_para_a[index].ch_info_t.bandwidth[i],
+            band_para_a[index].ch_info_t.ul[i].att,
+            band_para_a[index].ch_info_t.dl[i].att);
+    }
+
+} */
 
 void debug_info()
 {
@@ -124,8 +157,9 @@ void *monitor_thread(void *arg)
 
     while(1){
         //monitor 
-        sleep(15);
-        if(get_rs485_mod_init_state()){
+        sleep(30);
+        if(get_rs485_mod_init_state())
+        {
             debug_freq();
             debug_info();
         }

@@ -11,7 +11,7 @@
 */
 #define   RS485CMDDATALEN   150        /*RS485命令数据长度*/
 #define   MAXRSBUFLEN       (RS485CMDDATALEN)+20     /*RS485发送,接收缓冲区长度*/
-#define   ICSMAXCHNUM           12          /*京奥公司ICS模块最大信道数*/
+#define   ICSMAXCHNUM           24          /*京奥公司ICS模块最大信道数*/
 
 /*自动AGC选择*/
 typedef enum
@@ -350,8 +350,10 @@ typedef struct {
     s8 DLIsolation; //下行隔离度
     s8 DLInputP;    //下行输入功率
     s8 DLOutputP;   //下行输出功率
-    s8 DLOP[16];    //每载波输出功率
-    s8 DLIP[16];    //每载波输入功率
+    s8 ULOP[ICSMAXCHNUM];    //每载波输出功率
+    s8 ULIP[ICSMAXCHNUM];    //每载波输入功率
+    s8 DLOP[ICSMAXCHNUM];    //每载波输出功率
+    s8 DLIP[ICSMAXCHNUM];    //每载波输入功率
     //	u8 DLCarrierNum;  //下行载波数
     //	s8 DLCarrier1Gain;//下行载波1增益
     //	s8 DLCarrier2Gain;//下行载波2增益

@@ -363,6 +363,7 @@ typedef struct
 	power_detect pout;
 	power_detect rpout;
 	temp_ctrl temp_ctrl;
+	u8 blocking_compensation;
 } md_basic_para;
 /*模块参数杂项*/
 /*pa unique para*/

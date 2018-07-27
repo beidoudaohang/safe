@@ -98,13 +98,39 @@ s32 data_init(void)
 		unit_para_t.md_adr_t.mod_adr_t.mod_sub_adr.mod_mimo = MOD_MIMO_REV;
 		unit_para_t.md_adr_t.mod_adr_t.mod_sub_adr.mod_id = MOD_ID_0;
 	}
-	if (MOD_TYPE_RELAY != (band_para_a[0].md_adr_t.mod_type)) {
-		band_para_a[0].md_adr_t.mod_type = MOD_TYPE_RELAY;
+	if (MOD_TYPE_BROADBAND != (band_para_a[0].md_adr_t.mod_type)) {
+		band_para_a[0].md_adr_t.mod_type = MOD_TYPE_BROADBAND;
 		band_para_a[0].md_adr_t.mod_band = 1;
 		band_para_a[0].md_adr_t.mod_adr_t.mod_sub_adr.mod_link = MOD_LINK_DL;
 		band_para_a[0].md_adr_t.mod_adr_t.mod_sub_adr.mod_mimo = MOD_MIMO_REV;
 		band_para_a[0].md_adr_t.mod_adr_t.mod_sub_adr.mod_id = MOD_ID_0;
 	}
+
+/* 	u8 i;
+	for(i=0; i<4; ++i){
+		band_dynamic_para_a[0].ch_rf_t.feature[i].FEATURE.bandsel_type = 1;
+		band_dynamic_para_a[0].ch_rf_t.feature[i].FEATURE.index = i+1;
+		band_dynamic_para_a[0].ch_rf_t.feature[i].FEATURE.enable = 1;
+		band_dynamic_para_a[0].ch_rf_t.feature[i].FEATURE.band_min_int = 127;
+		band_dynamic_para_a[0].ch_rf_t.feature[i].FEATURE.band_min_float = 0;
+		band_dynamic_para_a[0].ch_rf_t.feature[i].FEATURE.band_max_int = 127;
+		band_dynamic_para_a[0].ch_rf_t.feature[i].FEATURE.band_max_float = 0;
+		band_dynamic_para_a[0].ch_rf_t.freq_ul[i].workfreq = 891+i;
+		band_dynamic_para_a[0].ch_rf_t.freq_dl[i].workfreq = 936 + i;
+		band_para_a[0].ch_info_t.ul[i].workfreq = 891+i;
+		band_para_a[0].ch_info_t.dl[i].workfreq = 936 + i;
+		band_para_a[0].ch_info_t.dl[i].att = 1;
+		band_para_a[0].ch_info_t.ul[i].att = 2;
+		band_para_a[0].ch_info_t.bandwidth[i] = 20;
+		band_para_a[0].ch_info_t.ul[i].sw = 1;
+		band_para_a[0].ch_info_t.dl[i].sw = 1;
+		band_para_a[0].ch_info_t.tech[i] = 127;
+		band_dynamic_para_a[0].md_wireless_net_t.modem_tech_a[i].tech = 127;
+	}
+	band_para_a[0].md_sundry.dig_sundry.center_freq.ul = 890;
+	band_para_a[0].md_sundry.dig_sundry.center_freq.dl = 930; */
+
+
 	#if PA_MODULE_ENABLE
 	if (MOD_TYPE_PA != (band_para_a[1].md_adr_t.mod_type)) {
 		band_para_a[1].md_adr_t.mod_type = MOD_TYPE_PA;

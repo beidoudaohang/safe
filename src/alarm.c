@@ -18,10 +18,13 @@ description:
 #include "para_table.h"
 #include "digital.h"
 #include "log.h"
+#include "module_adr_def.h"
 
 /****************************data def********************************/
 pthread_t alarm_ts_id;
 pthread_attr_t alarm_ts_attr;
+
+u8 alarm_send_flag = 0;
 
 /****************************funs************************************/
 //#define ALARM_SW(A)	((0x01&(A))&&(0x02&(A)))
@@ -519,41 +522,135 @@ void mod_alarm_census(void)
 void exmod_alarm_census(void)
 {
 	u8 md_index = 0;
-	s32 cnt;
 	s32 alarm_census_flag = 0;
 
 	for (md_index = 0; md_index < MONITOR_MOD_NUM; md_index++) {
-		//over temp
-		if (exmod_dynamic_para_a[md_index].md_dynamic_sundry.temperature > exmod_para_a[md_index].md_basic.temp_ctrl.temp_over_th) {
+		if(exmod_para_a[md_index].md_adr_t.mod_band == 0) continue;
+
+		//ul over power
+		if (exmod_dynamic_para_a[md_index].alarm.ch_pin_ul_op[0]) {
+			if ((exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_ul_op[0] > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_ul_op[0])) {
+				exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0] = 1;
+				alarm_send_flag = TRUE;
+			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_ul_op[0])) {
+				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_ul_op[0]++;
+			} else {
+				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_ul_op[0] = 0;
+				exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0] = 0;
+			}
+		} else if (exmod_dynamic_para_a[md_index].alarm.ch_pin_ul_op[0] == 0) {
+			if (exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0]) {
+				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_ul_op[0] = 0;
+				exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0] = 0;
+				alarm_send_flag = FALSE;
+			}
+		}
+		//dl over power
+		if (exmod_dynamic_para_a[md_index].alarm.ch_pin_dl_op[0]) {
+			if ((exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_dl_op[0] > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_dl_op[0])) {
+				exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0] = 1;
+				alarm_send_flag = TRUE;
+			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_dl_op[0])) {
+				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_dl_op[0]++;
+			} else {
+				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_dl_op[0] = 0;
+				exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0] = 0;
+			}
+		} else if (exmod_dynamic_para_a[md_index].alarm.ch_pin_dl_op[0] == 0) {
+			if (exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0]) {
+				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_dl_op[0] = 0;
+				exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0] = 0;
+				alarm_send_flag = FALSE;
+			}
+		}
+		//temp_h
+		if (exmod_dynamic_para_a[md_index].alarm.temp_h) {
 			if ((exmod_alarm_a[md_index].m_alarm_cnt.temp_h > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_h)) {
 				exmod_alarm_a[md_index].m_alarm.temp_h = 1;
+				alarm_send_flag = TRUE;
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_h)) {
 				exmod_alarm_a[md_index].m_alarm_cnt.temp_h++;
 			} else {
 				exmod_alarm_a[md_index].m_alarm_cnt.temp_h = 0;
 				exmod_alarm_a[md_index].m_alarm.temp_h = 0;
 			}
-		} else if (exmod_dynamic_para_a[md_index].md_dynamic_sundry.temperature < exmod_para_a[md_index].md_basic.temp_ctrl.temp_over_clean) {
+		} else if (exmod_dynamic_para_a[md_index].alarm.temp_h == 0) {
 			if (exmod_alarm_a[md_index].m_alarm.temp_h) {
 				exmod_alarm_a[md_index].m_alarm_cnt.temp_h = 0;
 				exmod_alarm_a[md_index].m_alarm.temp_h = 0;
+				alarm_send_flag = FALSE;
 			}
 		}
-
-		//lower temp
-		if (exmod_dynamic_para_a[md_index].md_dynamic_sundry.temperature < exmod_para_a[md_index].md_basic.temp_ctrl.temp_lower_th) {
+		//temp_l
+		if (exmod_dynamic_para_a[md_index].alarm.temp_l) {
 			if ((exmod_alarm_a[md_index].m_alarm_cnt.temp_l > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_l)) {
 				exmod_alarm_a[md_index].m_alarm.temp_l = 1;
+				alarm_send_flag = TRUE;
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_l)) {
 				exmod_alarm_a[md_index].m_alarm_cnt.temp_l++;
 			} else {
 				exmod_alarm_a[md_index].m_alarm_cnt.temp_l = 0;
 				exmod_alarm_a[md_index].m_alarm.temp_l = 0;
 			}
-		} else if (exmod_dynamic_para_a[md_index].md_dynamic_sundry.temperature > exmod_para_a[md_index].md_basic.temp_ctrl.temp_lower_clean) {
+		} else if (exmod_dynamic_para_a[md_index].alarm.temp_l == 0) {
 			if (exmod_alarm_a[md_index].m_alarm.temp_l) {
 				exmod_alarm_a[md_index].m_alarm_cnt.temp_l = 0;
 				exmod_alarm_a[md_index].m_alarm.temp_l = 0;
+				alarm_send_flag = FALSE;
+			}
+		}
+		//pa1
+		if (exmod_dynamic_para_a[md_index].alarm.pa1) {
+			if ((exmod_alarm_a[md_index].m_alarm_cnt.pa1 > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.pa1)) {
+				exmod_alarm_a[md_index].m_alarm.pa1 = 1;
+				alarm_send_flag = TRUE;
+			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.pa1)) {
+				exmod_alarm_a[md_index].m_alarm_cnt.pa1++;
+			} else {
+				exmod_alarm_a[md_index].m_alarm_cnt.pa1 = 0;
+				exmod_alarm_a[md_index].m_alarm.pa1 = 0;
+			}
+		} else if (exmod_dynamic_para_a[md_index].alarm.pa1 == 0) {
+			if (exmod_alarm_a[md_index].m_alarm.pa1) {
+				exmod_alarm_a[md_index].m_alarm_cnt.pa1 = 0;
+				exmod_alarm_a[md_index].m_alarm.pa1 = 0;
+				alarm_send_flag = FALSE;
+			}
+		}
+		//pout_pre
+		if (exmod_dynamic_para_a[md_index].alarm.pout_pre) {
+			if ((exmod_alarm_a[md_index].m_alarm_cnt.pout_pre > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.pout_pre)) {
+				exmod_alarm_a[md_index].m_alarm.pout_pre = 1;
+				alarm_send_flag = TRUE;
+			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.pout_pre)) {
+				exmod_alarm_a[md_index].m_alarm_cnt.pout_pre++;
+			} else {
+				exmod_alarm_a[md_index].m_alarm_cnt.pout_pre = 0;
+				exmod_alarm_a[md_index].m_alarm.pout_pre = 0;
+			}
+		} else if (exmod_dynamic_para_a[md_index].alarm.pout_pre == 0) {
+			if (exmod_alarm_a[md_index].m_alarm.pout_pre) {
+				exmod_alarm_a[md_index].m_alarm_cnt.pout_pre = 0;
+				exmod_alarm_a[md_index].m_alarm.pout_pre = 0;
+				alarm_send_flag = FALSE;
+			}
+		}
+		//驻波比告警(回波损耗告警)
+		if (exmod_dynamic_para_a[md_index].alarm.rl) {
+			if ((exmod_alarm_a[md_index].m_alarm_cnt.rl > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.rl)) {
+				exmod_alarm_a[md_index].m_alarm.rl = 1;
+				alarm_send_flag = TRUE;
+			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.rl)) {
+				exmod_alarm_a[md_index].m_alarm_cnt.rl++;
+			} else {
+				exmod_alarm_a[md_index].m_alarm_cnt.rl = 0;
+				exmod_alarm_a[md_index].m_alarm.rl = 0;
+			}
+		} else if (exmod_dynamic_para_a[md_index].alarm.rl == 0) {
+			if (exmod_alarm_a[md_index].m_alarm.rl) {
+				exmod_alarm_a[md_index].m_alarm_cnt.rl = 0;
+				exmod_alarm_a[md_index].m_alarm.rl = 0;
+				alarm_send_flag = FALSE;
 			}
 		}
 	}
@@ -563,6 +660,35 @@ s32 alarm_send(void)
 {
 	return 0;
 }
+
+void alarm_snmp_rep(void)
+{
+	u8 md_index = 0;
+
+	if(alarm_send_flag){
+		for (md_index = 0; md_index < MONITOR_MOD_NUM; md_index++) {
+			if(exmod_para_a[md_index].md_adr_t.mod_band == 0) continue;
+
+			if (exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0]){
+
+			}else if (exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0]){
+
+			}else if (exmod_alarm_a[md_index].m_alarm.temp_h){
+
+			}else if (exmod_alarm_a[md_index].m_alarm.temp_l){
+
+			}else if (exmod_alarm_a[md_index].m_alarm.pa1){
+
+			}else if (exmod_alarm_a[md_index].m_alarm.pout_pre){
+
+			}else if (exmod_alarm_a[md_index].m_alarm.rl){
+				
+			}
+		}
+	}
+}
+
+
 void *alarm_task(void* arg)
 {
 	s32 cnt;
@@ -575,12 +701,15 @@ void *alarm_task(void* arg)
 	memset((void*)&exmod_alarm_a, 0, (MONITOR_MOD_NUM * sizeof(exmod_alarm_a)));
 
 	while (1) {
-		timedelay(0, 1, 500, 0);
+		timedelay(0, 1, 0, 0);
 		unit_alarm_census();
 		mod_alarm_census();
 		exmod_alarm_census();
+
+		alarm_snmp_rep();
 	}
 }
+
 
 #if 0
 /************************************led control*****************************/

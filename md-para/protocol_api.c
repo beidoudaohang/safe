@@ -126,23 +126,7 @@ static s16 one_frame_pack(const para_stream *ps, frame *pf)
 
     #ifdef PROTOCOL_ENCRYPT_LZO
     //compress
-    memset(lzo_in_buf, 0, sizeof(lzo_in_buf));
-    memset(lzo_out_buf, 0, sizeof(lzo_out_buf));
-
-    memcpy(lzo_in_buf, (pf->arr + FRAME_HEADER_LEN), ((pf->header.len) - 5));
-    if (LZO_E_OK != lzo1x_1_compress((lzo_bytep)lzo_in_buf, (lzo_uint)((pf->header.len) - 5), (lzo_bytep)(lzo_out_buf), (lzo_uintp)&len, wrkmem)) {
-        RLDEBUG("one_frame_pack:lzo1x_1_compress() false\r\n");
-        return -1;
-    }
-
-    //pwd
-    EncryptCrackExt(lzo_out_buf, len);
-
-    //pack start ,end
-    memset((pf->arr + FRAME_HEADER_LEN), 0, (len + FRAME_END_LEN));
-    pf->header.len = len + 5;
-    memcpy((pf->arr + FRAME_HEADER_LEN), lzo_out_buf, len);
-    memcpy((pf->arr + FRAME_HEADER_LEN + len), FRAME_END, sizeof(FRAME_END));
+    protocol_encrypt_lzo(pf);
     #else
     RLDEBUG("pf->header.len = %d\r\n", pf->header.len);
     memcpy((pf->arr + pf->header.len + FRAME_START_LEN + 2), FRAME_END, sizeof(FRAME_END));
@@ -248,7 +232,7 @@ return:
     0:sus
     <0:err
  */
-static s8 frame_protocol_check(const s8 *str, u16 len, s8 **begin)
+s8 frame_protocol_check(const s8 *str, u16 len, s8 **begin)
 {
     s8 *start, *end;
     frame *pframe;
@@ -470,6 +454,77 @@ static s16 set_para_deal(const frame *pf, para_stream *ps)
         para_lens += sizeof(para) + (_para->para_len);
         _para = (para*)((pf->cmd.data) + para_lens);
     }
+
+    return 0;
+}
+
+s8 protocol_decode_unlzo(s8 *str, u16 len)
+{
+    u16 cnt;
+    frame *pf = NULL;
+    s8 *begin = NULL;
+    u32 frame_len = 0;
+
+    if (frame_shell_check(str,  len, &begin)) {
+        RLDEBUG("frame_recv_deal:frame_shell_check() false \r\n");
+        for (cnt = 0; cnt < len; cnt++) {	//@luke20170821
+            printf("%02x", (u8)(*(str + cnt)));
+        }
+        printf("\r\n");
+        timedelay(0, 1, 0, 0);
+        return -1;
+    }
+    pf = (frame*)(begin);
+    EncryptCrackExt((begin + FRAME_HEADER_LEN), (pf->header.len - 5));
+    /*
+        RLDEBUG("frame_recv_deal:after deencrypt: recv dat len=%d\r\n", (pf->header.len + 2 + 5 + 5));
+        for (cnt = 0; cnt < (pf->header.len + 2 + 5 + 5); cnt++) {
+            printf(" %02x", (u8)begin[cnt]);
+        }
+        RLDEBUG("\r\n");
+    */
+
+    memset(lzo_out_buf, 0, sizeof(lzo_out_buf));
+    if (LZO_E_OK != lzo1x_decompress((lzo_bytep)(begin + FRAME_HEADER_LEN), (lzo_uint)(pf->header.len - 5), (lzo_bytep)lzo_out_buf, (lzo_uintp)&frame_len, wrkmem)) {
+        RLDEBUG("frame_recv_deal:lzo1x_decompress_safe() false \r\n");
+    }
+    /*
+        RLDEBUG("frame_recv_deal:after lzo decompress: recv dat len=%d\r\n", frame_len);
+        for (cnt = 0; cnt < (frame_len); cnt++) {
+            printf(" %02x", (u8)lzo_buf[cnt]);
+        }
+        RLDEBUG("\r\n");
+    */
+    memset((begin + FRAME_HEADER_LEN), 0, len - (begin - str));
+    pf = (frame*)begin;
+    pf->header.len = frame_len + 5;
+    memcpy((begin + FRAME_HEADER_LEN), lzo_out_buf, frame_len);
+    memcpy((begin + FRAME_START_LEN + 2 + (pf->header.len)), FRAME_END, sizeof(FRAME_END));
+
+    return 0;
+}
+
+s8 protocol_encrypt_lzo(frame *pf)
+{
+    s32 len = 0;
+    //compress
+    memset(lzo_in_buf, 0, sizeof(lzo_in_buf));
+    memset(lzo_out_buf, 0, sizeof(lzo_out_buf));
+
+    memcpy(lzo_in_buf, (pf->arr + FRAME_HEADER_LEN), ((pf->header.len) - 5));
+    if (LZO_E_OK != lzo1x_1_compress((lzo_bytep)lzo_in_buf, (lzo_uint)((pf->header.len) - 5), (lzo_bytep)(lzo_out_buf), (lzo_uintp)&len, wrkmem)) {
+        RLDEBUG("one_frame_pack:lzo1x_1_compress() false\r\n");
+        return -1;
+    }
+
+    //pwd
+    EncryptCrackExt(lzo_out_buf, len);
+
+    //pack start ,end
+    memset((pf->arr + FRAME_HEADER_LEN), 0, (len + FRAME_END_LEN));
+    pf->header.len = len + 5;
+    memcpy((pf->arr + FRAME_HEADER_LEN), lzo_out_buf, len);
+    memcpy((pf->arr + FRAME_HEADER_LEN + len), FRAME_END, sizeof(FRAME_END));
 
     return 0;
 }

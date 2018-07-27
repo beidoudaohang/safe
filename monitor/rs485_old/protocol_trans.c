@@ -7,13 +7,14 @@
  * Date           Author       Notes
  * 2018-06-26      sujj      first version
 */
+#include <string.h>
+#include <stdio.h>
+#include <pthread.h>
 #include "protocol_trans.h"
 #include "helios.h"
 #include "Module_Struct.h"
 #include "Module_Comm.h"
 #include "para_def.h"
-#include <string.h>
-#include <stdio.h>
 #include "helios.h"
 #include "para_table.h"
 #include "dig_band0_para_table.h"
@@ -164,6 +165,30 @@ void set_new_mod_addr(band_para *para, u8 func, u8 addr)
     pmd_adr->mod_band = unit_para_t.oldsys_band_table[addr & 0x07];
 }
 
+//旧模块只设置下行频率，上行频率需要根据下行频率来计算
+f32 dl_freq_to_ul_freq(u8 sysnum, f32 dl_freq)
+{
+    f32 ul_freq = 0;
+    if(dl_freq >= 390 && dl_freq <= 396.5){
+        ul_freq = dl_freq - 10;
+    }else if(dl_freq >= 851 && dl_freq <= 869){
+        ul_freq = dl_freq - 45;
+    }else if(dl_freq >= 193 && dl_freq <= 199){
+        ul_freq = dl_freq - 80;
+    }else if(dl_freq >= 869.04 && dl_freq <= 870){
+        ul_freq = dl_freq - 45;
+    }else if(dl_freq >= 870.03 && dl_freq <= 893.97){
+        ul_freq = dl_freq - 45;
+    }else if(dl_freq >= 925 && dl_freq <= 960){
+        ul_freq = dl_freq - 45;
+    }else if(dl_freq >= 2110 && dl_freq <= 2170){
+        ul_freq = dl_freq - 190;
+    }else if(dl_freq >= 1805 && dl_freq <= 1880){
+        ul_freq = dl_freq - 95;
+    }
+
+    return ul_freq;
+}
 
 void query_old2new(Rs485Comm *data)
 {
@@ -208,28 +233,26 @@ void query_old2new(Rs485Comm *data)
         case PA_FUNC:
             if(data->Addr & 0x08){
                 //TODO:alarm
-                // exmod_dynamic_para_a[index].alarm.ch_pin_ul_op = MOD_RP[sys_num].UL_PA1.st & 0x02;
+                exmod_dynamic_para_a[index].alarm.ch_pin_ul_op[0] = MOD_RP[sys_num].UL_PA1.st & 0x02;
                 exmod_dynamic_para_a[index].alarm.temp_h = MOD_RP[sys_num].UL_PA1.st & 0x04;
-                //MOD_RP[sys_num].UL_PA1.st & 0x08; //驻波比告警
+                exmod_dynamic_para_a[index].alarm.rl = MOD_RP[sys_num].UL_PA1.st & 0x08; //驻波比告警
                 exmod_dynamic_para_a[index].alarm.pa1 = MOD_RP[sys_num].UL_PA1.st & 0x10;
                 exmod_dynamic_para_a[index].alarm.pout_pre = MOD_RP[sys_num].UL_PA1.st & 0x80;
                 exmod_para_a[index].md_basic.sw = MOD_RP[sys_num].UL_PA1.st & 0x01;
                 exmod_para_a[index].md_basic.att = MOD_RP[sys_num].UL_PA1.att;
-                // exmod_para_a[index].md_basic.att = MOD_RP[sys_num].UL_PA1.att;
                 exmod_dynamic_para_a[index].md_dynamic_sundry.temperature = MOD_RP[sys_num].UL_PA1.tp;
                 exmod_dynamic_para_a[index].md_dynamic_basic.pout.p = MOD_RP[sys_num].UL_PA1.po;
                 exmod_dynamic_para_a[index].md_dynamic_basic.rpout.p = MOD_RP[sys_num].UL_PA1.npo;
                 //TODO:SWR
             }else{
                 //TODO:alarm
-                // exmod_dynamic_para_a[index].alarm.ch_pin_dl_op = MOD_RP[sys_num].UL_PA1.st & 0x02;
-                exmod_dynamic_para_a[index].alarm.temp_h = MOD_RP[sys_num].UL_PA1.st & 0x04;
-                //MOD_RP[sys_num].UL_PA1.st & 0x08; //驻波比告警
-                exmod_dynamic_para_a[index].alarm.pa1 = MOD_RP[sys_num].UL_PA1.st & 0x10;
-                exmod_dynamic_para_a[index].alarm.pout_pre = MOD_RP[sys_num].UL_PA1.st & 0x80;
+                exmod_dynamic_para_a[index].alarm.ch_pin_dl_op[0] = MOD_RP[sys_num].DL_PA1.st & 0x02;
+                exmod_dynamic_para_a[index].alarm.temp_h = MOD_RP[sys_num].DL_PA1.st & 0x04;
+                exmod_dynamic_para_a[index].alarm.rl = MOD_RP[sys_num].DL_PA1.st & 0x08; //驻波比告警
+                exmod_dynamic_para_a[index].alarm.pa1 = MOD_RP[sys_num].DL_PA1.st & 0x10;
+                exmod_dynamic_para_a[index].alarm.pout_pre = MOD_RP[sys_num].DL_PA1.st & 0x80;
                 exmod_para_a[index].md_basic.sw = MOD_RP[sys_num].DL_PA1.st & 0x01;
                 exmod_para_a[index].md_basic.att = MOD_RP[sys_num].DL_PA1.att;
-                // exmod_para_a[index].md_basic.att = MOD_RP[sys_num].DL_PA1.att;
                 exmod_dynamic_para_a[index].md_dynamic_sundry.temperature = MOD_RP[sys_num].DL_PA1.tp;
                 exmod_dynamic_para_a[index].md_dynamic_basic.pout.p = MOD_RP[sys_num].DL_PA1.po;
                 exmod_dynamic_para_a[index].md_dynamic_basic.rpout.p = MOD_RP[sys_num].DL_PA1.npo;
@@ -362,7 +385,7 @@ void set_ip_old2new(Rs485Comm *data)
 {
 	u8 sys_num;
 	u8 index=0;
-
+    
 	sys_num = (data->Addr & 0x07)/SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     index = oldaddr_find_mod(data->Func, data->Addr);
     if(index == 0xff) return ;
@@ -404,14 +427,21 @@ void set_op_old2new(Rs485Comm *data)
 
 void set_ics_old2new(Rs485Comm *data)
 {
-	u8 sys_num, i;
+	u8 sys_num, i=0;
 	u8 index=0, chnum;
-
+    u8 tmp;
+    f32 workfreq[ICSMAXCHNUM];
 	sys_num = (data->Addr & 0x07)/SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     index = oldaddr_find_mod(data->Func, data->Addr);
     if(index == 0xff) return ;
 
-    chnum = MOD_RP[sys_num].ICS_HT_RP.WK_CH.CHN>FREQ_CHANNEL_NUMS_MAX ? FREQ_CHANNEL_NUMS_MAX : MOD_RP[sys_num].ICS_HT_RP.WK_CH.CHN;
+    if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+        chnum = MOD_RP[sys_num].ICS_HT_RP.WK_CH.CHN>FREQ_CHANNEL_NUMS_MAX*2 ? FREQ_CHANNEL_NUMS_MAX*2 : MOD_RP[sys_num].ICS_HT_RP.WK_CH.CHN;
+        chnum >>= 1;
+    }else{
+        chnum = MOD_RP[sys_num].ICS_HT_RP.WK_CH.CHN>FREQ_CHANNEL_NUMS_MAX ? FREQ_CHANNEL_NUMS_MAX : MOD_RP[sys_num].ICS_HT_RP.WK_CH.CHN;
+    }
+
     
 	switch(data->Func)
 	{
@@ -421,43 +451,91 @@ void set_ics_old2new(Rs485Comm *data)
             switch (data->Data[1])
             {
                 case 0x02:
-                    for(i=0; i<chnum; ++i){
-                        exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.enable = 1;
-                        exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_int = 0;
-                        exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_float = 0;
-                        exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_int = 255;
-                        exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_float = 0;
-                        exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_start_end = i%2;
-                        exmod_dynamic_para_a[index].ch_rf_t.freq_ul[i].workfreq = (f32)GET_FREQ(MOD_RP[sys_num].ICS_HT_RP.WK_CH.CH[i], UL, sys_num);
-                        exmod_dynamic_para_a[index].ch_rf_t.freq_dl[i].workfreq = (f32)GET_FREQ(MOD_RP[sys_num].ICS_HT_RP.WK_CH.CH[i], DL, sys_num);
-                        exmod_para_a[index].ch_info_t.ul[i].workfreq = (f32)GET_FREQ(MOD_RP[sys_num].ICS_HT_RP.WK_CH.CH[i], UL, sys_num);
-                        exmod_para_a[index].ch_info_t.dl[i].workfreq = (f32)GET_FREQ(MOD_RP[sys_num].ICS_HT_RP.WK_CH.CH[i], DL, sys_num);
+                    
+                    if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 0){//固定选带
+                        for(i=0; i<chnum; ++i){
+                            exmod_para_a[index].ch_info_t.bandwidth[i] = 0;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.enable = 1;
+                            
+                            exmod_para_a[index].ch_info_t.dl[i].workfreq = MOD_RP[sys_num].ICS_HT_RP.ULFREQ.Arr[i].a;
+                            exmod_para_a[index].ch_info_t.ul[i].workfreq = dl_freq_to_ul_freq(sys_num, MOD_RP[sys_num].ICS_HT_RP.ULFREQ.Arr[i].a);
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_int = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_float = 0;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_int = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_float = 0;
+                            exmod_para_a[index].ch_info_t.tech[i] = 127;
+                            exmod_dynamic_para_a[index].md_wireless_net_t.modem_tech_a[i].tech = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.index = i+1; //信道从1开始
+                        }
+                    }
+                    // exmod_dynamic_para_a[index].ch_rf_t.freq_ul[i].workfreq = (f32)GET_FREQ(MOD_RP[sys_num].ICS_HT_RP.WK_CH.CH[i], UL, sys_num);
+                    // exmod_dynamic_para_a[index].ch_rf_t.freq_dl[i].workfreq = (f32)GET_FREQ(MOD_RP[sys_num].ICS_HT_RP.WK_CH.CH[i], DL, sys_num);
+
+                    if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){//可变选带
+                        for(i=0; i<(chnum<<1); ++i){
+                            workfreq[i] = MOD_RP[sys_num].ICS_HT_RP.ULFREQ.Arr[i].a;
+                        }
+                        for(i=0; i<chnum; ++i){
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.enable = 1;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_int = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_float = 0;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_int = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_float = 0;
+                            exmod_para_a[index].ch_info_t.tech[i] = 127;
+                            exmod_dynamic_para_a[index].md_wireless_net_t.modem_tech_a[i].tech = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.index = i+1; //信道从1开始
+
+                            exmod_para_a[index].ch_info_t.bandwidth[i] = workfreq[i*2+1] \
+                            - workfreq[i*2];
+
+                            exmod_para_a[index].ch_info_t.dl[i].workfreq = workfreq[i*2] \
+                            + exmod_para_a[index].ch_info_t.bandwidth[i]/2;
+
+                            exmod_para_a[index].ch_info_t.ul[i].workfreq = dl_freq_to_ul_freq(sys_num, workfreq[i*2]) \
+                            + exmod_para_a[index].ch_info_t.bandwidth[i]/2;
+                        }
                     }
                     
                 break;
                 case 0x06:
                     for(i=0; i<chnum; ++i){
-                        if( i < 8)
+                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                            tmp = i*2+1;
+                        }else{
+                            tmp = i;
+                        }
+
+                        if( tmp < 8)
                         {
-                            if((MOD_RP[sys_num].ICS_HT_RP.CHSW.CHSW[2] >> i) & 0x01){
+                            if((MOD_RP[sys_num].ICS_HT_RP.CHSW.CHSW[2] >> tmp) & 0x01){
                                 exmod_para_a[index].ch_info_t.dl[i].sw = 1;
                             }else{
                                 exmod_para_a[index].ch_info_t.dl[i].sw = 0;
                             }
                         }
-                        else if( (i >= 8) && (i < 16))
+                        else if( (tmp >= 8) && (tmp < 16))
                         {
-                            if((MOD_RP[sys_num].ICS_HT_RP.CHSW.CHSW[1] >> i) & 0x01){
-                                exmod_para_a[index].ch_info_t.ul[i].sw = 1;
+                            tmp -= 8;
+                            if((MOD_RP[sys_num].ICS_HT_RP.CHSW.CHSW[1] >> tmp) & 0x01){
                                 exmod_para_a[index].ch_info_t.dl[i].sw = 1;
                             }else{
-                                exmod_para_a[index].ch_info_t.ul[i].sw = 0;
+                                exmod_para_a[index].ch_info_t.dl[i].sw = 0;
+                            }
+                        }
+                        else if( (tmp >= 17) && (tmp < 24))
+                        {
+                            tmp -= 16;
+                            if((MOD_RP[sys_num].ICS_HT_RP.CHSW.CHSW[0] >> tmp) & 0x01){
+                                exmod_para_a[index].ch_info_t.dl[i].sw = 1;
+                            }else{
                                 exmod_para_a[index].ch_info_t.dl[i].sw = 0;
                             }
                         }
                     }
+
                 break;
                 case 0x30:
+
                     for(i=0; i<chnum; ++i){
                         // exmod_para_a[index].ch_info_t.ul[i].agc_th = MOD_RP[sys_num].ICS_HT_RP.ULSL.AGCDepth;//TODO:AGC
                         exmod_para_a[index].ch_info_t.ul[i].pin_op_th = MOD_RP[sys_num].ICS_HT_RP.ULSL.INOverGa;
@@ -542,37 +620,88 @@ void set_ics_old2new(Rs485Comm *data)
                         exmod_para_a[index].ch_info_t.dl[i].mute_sw = MOD_RP[sys_num].ICS_HT_RP.DLSL.slSW;
                     }
                 break;
+                case 0x13:
+				    for(i = 0; i < chnum; ++i){
+                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                            tmp = i*2;
+                        }else{
+                            tmp = i;
+                        }
+                        exmod_dynamic_para_a[index].ch_rf_t.ul[i].pin = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULIP[tmp];
+					}
+                break;
+                case 0x14:
+				    for(i = 0; i < chnum; ++i){
+                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                            tmp = i*2;
+                        }else{
+                            tmp = i;
+                        }
+                        exmod_dynamic_para_a[index].ch_rf_t.ul[i].pout = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOP[tmp];
+					}
+                break;
                 case 0x15:
-				    for(i = 0; i < data->Data[2]; ++i){
-                        exmod_dynamic_para_a[index].ch_rf_t.dl[i].pin = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLIP[i];
+				    for(i = 0; i < chnum; ++i){
+                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                            tmp = i*2;
+                        }else{
+                            tmp = i;
+                        }
+                        exmod_dynamic_para_a[index].ch_rf_t.dl[i].pin = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLIP[tmp];
 					}
                 break;
                 case 0x16:
-				    for(i = 0; i < data->Data[2]; ++i){
-                        exmod_dynamic_para_a[index].ch_rf_t.dl[i].pout = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOP[i];
+				    for(i = 0; i < chnum; ++i){
+                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                            tmp = i*2;
+                        }else{
+                            tmp = i;
+                        }
+                        exmod_dynamic_para_a[index].ch_rf_t.dl[i].pout = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOP[tmp];
 					}
                 break;
                 case 0xe0:
                     for(i=0; i<chnum; ++i){
-                        exmod_para_a[index].ch_info_t.ul[i].att = MOD_RP[sys_num].ICS_HT_RP.ch_ul_att.dat[i];
+                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                            tmp = i*2+1;
+                        }else{
+                            tmp = i;
+                        }
+                        exmod_para_a[index].ch_info_t.ul[i].att = MOD_RP[sys_num].ICS_HT_RP.ch_ul_att.dat[tmp];
                     }
                 break;
                 case 0xe1:
                     for(i=0; i<chnum; ++i){
-                        exmod_para_a[index].ch_info_t.dl[i].att = MOD_RP[sys_num].ICS_HT_RP.ch_dl_att.dat[i];
+                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                            tmp = i*2+1;
+                        }else{
+                            tmp = i;
+                        }
+                        exmod_para_a[index].ch_info_t.dl[i].att = MOD_RP[sys_num].ICS_HT_RP.ch_dl_att.dat[tmp];
                     }
                 break;
                 case 0xe2:
                     for(i=0; i<chnum; ++i){
-                        exmod_para_a[index].ch_info_t.ul[i].agc_th = MOD_RP[sys_num].ICS_HT_RP.ch_ul_agc.dat[i];
+                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                            tmp = i*2+1;
+                        }else{
+                            tmp = i;
+                        }
+                        exmod_para_a[index].ch_info_t.ul[i].agc_th = MOD_RP[sys_num].ICS_HT_RP.ch_ul_agc.dat[tmp];
                     }
                 break;
                 case 0xe3:
                     for(i=0; i<chnum; ++i){
-                        exmod_para_a[index].ch_info_t.dl[i].agc_th = MOD_RP[sys_num].ICS_HT_RP.ch_dl_agc.dat[i];
+                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                            tmp = i*2+1;
+                        }else{
+                            tmp = i;
+                        }
+                        exmod_para_a[index].ch_info_t.dl[i].agc_th = MOD_RP[sys_num].ICS_HT_RP.ch_dl_agc.dat[tmp];
                     }
                 break;
                 case 0xe4:
+                    exmod_para_a[index].md_basic.blocking_compensation = MOD_RP[sys_num].ICS_HT_RP.block_compensate;
                 break;
                 default:
                     break;
@@ -605,7 +734,7 @@ void set_sn_old2new(Rs485Comm *data)
 
 void protocol_old2new(Rs485Comm *Rstr)
 {
-    
+    //pthread_mutex_lock(&exmod_para_mutex);
 	switch(Rstr->Cmd)
 	{
 	  	case QUERY:          /*模块状态查询*/
@@ -664,24 +793,69 @@ void protocol_old2new(Rs485Comm *Rstr)
         // break;  	
         default:break;
 	} 
+    //pthread_mutex_unlock(&exmod_para_mutex);
 }
 //工作频率
-s16 check_workfreq_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+s16 check_ul_workfreq_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
 {
-	u8 cnt;
+	u8 cnt, sysnum;
 	f32 *pf;
 	ch_link *pch;
+
 
 	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
 		return -1;
 
+    sysnum = newaddr_to_sysnum(md_adr);
+
+
+    if(sysnum == 0xff) return -1;
+
 	pf = (f32*)remote;
 	pch = (ch_link*)local;
+    
+
+	if (PARA_RW == flag) {
+		// for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+		// 	pch[cnt].workfreq = pf[cnt];
+		// }
+
+        //rs485_workfreq_send(newaddr_to_sysnum(md_adr), local);
+	} else if (PARA_RD == flag) {
+		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+			pf[cnt] = pch[cnt].workfreq;
+		}
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+//工作频率
+s16 check_dl_workfreq_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	u8 cnt, sysnum;
+	f32 *pf;
+	ch_link *pch;
+
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+    sysnum = newaddr_to_sysnum(md_adr);
+
+
+    if(sysnum == 0xff) return -1;
+
+	pf = (f32*)remote;
+	pch = (ch_link*)local;
+    
 
 	if (PARA_RW == flag) {
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			pch[cnt].workfreq = pf[cnt];
 		}
+
         rs485_workfreq_send(newaddr_to_sysnum(md_adr), local);
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
@@ -998,6 +1172,124 @@ s16 check_ch_pin_lp_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			p[cnt] = pch[cnt].pin_lp_th;
 		}
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_ul_center_freq_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	flag = flag;
+	dig_adr = dig_adr;
+
+	if (PARA_RW == flag) {
+		*(f32*)(local) = *(f32*)(remote);
+		rs485_center_freq_send(newaddr_to_sysnum(md_adr), local, UL);
+	} else if (PARA_RD == flag) {
+		*(f32*)(remote) = *(f32*)(local);
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_dl_center_freq_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	flag = flag;
+	dig_adr = dig_adr;
+
+	if (PARA_RW == flag) {
+		*(f32*)(local) = *(f32*)(remote);
+		rs485_center_freq_send(newaddr_to_sysnum(md_adr), local, DL);
+	} else if (PARA_RD == flag) {
+		*(f32*)(remote) = *(f32*)(local);
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_ch_bandwidth_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	u8 cnt;
+	f32 *pf;
+	f32 *pch;
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	pf = (f32*)remote;
+	pch = (f32*)local;
+
+	if (PARA_RW == flag) {
+		dig_adr = 0xe8;
+		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+			pch[cnt] = pf[cnt];
+		}
+        rs485_ch_bandwidth_send(newaddr_to_sysnum(md_adr), local);
+	} else if (PARA_RD == flag) {
+		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+			pf[cnt] = pch[cnt];
+		}
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_ch_traffic_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	u8 cnt;
+	s8 *p;
+	ch_link *pch;
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	p = (s8*)remote;
+	pch = (ch_link*)local;
+
+	if (PARA_RW == flag) {
+		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+			pch[cnt].traffic_th = p[cnt];
+		}
+	} else if (PARA_RD == flag) {
+		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+			p[cnt] = pch[cnt].traffic_th;
+		}
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_blocking_compensation_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+    u8 *blocking_compensation, *src;
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+    blocking_compensation = (u8*)local;
+    src = (u8*)remote;
+
+	if (PARA_RW == flag) {
+        *blocking_compensation = *src;
+        rs485_blocking_compensation_send(newaddr_to_sysnum(md_adr), local);
+	} else if (PARA_RD == flag) {
+        *src = *blocking_compensation;
 	} else {
 		return -1;
 	}

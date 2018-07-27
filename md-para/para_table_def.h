@@ -37,6 +37,7 @@ typedef struct {
 	para_type para_type_t;	/*参数类型*/
 	u16 len;				/*参数长度*/
 	void *dat;				/*参数内存首地址*/
+	u16 dat_size;
 	para_limit min;				/*参数最小值*/
 	para_limit max;				/*参数最大值*/
 	s16 (*paradeal)(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);	//flag=PARA_RDRW_FLAG /*参数特殊处理函数指针*/

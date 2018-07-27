@@ -1113,6 +1113,23 @@ void GET_DIG_PICO_POWER(void)
             SetModArr.Arr[SetModArr.SetNum].Cmd  = SETICS;
             SetModArr.Arr[SetModArr.SetNum].Clen = 0x03;
             SetModArr.Arr[SetModArr.SetNum].data[0] = 0x00;
+            SetModArr.Arr[SetModArr.SetNum].data[1] = 0x13;
+            SetModArr.Arr[SetModArr.SetNum].data[2] = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
+            SetModArr.SetNum += 1;
+            SetModArr.Arr[SetModArr.SetNum].Func = ICS_HT_FUNC;
+            SetModArr.Arr[SetModArr.SetNum].Addr = DLModAddr;
+            SetModArr.Arr[SetModArr.SetNum].Cmd  = SETICS;
+            SetModArr.Arr[SetModArr.SetNum].Clen = 0x03;
+            SetModArr.Arr[SetModArr.SetNum].data[0] = 0x00;
+            SetModArr.Arr[SetModArr.SetNum].data[1] = 0x14;
+            SetModArr.Arr[SetModArr.SetNum].data[2] = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
+            SetModArr.SetNum += 1;
+
+            SetModArr.Arr[SetModArr.SetNum].Func = ICS_HT_FUNC;
+            SetModArr.Arr[SetModArr.SetNum].Addr = DLModAddr;
+            SetModArr.Arr[SetModArr.SetNum].Cmd  = SETICS;
+            SetModArr.Arr[SetModArr.SetNum].Clen = 0x03;
+            SetModArr.Arr[SetModArr.SetNum].data[0] = 0x00;
             SetModArr.Arr[SetModArr.SetNum].data[1] = 0x15;
             SetModArr.Arr[SetModArr.SetNum].data[2] = SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num;
             SetModArr.SetNum += 1;
@@ -1943,6 +1960,20 @@ void SETICS_RP(Rs485Comm *data)
             MOD_RP[sys_num].ICS_HT_RP.ULSL.slSW = data->Data[2];
         } else if(data->Data[1] == 0x12) { /*下行静噪开关*/
             MOD_RP[sys_num].ICS_HT_RP.DLSL.slSW = data->Data[2];
+        } else if(data->Data[1] == 0x13) { /*上行每信道输入功率*/
+            for( i = 0; i < data->Data[2]; i++) {
+                memcpy((u8 *)&Temp16, (u8 *)&data->Data[3 + i * 2], 2);
+                ByteSwap((u8 *)&Temp16);
+                Temp16 = Temp16 / 16;
+                MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULIP[i] = Temp16;
+            }
+        } else if(data->Data[1] == 0x14) { /*上行每信道输出功率*/
+            for( i = 0; i < data->Data[2]; i++) {
+                memcpy((u8 *)&Temp16, (u8 *)&data->Data[3 + i * 2], 2);
+                ByteSwap((u8 *)&Temp16);
+                Temp16 = Temp16 / 16;
+                MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOP[i] = Temp16;
+            }
         } else if(data->Data[1] == 0x15) { /*下行每信道输入功率*/
             for( i = 0; i < data->Data[2]; i++) {
                 memcpy((u8 *)&Temp16, (u8 *)&data->Data[3 + i * 2], 2);
@@ -2369,7 +2400,7 @@ void *rs485_thread(void *arg)
     u8 i;
     DelayFlag = 0;
     for( i = 0; i < SYS_NUM; i++) {
-        SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num = 6;
+        SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num = 16;
     }
     if(rs485_tty_open()) {
         RLDEBUG("rs485 open tty faild\r\n");

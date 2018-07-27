@@ -28,7 +28,8 @@ typedef enum
 	MOD_TYPE_RELAY,
 	MOD_TYPE_OPTICAL,
 	MOD_TYPE_FREQSEL_1,
-	MOD_TYPE_LED
+	MOD_TYPE_LED,
+	MOD_TYPE_BROADBAND 
 } MOD_TYPE;
 
 /*******************mod_adr define****************************/

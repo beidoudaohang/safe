@@ -27,6 +27,8 @@ extern unit_alarm_c u_alarm_t;
 extern band_para exmod_para_a[MONITOR_MOD_NUM];
 extern band_dynamic_para exmod_dynamic_para_a[MONITOR_MOD_NUM];
 extern md_alarm_c exmod_alarm_a[MONITOR_MOD_NUM];
+
+extern pthread_mutex_t exmod_para_mutex;
 #endif
 #if OTHER_MODULE_ENABLE
 extern band_para band_para_a[MOD_NUM_IN_ONE_PCB];

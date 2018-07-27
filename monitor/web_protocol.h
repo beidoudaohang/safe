@@ -31,7 +31,7 @@ typedef struct
 
 
 s8 web_recv_deal(s8 *str, para_stream *ps);
-s16 web_pack(const para_stream *ps, web_msg_t *pf);
+s16 web_pack(const para_stream *ps, web_protocol_t *pf);
 
 void *local_web_thread(void *arg);
 #endif //WEB_PROTOCOL_H_
