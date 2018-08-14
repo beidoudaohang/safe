@@ -456,6 +456,7 @@ void *local_web_thread(void *arg)
     /*循环从消息队列中接收消息*/
     while (1)
     {
+
         /*读取消息*/
         if (recv_len = msgrcv(msgid, (void *)&web_msg_recv, sizeof(web_protocol_t), RECVMSG, 0) == -1)
         {
@@ -467,6 +468,10 @@ void *local_web_thread(void *arg)
         // RLDEBUG("return:%d, len:%d\r\n", recv_len, web_msg_recv.data.len);
         RLDEBUG("web recv data:");
         hexdata_debug((s8*)&web_msg_recv.data, web_msg_recv.data.len + WEB_PROTOCOL_HEAD_LEN);
+
+        if(!get_rs485_mod_init_state()){
+            continue;
+        }
 
         if(web_msg_recv.data.md_adr.mod_type == MOD_TYPE_RELAY){
             //RELAY模块是新协议，需要把web数据包打包成新协议发送，再把收到的数据包重新打包成web数据包返回给CGI程序
@@ -509,7 +514,7 @@ void *local_web_thread(void *arg)
 
         if (msgsnd(msgid, (void *)&web_msg_send, cnt, 0) == -1)
         {
-            RLDEBUG("msgsed failed\n");
+            RLDEBUG("web msgsed failed\n");
             continue;
             // exit(EXIT_FAILURE);
         }

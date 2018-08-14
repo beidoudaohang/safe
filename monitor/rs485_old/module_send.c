@@ -366,10 +366,145 @@ void rs485_blocking_compensation_send(u8 sys_num, void * src)
     SetSem.SET_STRUCT[SetSem.SetSemFlag].Func     = ICS_HT_FUNC;   
     SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr     = DLModAddr;
     SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd      = SETICS;
-    SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen     = 0x06;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen     = 0x03;
     SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0]  = 0x01;
     SetSem.SET_STRUCT[SetSem.SetSemFlag].data[1]  = 0xe4;  
     SetSem.SET_STRUCT[SetSem.SetSemFlag].data[2]  = *(u8*)src;  
     SetSem.SetSemFlag += 1;
     err = sem_wait(&SetSem.SetSem);
 }
+
+void rs485_max_agc_th_send(u8 sys_num, void * src, u8 udl)
+{
+    u8 DLModAddr, i;
+    s32 err;
+    int tmp;
+    f32 max_agc_th;
+    u8 arr[2];
+
+    if(sys_num == 0xff) return;
+
+    DLModAddr = SYS_ADDR_BASE + sys_num * SYS_ADDR_SKIP + DL;
+    
+    memset((u8*)&SetSem.SET_STRUCT[SetSem.SetSemFlag],0x00,sizeof(SetSem.SET_STRUCT[SetSem.SetSemFlag]));
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Func     = ICS_HT_FUNC;   
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr     = DLModAddr;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd      = SETICS;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen     = 0x04;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0]  = 0x01;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[1]  = udl == UL ? 0x07 : 0x08;  
+
+    max_agc_th = *(s8*)src * 16;
+    tmp = max_agc_th;
+    int22hex(tmp, FALSE, arr);
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[2] = arr[1];
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[3] = arr[0];
+
+    SetSem.SetSemFlag += 1;
+    err = sem_wait(&SetSem.SetSem);
+}
+
+void rs485_att_th_send(u8 sys_num, void * src, u8 udl)
+{
+    u8 DLModAddr, i;
+    s32 err;
+    int tmp;
+    f32 att_th;
+    u8 arr[2];
+
+    if(sys_num == 0xff) return;
+
+    DLModAddr = SYS_ADDR_BASE + sys_num * SYS_ADDR_SKIP + DL;
+    
+    memset((u8*)&SetSem.SET_STRUCT[SetSem.SetSemFlag],0x00,sizeof(SetSem.SET_STRUCT[SetSem.SetSemFlag]));
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Func     = ICS_HT_FUNC;   
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr     = DLModAddr;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd      = SETICS;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen     = 0x04;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0]  = 0x01;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[1]  = udl == UL ? 0x0b : 0x0c;  
+
+    att_th = *(s8*)src * 16;
+    tmp = att_th;
+    int22hex(tmp, FALSE, arr);
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[2] = arr[1];
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[3] = arr[0];
+
+    SetSem.SetSemFlag += 1;
+    err = sem_wait(&SetSem.SetSem);
+}
+
+void rs485_pa_att_th_send(u8 sys_num, void * src, u8 udl)
+{
+    u8 ULModAddr, DLModAddr, i;
+    s32 err;
+    
+    if(sys_num == 0xff) return;
+
+    ULModAddr = SYS_ADDR_BASE + sys_num * SYS_ADDR_SKIP + UL;
+    DLModAddr = SYS_ADDR_BASE + sys_num * SYS_ADDR_SKIP + DL;
+    
+    memset((u8*)&SetSem.SET_STRUCT[SetSem.SetSemFlag],0x00,sizeof(SetSem.SET_STRUCT[SetSem.SetSemFlag]));
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Func     = PA_FUNC;   //功放
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr     = udl == UL ? ULModAddr : DLModAddr;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd      = SETATT;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen     = 0x01;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0]  = *(s8*)src;
+
+    SetSem.SetSemFlag += 1;
+    err = sem_wait(&SetSem.SetSem);
+}
+
+void rs485_ch_mute_sw_send(u8 sys_num, void * src)
+{
+    u8  DLModAddr, i;
+    s32 err;
+    ch_link *pch;
+    if(sys_num == 0xff) return;
+
+    pch = (ch_link*)src;
+    DLModAddr = SYS_ADDR_BASE + sys_num * SYS_ADDR_SKIP + DL;
+    
+    memset((u8*)&SetSem.SET_STRUCT[SetSem.SetSemFlag],0x00,sizeof(SetSem.SET_STRUCT[SetSem.SetSemFlag]));
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Func     = ICS_HT_FUNC;   
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr     = DLModAddr;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd      = SETICS;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen     = 0x03;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0]  = 0x01;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[1]  = 0x11;  
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[2]  =  pch[0].mute_sw;  
+
+    SetSem.SetSemFlag += 1;
+    err = sem_wait(&SetSem.SetSem);
+}
+
+void rs485_ch_mute_th_send(u8 sys_num, void * src)
+{
+    u8  DLModAddr, i;
+    s32 err;
+    u16 index;
+
+    if(sys_num == 0xff) return;
+
+    DLModAddr = SYS_ADDR_BASE + sys_num * SYS_ADDR_SKIP + DL;
+
+    index = oldaddr_find_mod(ICS_HT_FUNC, DLModAddr);
+    
+    memset((u8*)&SetSem.SET_STRUCT[SetSem.SetSemFlag],0x00,sizeof(SetSem.SET_STRUCT[SetSem.SetSemFlag]));
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Func     = ICS_HT_FUNC;   
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr     = DLModAddr;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd      = SETICS;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen     = 0x04;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0]  = 0x01;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[1]  = 0x0f;  
+    //高门限不能小于低门限
+    if(exmod_para_a[index].ch_info_t.ul[0].mute_th_h < exmod_para_a[index].ch_info_t.ul[0].mute_th_l){
+        exmod_para_a[index].ch_info_t.ul[0].mute_th_h = exmod_para_a[index].ch_info_t.ul[0].mute_th_l;
+    }
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[2]  =  exmod_para_a[index].ch_info_t.ul[0].mute_th_h;
+    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[3]  =  exmod_para_a[index].ch_info_t.ul[0].mute_th_l;
+
+    SetSem.SetSemFlag += 1;
+    err = sem_wait(&SetSem.SetSem);
+}
+

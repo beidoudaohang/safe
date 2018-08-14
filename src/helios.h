@@ -57,18 +57,23 @@ typedef signed   int   			int32_t;                   /* Signed   32 bit quantity
 #ifndef RET_FAIL
 #define RET_FAIL 1
 #endif
+#ifndef INVALID_VALUE
+#define INVALID_VALUE 127
+#endif 
 #define SETBIT(DAT,BIT) ((DAT)|=(0x00000001<<(BIT)))
 #define CLRBIT(DAT,BIT) ((DAT)&=(~(0x00000001<<(BIT))))
 #define GETBIT(DAT,BIT) ((DAT)&(0x00000001<<(BIT)))
 #define MIN(A,B)		(((A)>=(B))?(B):(A))
 #define MAX(A,B)		(((A)>=(B))?(A):(B))
 
+#define STACKSIZE  524288 //512*1024 线程栈大小
+
 #define PRO_DEBUG_ENABLE        	1
 #define MONITOR_MODULE_ENABLE		1	/*标示是否包含监控模块*/
 #define PA_MODULE_ENABLE			0	/*标示是否包含PA模块*/
 #define OTHER_MODULE_ENABLE			1	/*标示是否有除监控模块以外的模块*/
 
-//#define RL_PERMISSION_CHECK		1		/*adr access permisson check*/
+#define RL_PERMISSION_CHECK		1		/*adr access permisson check*/
 #if MONITOR_MODULE_ENABLE
 #define MONITOR_MOD_NUM 			160 //8*10*2	
 #define SYS_NUM 8

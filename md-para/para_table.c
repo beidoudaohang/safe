@@ -33,7 +33,8 @@ band_para exmod_para_a[MONITOR_MOD_NUM];
 band_dynamic_para exmod_dynamic_para_a[MONITOR_MOD_NUM];
 md_alarm_c exmod_alarm_a[MONITOR_MOD_NUM];
 
-pthread_mutex_t exmod_para_mutex;
+extern u8 reset_agc_flag;
+// pthread_mutex_t exmod_para_mutex;
 #endif
 //band
 #if OTHER_MODULE_ENABLE
@@ -83,6 +84,7 @@ static s16 check_reset_para(void* local, void* remote, md_adr_info *md_adr, u8 d
 static s16 check_band_bts(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_band_ms(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_band_max_gain(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
+static s16 check_band_ch_max_gain(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_band_max_pout(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_band_max_freq(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_band_min_freq(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
@@ -2435,8 +2437,382 @@ const para_table u_para_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
+/*     {
+        .index = 0x14f, //channel agc
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_S8},
+                    .len = 12,
+                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = -120,
+                    },
+                    .max = {
+                        .s8l = 53,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },
+    {
+        .index = 0x150, //channel agc
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_S8},
+                    .len = 12,
+                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = -120,
+                    },
+                    .max = {
+                        .s8l = 53,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    }, */
+    {
+        .index = 0x151, //module max gain 
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_S8},
+                    .len = 12,
+                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = -100,
+                    },
+                    .max = {
+                        .s8l = 120,
+                    },
+                    .paradeal = check_band_ch_max_gain,
+                },
+        },
+        .authority = USR_MANUFACTURER,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },
+    {
+        .index = 0x152, //module max gain 
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_S8},
+                    .len = 12,
+                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = -100,
+                    },
+                    .max = {
+                        .s8l = 120,
+                    },
+                    .paradeal = check_band_ch_max_gain,
+                },
+        },
+        .authority = USR_MANUFACTURER,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },
+    {
+        .index = 0x153, //channel gain adjust
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_S8},
+                    .len = 12,
+                    .dat = (void*) & (unit_para_t.band_whole.dl_gain_adjust),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = -100,
+                    },
+                    .max = {
+                        .s8l = 120,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_MANUFACTURER,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },
+    {
+        .index = 0x156, //SNMP VERSION
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_U8},
+                    .len = 1,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_ver),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .u8l = 2,
+                    },
+                    .max = {
+                        .u8l = 3,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },
+    {
+        .index = 0x157, //SNMP IP
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_STRING},
+                    .len = 20,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_ip),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = 0,
+                    },
+                    .max = {
+                        .s8l = 0,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },
+    {
+        .index = 0x158, //SNMP PORT
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_U16},
+                    .len = 2,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_port),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .u16l = 1,
+                    },
+                    .max = {
+                        .u16l = 65535,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },
+    {
+        .index = 0x159, //SNMP COMMUNITY
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_STRING},
+                    .len = 20,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_community),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = 0,
+                    },
+                    .max = {
+                        .s8l = 0,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },   
+    {
+        .index = 0x15a, //SNMP  UserName
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_STRING},
+                    .len = 20,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_username),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = 0,
+                    },
+                    .max = {
+                        .s8l = 0,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },   
+    {
+        .index = 0x15b, //SNMP auth
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_U8},
+                    .len = 1,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_auth),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .u8l = 0,
+                    },
+                    .max = {
+                        .u8l = 1,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    }, 
+    {
+        .index = 0x15c, //SNMP  authpass
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_STRING},
+                    .len = 20,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_authpass),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = 0,
+                    },
+                    .max = {
+                        .s8l = 0,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    }, 
+    {
+        .index = 0x15d, //SNMP priv
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_U8},
+                    .len = 1,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_priv),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .u8l = 0,
+                    },
+                    .max = {
+                        .u8l = 3,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    }, 
+    {
+        .index = 0x15e, //SNMP  privpass
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_STRING},
+                    .len = 20,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_privpass),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = 0,
+                    },
+                    .max = {
+                        .s8l = 0,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    }, 
+    {
+        .index = 0x15f, //SNMP  engine_id
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_STRING},
+                    .len = 25,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_engine_id),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = 0,
+                    },
+                    .max = {
+                        .s8l = 0,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    }, 
+    {
+        .index = 0x160, //SNMP sw
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_U8},
+                    .len = 1,
+                    .dat = (void*) & (unit_para_t.snmp_t.snmp_sw),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .u8l = 0,
+                    },
+                    .max = {
+                        .u8l = 1,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    }, 
+    {
+        .index = 0x161, //ul channel gain adjust
+        .link_para_a = {
+                .md_adr = &(unit_para_t.md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_S8},
+                    .len = 12,
+                    .dat = (void*) & (unit_para_t.band_whole.ul_gain_adjust),
+                    .dat_size = sizeof(unit_para),
+                    .min = {
+                        .s8l = -100,
+                    },
+                    .max = {
+                        .s8l = 120,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_MANUFACTURER,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },
 };
-//=========================================================================//
+//=============================###########=================================//
 //=========================================================================//
 const para_table exmod_table_a[] =
 {
@@ -2620,13 +2996,13 @@ const para_table exmod_table_a[] =
                 .link_para_t = {
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1, //12 @ccTagOK
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.agc_mod),
+                    .dat = (void*) & (exmod_para_a[0].md_augment.dig_agc.dl_agc_mode),
                     .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
                     .max = {
-                        .u8l = 4, //2 @ccTagOK
+                        .u8l = 1, //2 @ccTagOK
                     },
                     .paradeal = NULL,
                 },
@@ -2757,7 +3133,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .u8l = 30,
                     },
-                    .paradeal = NULL,
+                    .paradeal = check_pa_att_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -4121,7 +4497,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .u8l = 1,
                     },
-                    .paradeal = check_ch_mute_sw,
+                    .paradeal = check_ch_mute_sw_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -5182,7 +5558,7 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RD
     },
-/*     {
+    {
         .index = 0xef,
         .link_para_a = {
                 .md_adr = &(exmod_para_a[0].md_adr_t),
@@ -5190,6 +5566,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.ad80305_1),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -5211,6 +5588,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_alarm_a[0].m_alarm.ad80305_2),
+                    .dat_size = sizeof(md_alarm_c),
                     .min = {
                         .u8l = 0,
                     },
@@ -5232,6 +5610,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.ad80305_1),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5253,6 +5632,7 @@ const para_table exmod_table_a[] =
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1,
                     .dat = (void*) & (exmod_para_a[0].alarm_sw.ad80305_2),
+                    .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
@@ -5265,7 +5645,7 @@ const para_table exmod_table_a[] =
         .authority = USR_OPERATOR,
         .dig_adr = 0,
         .flag = PARA_RW
-    }, */
+    }, 
     {
         .index = 0xf3,
         .link_para_a = {
@@ -6450,7 +6830,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 30,
                     },
-                    .paradeal = NULL,
+                    .paradeal = check_ul_att_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -6472,7 +6852,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 30,
                     },
-                    .paradeal = NULL,
+                    .paradeal = check_dl_att_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -6494,7 +6874,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 30,
                     },
-                    .paradeal = NULL,
+                    .paradeal = check_pa_att_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -6516,7 +6896,7 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 30,
                     },
-                    .paradeal = NULL,
+                    .paradeal = check_pa_att_th_exmod,
                 },
         },
         .authority = USR_OPERATOR,
@@ -6771,7 +7151,7 @@ const para_table exmod_table_a[] =
                 .link_para_t = {
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_augment.after_relay_rsrp_revise),
+                    .dat = (void*) & (exmod_para_a[0].md_augment.relay_about_t.after_relay_rsrp_revise),
                     .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -127,
@@ -6786,6 +7166,50 @@ const para_table exmod_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RW
     },
+	{
+		.index = 0x14a,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_augment.max_agc_th.max_agc_th_ul),
+                    .dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = check_ul_max_agc_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x14b,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_augment.max_agc_th.max_agc_th_dl),
+                    .dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = check_dl_max_agc_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
     {
         .index = 0x14e,
         .link_para_a = {
@@ -6801,13 +7225,57 @@ const para_table exmod_table_a[] =
                     .max = {
                         .s8l = 20,
                     },
+                    .paradeal = check_blocking_compensation_exmod,
+                },
+        },
+        .authority = USR_OPERATOR,
+        .dig_adr = 0,
+        .flag = PARA_RW
+    },
+    {
+        .index = 0x154, //自激告警
+        .link_para_a = {
+                .md_adr = &(exmod_para_a[0].md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_U8},
+                    .len = 1,
+                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.self_excited),
+                    .dat_size = sizeof(md_alarm_c),
+                    .min = {
+                        .s8l = 0,
+                    },
+                    .max = {
+                        .s8l = 1,
+                    },
+                    .paradeal = NULL,
+                },
+        },
+        .authority = USR_TERMINAL,
+        .dig_adr = 0,
+        .flag = PARA_RD
+    },
+    {
+        .index = 0x155, //自激告警开关
+        .link_para_a = {
+                .md_adr = &(exmod_para_a[0].md_adr_t),
+                .link_para_t = {
+                    .para_type_t = {PARA_TYPE_U8},
+                    .len = 1,
+                    .dat = (void*) & (exmod_para_a[0].alarm_sw.self_excited),
+                    .dat_size = sizeof(band_para),
+                    .min = {
+                        .s8l = 0,
+                    },
+                    .max = {
+                        .s8l = 1,
+                    },
                     .paradeal = NULL,
                 },
         },
         .authority = USR_OPERATOR,
         .dig_adr = 0,
         .flag = PARA_RW
-    }
+    },
 };
 #else
 const para_table u_para_table_a[] = {};
@@ -7012,13 +7480,13 @@ const para_table para_table_a[] =
                 .link_para_t = {
                     .para_type_t = {PARA_TYPE_U8},
                     .len = 1, //12 @ccTagOK
-                    .dat = (void*) & (band_para_a[0].md_sundry.agc_mod),
+                    .dat = (void*) & (band_para_a[0].md_augment.dig_agc.dl_agc_mode),
                     .dat_size = sizeof(band_para),
                     .min = {
                         .u8l = 0,
                     },
                     .max = {
-                        .u8l = 4, //2 @ccTagOK
+                        .u8l = 1, //2 @ccTagOK
                     },
                     .paradeal = NULL,
                 },
@@ -10148,7 +10616,7 @@ const para_table para_table_a[] =
         .dig_adr = 0,
         .flag = PARA_RD
     },
-    {
+/*     {
         .index = 0x108,
         .link_para_a = {
                 .md_adr = &(band_para_a[0].md_adr_t),
@@ -10169,7 +10637,7 @@ const para_table para_table_a[] =
         .authority = USR_TERMINAL,
         .dig_adr = 0,
         .flag = PARA_RD
-    },
+    }, */
     {
         .index = 0x109,
         .link_para_a = {
@@ -11207,7 +11675,7 @@ const para_table para_table_a[] =
                 .link_para_t = {
                     .para_type_t = {PARA_TYPE_S8},
                     .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_augment.after_relay_rsrp_revise),
+                    .dat = (void*) & (band_para_a[0].md_augment.relay_about_t.after_relay_rsrp_revise),
                     .dat_size = sizeof(band_para),
                     .min = {
                         .s8l = -127,
@@ -11221,7 +11689,51 @@ const para_table para_table_a[] =
         .authority = USR_MANUFACTURER,
         .dig_adr = 0,
         .flag = PARA_RW
-    }
+    },
+	{
+		.index = 0x14a,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_augment.max_agc_th.max_agc_th_ul),
+                    .dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x14b,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_augment.max_agc_th.max_agc_th_dl),
+                    .dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}
 };
 #else
 const para_table para_table_a[] = {};
@@ -12138,6 +12650,7 @@ static s16 check_band_bts(void* local, void* remote, md_adr_info *md_adr, u8 dig
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			po[cnt].bts = p[cnt];
 		}
+        reset_agc_flag = 1;
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			p[cnt] = po[cnt].bts;
@@ -12166,6 +12679,7 @@ static s16 check_band_ms(void* local, void* remote, md_adr_info *md_adr, u8 dig_
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			po[cnt].ms = p[cnt];
 		}
+        reset_agc_flag = 1;
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			p[cnt] = po[cnt].ms;
@@ -12194,9 +12708,39 @@ static s16 check_band_max_gain(void* local, void* remote, md_adr_info *md_adr, u
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			br[cnt].max_gain = p[cnt];
 		}
+        reset_agc_flag = 1;
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			p[cnt] = br[cnt].max_gain;
+		}
+	} else {
+		return -1;
+	}
+	return 0;
+}
+static s16 check_band_ch_max_gain(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	u8 cnt;
+	s8 *p;
+	band_restrict *br;
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	flag = flag;
+	dig_adr = dig_adr;
+
+	br = (band_restrict*)local;
+	p = (s8*)remote;
+
+	if (PARA_RW == flag) {
+		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
+			br[cnt].ch_max_gain[0] = p[cnt];
+		}
+        reset_agc_flag = 1;
+	} else if (PARA_RD == flag) {
+		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
+			p[cnt] = br[cnt].ch_max_gain[0];
 		}
 	} else {
 		return -1;
@@ -12891,11 +13435,14 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	memcpy(&table_para_adr, &ps->md_adr, sizeof(md_adr_info));
     if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
         ptable_para_dat = (void*)(ptable[adr_index].link_para_a.link_para_t.dat + ptable[adr_index].link_para_a.link_para_t.dat_size*mod_index);
+    }else{
+        ptable_para_dat = (void*)ptable[adr_index].link_para_a.link_para_t.dat;
     }
 
 
 	//RLDEBUG("one_para_adr_read_processing:adr mod index is:%d\r\n", mod_index);
 	/*check permission*/
+#if 0
 #ifdef RL_PERMISSION_CHECK
 	adr_permission = ptable[adr_index].authority;
 
@@ -12916,6 +13463,7 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 		}
 	}
 
+#endif
 #endif
 	cnt = ptable[adr_index].link_para_a.link_para_t.para_type_t.dat; //para size
 
@@ -13101,6 +13649,8 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
     memcpy(&table_para_adr, &ps->md_adr, sizeof(md_adr_info));
     if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
         set_table_para_dat(&ptable_para_dat, ptable[adr_index].link_para_a.link_para_t.dat, sizeof(band_para)*mod_index, _para->para_adr);
+    }else{
+        ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat;
     }
 
 	/*check permission*/
@@ -13110,7 +13660,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	if (USR_LOCAL != ps->authority) {
 		if (ps->authority < adr_permission)
 		{
-			RLDEBUG("one_para_adr_set_processing adr:%d permission denied\r\n", adr);
+			RLDEBUG("one_para_adr_set_processing adr: remount permission denied adr_authorit%d,,cur_authority=%d \r\n", adr_permission, ps->authority);
 			SET_PARA_ERR_CODE(err, PARA_ADR_PERMISSION_DENIED);
 			goto ONE_PARA_ADR_SET_ERR;
 		}
@@ -13118,7 +13668,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	} else {
 		if (usr_auth.authorize < adr_permission)
 		{
-			RLDEBUG("one_para_adr_set_processing adr:%d permission denied\r\n", adr);
+			RLDEBUG("one_para_adr_set_processing adr: local permission denied adr_authorit%d,,cur_authority=%d \r\n", adr_permission, usr_auth.authorize);
 			SET_PARA_ERR_CODE(err, PARA_ADR_PERMISSION_DENIED);
 			goto ONE_PARA_ADR_SET_ERR;
 		}

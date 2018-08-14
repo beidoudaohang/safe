@@ -9,7 +9,7 @@
 //#define SETTIME       180          /*设置延时时间*/
 
 #define GETTIME       250
-#define SETTIME       250          /*设置延时时间*/
+#define SETTIME       300          /*设置延时时间*/
 
 #define POLLSKIP      2            /*轮询间隔*/
 #define SPECSKIP      1            /*特殊事件间隔*/
@@ -126,10 +126,24 @@ typedef struct {
     u8          SetSemFlag ;      /*设置命令标志*/
 } _SET_MOD_SEM;
 
+/*
+* 射频系统中具体的设备类型
+*/
+typedef struct
+{				    
+ u8 RF_ENABLE;		/*射频系统使能*/
+ u8 DeviceType;		/*设备类型*/
+ u8 CHNum;			/*信道数*/
+ u8 Pre_DeviceNum;	/*从设备数*/
+ u8 *RF_Name;       /*射频系统名称*/
+}_SYS_Type;
+
 void *rs485_thread(void *arg);
 u16 GET_CHN(u32 freq,u8 uldl,u8 type);
 int GET_FREQ(u16 chnum,u8 uldl,u8 type);
 u8 get_rs485_mod_init_state();
+u8 reboot_pa_restone(void);
+void Search_Sys(void);
 #endif
 
 

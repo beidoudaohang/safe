@@ -20,6 +20,8 @@
 #include "web_protocol.h"
 #include "porting.h"
 #include "Module_Comm.h"
+#include "snmp_send.h"
+#include "protocol_trans.h"
 
 pthread_t monitor_tid;
 pthread_attr_t monitor_attr;
@@ -27,6 +29,9 @@ pthread_t local_web_tid;
 pthread_attr_t local_web_attr;
 pthread_t rs485_tid;
 pthread_attr_t rs485_attr;
+
+
+
 
 /* #define RS485_SRC "\x7E\x13\x02\x11\x00\x00\xB3\x73\x7F"
 
@@ -83,7 +88,11 @@ void debug_freq()
     RLDEBUG("ul center freq: %f\r\n", exmod_para_a[index].md_sundry.dig_sundry.center_freq.ul);
     RLDEBUG("dl center freq: %f\r\n", exmod_para_a[index].md_sundry.dig_sundry.center_freq.dl);
     RLDEBUG("dig temp: %d\r\n", exmod_dynamic_para_a[index].md_dynamic_sundry.temperature);
-
+    RLDEBUG("ul max agc th: %d\r\n", exmod_para_a[index].md_augment.max_agc_th.max_agc_th_ul);
+    RLDEBUG("dl max agc th: %d\r\n", exmod_para_a[index].md_augment.max_agc_th.max_agc_th_dl);
+    RLDEBUG("ul att th: %d\r\n",  exmod_para_a[index].md_sundry.dig_sundry.att_ul.lna_att);
+    RLDEBUG("dl att th: %d\r\n",  exmod_para_a[index].md_sundry.dig_sundry.att_dl.lna_att);
+   
 }
 
 /* void debug_freq()
@@ -135,14 +144,17 @@ void debug_info()
 void *monitor_thread(void *arg)
 {
     s32 err;
-    u16 i;
+    u16 cnt=0;
+    u8 flag=0;
     // RLDEBUG("start monitor thread...\r\n"); 
 
     //modem Remote controls
+    
 
     //local web server
     pthread_attr_init(&local_web_attr);
     pthread_attr_setdetachstate(&local_web_attr, PTHREAD_CREATE_DETACHED);
+    pthread_attr_setstacksize(&local_web_attr, STACKSIZE);
     err = pthread_create(&local_web_tid, &local_web_attr, local_web_thread, NULL);
     if (err < 0) {
         RLDEBUG("creat local web thread false!\r\n");
@@ -150,18 +162,57 @@ void *monitor_thread(void *arg)
 
     pthread_attr_init(&rs485_attr);
     pthread_attr_setdetachstate(&rs485_attr, PTHREAD_CREATE_DETACHED);
+    pthread_attr_setstacksize(&rs485_attr, STACKSIZE);
     err = pthread_create(&rs485_tid, &rs485_attr, rs485_thread, NULL);
     if (err < 0) {
         RLDEBUG("creat rs485 thread false!\r\n");
     }
 
+
+
+    //===================================================
+    unit_dynamic_para_t.band_current = 0;
+    // unit_para_t.band_whole.band_restrict_ul[0].max_gain = 90;
+    // unit_para_t.band_whole.band_restrict_dl[0].max_gain = 90;
+    // unit_para_t.band_whole.band_restrict_ul[0].ch_max_gain[0] = 50;
+    // unit_para_t.band_whole.band_restrict_dl[0].ch_max_gain[0] = 50;
+    // unit_para_t.band_whole.passive_offset[0].bts = 2;
+    // unit_para_t.band_whole.passive_offset[0].ms = 2;
+    // unit_para_t.band_whole.gain_adjust[0] = 40;
+    // unit_para_t.band_whole.gain_adjust[1] = 40;
+    // unit_para_t.band_whole.gain_adjust[2] = 40;
+    // unit_para_t.band_whole.gain_adjust[3] = 40;
+    // unit_para_t.band_whole.gain_adjust[4] = 40;
+    // unit_para_t.band_whole.gain_adjust[5] = 40;
+    // unit_para_t.band_whole.gain_adjust[6] = 40;
+    // unit_para_t.band_whole.gain_adjust[7] = 40;
+    // unit_para_t.band_whole.gain_adjust[8] = 40;
+    // unit_para_t.band_whole.gain_adjust[9] = 40;
+    // unit_para_t.band_whole.gain_adjust[10] = 40;
+    // unit_para_t.band_whole.gain_adjust[11] = 40;
+    //===================================================
+
     while(1){
         //monitor 
-        sleep(30);
+        sleep(1);
         if(get_rs485_mod_init_state())
         {
-            debug_freq();
-            debug_info();
+            flag = reboot_pa_restone();
+
+
+            if(flag){
+                debug_freq();
+                cnt = 0;
+            }else{
+                cnt++;
+                if(cnt >= 30){
+                    cnt = 0;
+                    debug_freq();
+                }
+            }
+ 
+            // debug_info();
+
         }
     }
 

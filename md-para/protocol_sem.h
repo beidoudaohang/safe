@@ -34,4 +34,3 @@ extern protocol_sem protocol_sem_t;
 
 
 #endif //PROTOCOL_SEM_H_
-#

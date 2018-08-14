@@ -34,6 +34,7 @@ u8  ICS_HT_FUNC = ICS_FUNC;     /*判断是新板数字模块还是旧版数字�
 u32 Try_Check_Time  = 0  ;     /*每隔一天重新查询不在线模块*/
 _SYS_Var  SYS_Var[SYS_NUM];
 MODULE_RP MOD_RP[SYS_NUM];
+_SYS_Type SYS_Type[SYS_NUM];
 
 u8 MPA_RcvBuf[100];
 u8 MPA_RcvLen;
@@ -442,7 +443,7 @@ void Check_Module_Online(void)
     u8 i, j, ULModAddr, DLModAddr, ULSelAddr, DLSelAddr;
     memset((u8 *)&CheckCommArr, 0x00, sizeof(CheckCommArr));
     CheckCommArr.GlobalPollNum = 1;
-    for( i = 0; i < SYS_NUM; i++) {
+    for( i = RP_TETRA; i < SYS_NUM; i++) {
         ULModAddr = SYS_ADDR_BASE + i * SYS_ADDR_SKIP + UL;
         DLModAddr = SYS_ADDR_BASE + i * SYS_ADDR_SKIP + DL;
         ULSelAddr = SYS_ADDR_BASE + i * SEL_ADDR_SKIP + UL;
@@ -569,7 +570,7 @@ void Only_Check_Module_Online(void)
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     memset((u8 *)&CheckCommArr, 0x00, sizeof(CheckCommArr));
-    for( i = 0; i < SYS_NUM; i++) {
+    for( i = RP_TETRA; i < SYS_NUM; i++) {
         ULModAddr = SYS_ADDR_BASE + i * SYS_ADDR_SKIP + UL;
         DLModAddr = SYS_ADDR_BASE + i * SYS_ADDR_SKIP + DL;
         ULSelAddr = SYS_ADDR_BASE + i * SEL_ADDR_SKIP + UL;
@@ -599,6 +600,22 @@ void Only_Check_Module_Online(void)
             OnlyCheck->Cmd  = SETSN;
             OnlyCheck->Clen = 0x0B;
             OnlyCheck->data1 = 0x00;
+            CheckCommArr.CheckNum += 1;
+
+            OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
+            OnlyCheck->Func = PA_FUNC;
+            OnlyCheck->Addr = ULModAddr;
+            OnlyCheck->Cmd  = QUERY;
+            OnlyCheck->Clen = 0x00;
+            // OnlyCheck->data1 = 0x00;
+            CheckCommArr.CheckNum += 1;
+
+            OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
+            OnlyCheck->Func = PA_FUNC;
+            OnlyCheck->Addr = DLModAddr;
+            OnlyCheck->Cmd  = QUERY;
+            OnlyCheck->Clen = 0x00;
+            // OnlyCheck->data1 = 0x00;
             CheckCommArr.CheckNum += 1;
 
             for(j = 0; j < 2; j++) {
@@ -739,6 +756,21 @@ void Only_Check_Module_Online(void)
                     OnlyCheck->Clen = 0x03;
                     OnlyCheck->data1 = 0x32;
                     CheckCommArr.CheckNum += 1;
+
+/*                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
+                    OnlyCheck->Func = ICS_HT_FUNC;   //ICS下行可见参数
+                    OnlyCheck->Addr = DLModAddr;
+                    OnlyCheck->Cmd = SETICS;
+                    OnlyCheck->Clen = 0x04;
+                    OnlyCheck->data1 = 0x0b;
+                    CheckCommArr.CheckNum += 1;
+                    OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
+                    OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块类型
+                    OnlyCheck->Addr = DLModAddr;
+                    OnlyCheck->Cmd = SETICS;
+                    OnlyCheck->Clen = 0x04;
+                    OnlyCheck->data1 = 0x0c;
+                    CheckCommArr.CheckNum += 1; */
 
                     OnlyCheck = (OnlyCheckComm *)&CheckCommArr.Arr[CheckCommArr.CheckNum];
                     OnlyCheck->Func = ICS_HT_FUNC;   //ICS模块的上行ATT
@@ -1091,6 +1123,90 @@ void Auto_AGC_Set(void)
     }
 }
 
+u8 reboot_pa_restone(void)
+{
+    u8 cnt,err;
+    u8 dladdr;
+    u8 uladdr;
+    u8 flag;
+
+    if (DelayFlag) {
+  /*       if (2 == Global_Var.reboot_t.condition_cnt) {
+            for (cnt = 0; cnt < SYS_NUM; cnt++) {
+                if (!(pasw_flag_t[cnt]) && SYS_Type[cnt].RF_ENABLE) {
+                    dladdr = SYS_ADDR_BASE + SYS_Var[cnt].Multiple * SYS_ADDR_SKIP + DL;
+                    uladdr = SYS_ADDR_BASE + SYS_Var[cnt].Multiple * SYS_ADDR_SKIP + UL;
+
+                    memset((u8 * ) & SetSem.SET_STRUCT[SetSem.SetSemFlag], 0x00, sizeof(SetSem.SET_STRUCT[SetSem.SetSemFlag]));
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].Func = PA_FUNC; //功放
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr = dladdr;
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd = SETSW;
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen = 0x01;
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0] = SYS_Var[cnt].RF_SYS.SAVE_ATT.DL_PA1_SAVE_SW;
+                    SetSem.SetSemFlag += 1;
+                    OSSemPend(SetSem.SetSem, 0,  & err);
+
+                    memset((u8 * ) & SetSem.SET_STRUCT[SetSem.SetSemFlag], 0x00, sizeof(SetSem.SET_STRUCT[SetSem.SetSemFlag]));
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].Func = PA_FUNC; //功放
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr = uladdr;
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd = SETSW;
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen = 0x01;
+                    SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0] = SYS_Var[cnt].RF_SYS.SAVE_ATT.UL_PA1_SAVE_SW;
+                    SetSem.SetSemFlag += 1;
+                    OSSemPend(SetSem.SetSem, 0,  & err);
+                }
+            }
+
+            Global_Var.reboot_t.condition_cnt = 0;
+            SPI_Flash_Write(GLOBAL_BASE, (u8 * ) & Global_Var, sizeof(Global_Var));
+        } else  */{
+            //add by salan@20161228,防止意外关机后，无法恢复pa开关
+            flag = 0;
+            for (cnt = 0; cnt < SYS_NUM; cnt++) {
+                if (!(pasw_flag_t[cnt])  && SYS_Type[cnt].RF_ENABLE ) {
+                    dladdr = SYS_ADDR_BASE + cnt * SYS_ADDR_SKIP + DL;
+                    uladdr = SYS_ADDR_BASE + cnt * SYS_ADDR_SKIP + UL;
+
+                    // RLDEBUG("SYS_Var[cnt].RF_SYS.GA_SW.DL_PA1_SW:%d  cnt=%d\n", SYS_Var[cnt].RF_SYS.GA_SW.DL_PA1_SW, cnt);
+                    // RLDEBUG("SYS_Var[cnt].RF_SYS.SAVE_ATT.DL_PA1_SAVE_SW:%d  cnt=%d\n", SYS_Var[cnt].RF_SYS.SAVE_ATT.DL_PA1_SAVE_SW , cnt);
+                    if (SYS_Var[cnt].RF_SYS.GA_SW.DL_PA1_SW != 1) {
+                        memset((u8 * ) & SetSem.SET_STRUCT[SetSem.SetSemFlag], 0x00, sizeof(SetSem.SET_STRUCT[SetSem.SetSemFlag]));
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].Func = PA_FUNC; //功放
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr = dladdr;
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd = SETSW;
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen = 0x01;
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0] = 1;
+                        SetSem.SetSemFlag += 1;
+                        err = sem_wait(&SetSem.SetSem);
+                        flag = 1;
+
+                        RLDEBUG("open dl pa sw!\n");
+                    }
+
+                    if (SYS_Var[cnt].RF_SYS.GA_SW.UL_PA1_SW != 1) {
+                        memset((u8 * ) & SetSem.SET_STRUCT[SetSem.SetSemFlag], 0x00, sizeof(SetSem.SET_STRUCT[SetSem.SetSemFlag]));
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].Func = PA_FUNC; //功放
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].Addr = uladdr;
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].Cmd = SETSW;
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].Clen = 0x01;
+                        SetSem.SET_STRUCT[SetSem.SetSemFlag].data[0] = 1;
+                        SetSem.SetSemFlag += 1;
+                        err = sem_wait(&SetSem.SetSem);
+                        flag = 1;
+
+                        RLDEBUG("open ul pa sw!\n");
+                    }
+                }
+            }
+            if (flag) {
+                RLDEBUG("delay 30 s\n");
+                timedelay(0, 30, 0, 0);
+            }
+        }
+    }
+
+    return flag;
+}
 /*
 *********************************************************************************************************
 *	? ? ?: GET_DIG_PICO_POWER
@@ -1227,7 +1343,7 @@ void Query_RP(Rs485Comm *data)
         if(data->Addr & 0x08) { /*上行*/
             memcpy((u8 *)&MOD_RP[sys_num].UL_PA1, data->Data, 7/*data->Clen*/);
 
-            if(MOD_RP[sys_num].UL_PA1.st & 0x01)
+            if((MOD_RP[sys_num].UL_PA1.st & 0x01) == 1)
                 SYS_Var[sys_num].RF_SYS.GA_SW.UL_PA1_SW = ON;
             else
                 SYS_Var[sys_num].RF_SYS.GA_SW.UL_PA1_SW = OFF;
@@ -1236,13 +1352,14 @@ void Query_RP(Rs485Comm *data)
             if(MOD_RP[sys_num].UL_PA1.po == -127)
                 MOD_RP[sys_num].PWR_RP.UL_PA1_PO = MOD_RP[sys_num].UL_PA1.po;
             else
-                MOD_RP[sys_num].PWR_RP.UL_PA1_PO = MOD_RP[sys_num].UL_PA1.po - SYS_Var[sys_num].RF_SYS.GA_SW.UL_PA1_LOSS;
+                MOD_RP[sys_num].PWR_RP.UL_PA1_PO = MOD_RP[sys_num].UL_PA1.po - unit_para_t.band_whole.passive_offset[0].ms;
         } else {
             memcpy((u8 *)&MOD_RP[sys_num].DL_PA1, data->Data, 7/*data->Clen*/);
-            if(MOD_RP[sys_num].DL_PA1.st & 0x01)
-                SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_SW = ON;
-            else
-                SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_SW = OFF;
+            // RLDEBUG("MOD_RP[sys_num].DL_PA1.st & 0x01:%d sys_num=%d\n", MOD_RP[sys_num].DL_PA1.st & 0x01 , sys_num);
+            if((MOD_RP[sys_num].DL_PA1.st & 0x01) == 1){
+                SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_SW = 1;
+            }else
+                SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_SW = 0;
             //if(SYS_Var[sys_num].RF_SYS.Agc_Enable == ModelComplete)
             SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_ATT = MOD_RP[sys_num].DL_PA1.att;
             if(MOD_RP[sys_num].DL_PA1.po == -127)
@@ -1254,7 +1371,7 @@ void Query_RP(Rs485Comm *data)
                 //				   MOD_RP[sys_num].AUTO_AGC.IPVar = MOD_RP[sys_num].DL_PA1.po;
                 //	  			   MOD_RP[sys_num].AUTO_AGC.StartAgc = 0x02;
                 //				  }
-                MOD_RP[sys_num].PWR_RP.DL_PA1_PO = MOD_RP[sys_num].DL_PA1.po - SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_LOSS;
+                MOD_RP[sys_num].PWR_RP.DL_PA1_PO = MOD_RP[sys_num].DL_PA1.po - unit_para_t.band_whole.passive_offset[0].bts;
             }
         }
         break;
@@ -1312,6 +1429,7 @@ void Query_RP(Rs485Comm *data)
         break;
     case DIG_PICO: /*京奥公司数字PICO模块*/
         ICS_HT_FUNC = DIG_PICO;
+        
         // for( i = 0; i < SYS_NUM; i++) {
         //     SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num = 2;
         // }
@@ -1347,15 +1465,15 @@ void Query_RP(Rs485Comm *data)
         MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOutputP = IPTemp / 16;
 
         if(MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP != -127)
-            MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP + SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_LOSS;
+            MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP + unit_para_t.band_whole.passive_offset[0].bts;
         if(MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP != -127)
-            MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP + SYS_Var[sys_num].RF_SYS.GA_SW.UL_PA1_LOSS;
+            MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP + unit_para_t.band_whole.passive_offset[0].ms;
         //         if(MOD_RP[sys_num].ICS_HT_RP.PICO_ENABLE)//数字PICO,输出也需要加上线损
         // 				  {
         // 			  	 if(MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOutputP != -127)
-        // 			        MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOutputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOutputP - SYS_Var[sys_num].RF_SYS.GA_SW.UL_PA1_LOSS;
+        // 			        MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOutputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOutputP - unit_para_t.band_whole.passive_offset[0].ms;
         // 		       if(MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOutputP != -127)
-        // 			        MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOutputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOutputP - SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_LOSS;
+        // 			        MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOutputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOutputP - unit_para_t.band_whole.passive_offset[0].bts;
         // 				  }
         //salan add at 20160310
         MOD_RP[sys_num].AUTO_AGC.StartAgc = 0x04;	//数字模块 + pa 计算att
@@ -1373,9 +1491,9 @@ void Query_RP(Rs485Comm *data)
 
         memcpy((u8 *)&MOD_RP[sys_num].ICS_HT_RP.QueryRP, data->Data, data->Clen);
         if(MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP != -127)
-            MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP + SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_LOSS;
+            MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULInputP + unit_para_t.band_whole.passive_offset[0].bts;
         if(MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP != -127)
-            MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP + SYS_Var[sys_num].RF_SYS.GA_SW.UL_PA1_LOSS;
+            MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP + unit_para_t.band_whole.passive_offset[0].ms;
         //		 /**/
         //		 if(MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOutputP != -127)
         //			MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOutputP = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOutputP + 2;
@@ -1756,12 +1874,12 @@ void GETIP_RP(Rs485Comm *data)
         if(data->Addr & 0x08) { /*上行*/
             MOD_RP[sys_num].PWR_RP.UL_LNA_PI = data->Data[0];
             if(MOD_RP[sys_num].PWR_RP.UL_LNA_PI != -127) {
-                MOD_RP[sys_num].PWR_RP.UL_LNA_PI = MOD_RP[sys_num].PWR_RP.UL_LNA_PI + SYS_Var[sys_num].RF_SYS.GA_SW.DL_PA1_LOSS;
+                MOD_RP[sys_num].PWR_RP.UL_LNA_PI = MOD_RP[sys_num].PWR_RP.UL_LNA_PI + unit_para_t.band_whole.passive_offset[0].bts;
             }
         } else {
             MOD_RP[sys_num].PWR_RP.DL_LNA_PI = data->Data[0];
             if(MOD_RP[sys_num].PWR_RP.DL_LNA_PI != -127) {
-                MOD_RP[sys_num].PWR_RP.DL_LNA_PI = MOD_RP[sys_num].PWR_RP.DL_LNA_PI + SYS_Var[sys_num].RF_SYS.GA_SW.UL_PA1_LOSS;
+                MOD_RP[sys_num].PWR_RP.DL_LNA_PI = MOD_RP[sys_num].PWR_RP.DL_LNA_PI + unit_para_t.band_whole.passive_offset[0].ms;
             }
             if( (MOD_RP[sys_num].AUTO_AGC.IPVar < (MOD_RP[sys_num].PWR_RP.DL_LNA_PI - 1)) || (MOD_RP[sys_num].AUTO_AGC.IPVar > (MOD_RP[sys_num].PWR_RP.DL_LNA_PI + 1))) {
                 MOD_RP[sys_num].AUTO_AGC.IPVar = MOD_RP[sys_num].PWR_RP.DL_LNA_PI;
@@ -2380,6 +2498,33 @@ void  ClearModStatus(CheckComm *data)
     }
 }
 
+/*
+*********************************************************************************************************
+*	函 数 名: Search_Sys
+*	功能说明: 搜索整机中带有几种射频系统及每种射频系统的设备类型
+*	形    参：无
+*	返 回 值: 无
+*********************************************************************************************************
+*/
+void Search_Sys(void)
+{
+    u8 i, j;
+    u8 ULModAddr, DLModAddr;
+    u8 ULCHNum, DLCHNum;
+
+    memset((u8 *)&SYS_Type, 0x00, sizeof(SYS_Type));
+    for (i = 0; i < SYS_NUM; i++){
+        ULModAddr = SYS_ADDR_BASE + i * SYS_ADDR_SKIP + UL;
+        DLModAddr = SYS_ADDR_BASE + i * SYS_ADDR_SKIP + DL;
+
+        if (SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Online) //ICS 数字选频  数字可变选带还未定义
+        {
+            SYS_Type[i].RF_ENABLE = 0x01;
+
+        }
+    }
+}
+
 u8 get_rs485_mod_init_state()
 {
     return DelayFlag;
@@ -2399,20 +2544,27 @@ void *rs485_thread(void *arg)
     u16 RcvUpdateIndex = 0;
     u8 i;
     DelayFlag = 0;
+
+    //参数初始化
     for( i = 0; i < SYS_NUM; i++) {
-        SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num = 16;
+        SYS_Var[i].RF_SYS.MOD_ONLINE.ICS.Num = 16;//默认16个信道
+        SYS_Var[i].RF_SYS.SAVE_ATT.UL_PA1_SAVE_SW = 1; //默认开启功放
+        SYS_Var[i].RF_SYS.SAVE_ATT.DL_PA1_SAVE_SW = 1;
     }
+    SYS_Var[RP_TETRA].RF_SYS.MOD_ONLINE.ICS.Online = 1;
+    SYS_Type[RP_TETRA].RF_ENABLE = 0x01;
+
     if(rs485_tty_open()) {
         RLDEBUG("rs485 open tty faild\r\n");
         return ;
     }
-
+    
     //初始化旧地址转BAND
     oldsys_band_table_init();
 
     sem_init(&(SetSem.SetSem), 0, 0);
 
-    timedelay(0, 1, 0, 0); //差不多50秒后再开始查询模块状态
+    timedelay(0, 50, 0, 0); //差不多50秒后再开始查询模块状态
 
     Only_Check_Module_Online();
 

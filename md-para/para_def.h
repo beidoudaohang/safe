@@ -17,9 +17,13 @@ description:
 
 
 /*****************************para define*************************/
-#define ADI_OFFSET_TABLE_SIZE 20
-#define FREQ_CHANNEL_NUMS_MAX 12
-#define BANDS_IN_ONE_MONITOR 12	/*监控板最大能管理的band数*/
+#define ADI_OFFSET_TABLE_SIZE 	20		/*单个中心频点校准表格的校准频点个数*/
+#define FREQ_CHANNEL_NUMS_MAX 	12		/*数字模块最大能支持的信道数*/
+#define BANDS_IN_ONE_MONITOR 	12		/*监控板最大能管理的band数*/
+#define SUPORT_PLMN_MAX_NUMS 	250		/*最大能保存的plmn个数*/
+#define SER_CELL_LEN 			40		/*主区的数据长度*/
+#define NEI_CELL_LEN			388		/*临区的数据长度*/
+#define ADI_ADJUST_TABLE_SIZE 	2		/*ad80305校准的中心频点个数*/
 
 /*****************************整机参数*****************************/
 /*unit manufacturer info*/
@@ -164,6 +168,8 @@ typedef struct {
 	s8 max_pout;		/*最大输出功率*/
 	f32 max_freq;	/*最大输出频率*/
 	f32 min_freq;	/*最小输出频率*/
+	s8 ch_max_gain[FREQ_CHANNEL_NUMS_MAX];
+	s8 ch_agc_th[FREQ_CHANNEL_NUMS_MAX];
 } band_restrict;
 
 
@@ -173,8 +179,40 @@ typedef struct
 	band_restrict band_restrict_ul[BANDS_IN_ONE_MONITOR];
 	band_restrict band_restrict_dl[BANDS_IN_ONE_MONITOR];
 	u8 band[BANDS_IN_ONE_MONITOR];	/*该band支持的具体band值*/
+	s8 dl_gain_adjust[FREQ_CHANNEL_NUMS_MAX];
+	s8 ul_gain_adjust[FREQ_CHANNEL_NUMS_MAX];
 } band_whole_para;
 
+/*电池手动控制时的开关*/
+struct bat_manual_ctl_sw {
+	u8 sw;
+};
+/*gprs模块重试次数及时间间隔*/
+struct gprs_retry
+{
+	u8 try_times;
+	u8 try_interval;
+};
+struct unit_augment_para
+{
+	struct bat_manual_ctl_sw bat_sw;
+	struct gprs_retry gprs_retry;
+};
+
+struct snmp_para
+{
+	unsigned char snmp_ver;
+	char snmp_ip[21];
+	unsigned short int snmp_port;
+	char snmp_community[21];
+	char snmp_username[21];
+	unsigned char snmp_auth;
+	char snmp_authpass[21];
+	unsigned char snmp_priv;
+	char snmp_privpass[21];
+	char snmp_engine_id[26];
+	unsigned char snmp_sw;
+};
 
 typedef struct {
 	site_info site;
@@ -189,11 +227,12 @@ typedef struct {
 	band_whole_para band_whole;
 	md_adr_info md_adr_t;
 	md_mfrs_info md_mfrs;
+	struct unit_augment_para unit_augment;
 	u8 oldsys_band_table[8];
+	struct snmp_para snmp_t;
 } unit_para;
 
 /******************************模块信息*********************************/
-#define SUPORT_PLMN_MAX_NUMS 		250
 /*operator info*/
 typedef enum {
 	TECH_GSM = 1,
@@ -201,7 +240,7 @@ typedef enum {
 	TECH_TDSCDMA,
 	TECH_FDDLTE,
 	TECH_TDDLTE,
-	TECH_MAX
+	TECH_MAX = 8
 } OPERATOR_TECH;
 
 /***************************支持的plmn列表********************************/
@@ -217,13 +256,27 @@ typedef struct {
 	plmn_enable enable[SUPORT_PLMN_MAX_NUMS];	/*运营商代码使能*/
 } plmn_para;
 /*****************************主小区，邻小区信息************************/
-#define SER_CELL_LEN 	40
-#define NEI_CELL_LEN	388
 typedef struct
 {
 	u16 ser_cell[SER_CELL_LEN];		//主小区
 	u16 nei_cell[NEI_CELL_LEN];		//邻小区
 } wireless_info;
+
+struct ser_cell_key_info
+{
+	u16 band;
+	u16 tech;
+	u16 cell_id;
+	u16 dl_earfcn;
+	u16 ul_earfcn;
+	f32 bandwidth;
+};
+
+struct nei_cell_key_info
+{
+	u16 cell_id;
+	u16 dl_earfcn;
+};
 
 /**************************配置的网络参数*******************************/
 typedef struct {
@@ -457,15 +510,70 @@ typedef struct {
 	u8 iso_alarm;		/*隔离度告警*/
 	u8 cp_init;			/*cp init false alarm*/
 	u8 ap_init;			/*ap init false alarm*/
+	u8 self_excited;
 } md_alarm;
 
-#define ADI_ADJUST_TABLE_SIZE 2	/*ad80305У?μ???μμ??*/
 
+
+/*dig module agc control mode*/
+typedef enum {
+	DIG_DL_AGC_TARGET_POWER = 0,	/*目标功率控制*/
+#if 0
+	DIG_DL_AGC_TARGET_POWER_GAIN_LINKAGE,		/*目标功率控制带增益联动*/
+	DIG_DL_AGC_TARGET_POWER_BLOCK_COMPENSATION,	/*目标功率控制带阻塞补偿*/
+	DIG_DL_AGC_TARGET_POWER_GAIN_BLOCK,		/*目标功率控制带增益联动，阻塞补偿*/
+#endif
+	DIG_DL_AGC_RS,					/*目标rs功率控制*/
+} DIG_DL_AGC_MODE;
+typedef enum
+{
+	DIG_UL_AGC_NONE = 0,		/*不带功率控制*/
+	DIG_UL_AGC_AI,			/*智能功率控制*/
+} DIG_UL_AGC_MODE;
+typedef struct
+{
+	s8 ul_agc_mode;		//DIG_UL_AGC_MODE
+	s8 ul_agc_adj;		/*上行智能功率控制之校准值*/
+	s8 dl_agc_mode;		//DIG_DL_AGC_MODE
+	s8 dl_agc_mode_rs_th;		/*下行rs功率控制之rs功率控制门限*/
+} dig_agc_para;
+
+/*about relay*/
+struct relay_about
+{
+	s8 after_relay_rsrp_revise;		/*relay后小区信息中rsrp的修正值*/
+	u8 reselect_cell_th;			/*relay小区可重选模式下，重选小区的rsrp差值门限*/
+	u8 relay_tech;					/*当前系统relay工作的制式*/
+	u16 relay_cell_mannul;			/*relay小区不可重选模式下，手动选择的小区id*/
+	u32 relay_channel;				/*当前系统relay工作的信道号*/
+	u32 nei_measurement_interval;	/*发起邻区测量，单位second*/
+};
+
+struct dig_ul_max_gain
+{
+	u8 max_gain;	//数字模块上行最大增益,其他模块的最大增益或者数字模块的最大增益统一在md-baisc里
+};
+/*模块上下行最大agc门限*/
+struct max_agc_th {
+	s8 max_agc_th_ul;
+	s8 max_agc_th_dl;
+};
+
+/*增益联动与阻塞补偿*/
+struct gainlink_block
+{
+	u8 gainlink;
+	u8 block_compensation;
+};
 
 typedef struct
 {
-	s8 after_relay_rsrp_revise;		/*relay后rsrp修正值*/
-	//s8 recv;
+	dig_agc_para dig_agc;			/*数字板工控*/
+	struct relay_about relay_about_t;	/*relay相关*/
+	struct dig_ul_max_gain dig_ul_max_gain_t;
+	struct max_agc_th max_agc_th;
+	struct bat_manual_ctl_sw bat_sw;
+	struct gainlink_block gl_bc;
 } md_augment_para;
 typedef struct {
 	md_adr_info md_adr_t;
@@ -486,10 +594,15 @@ typedef struct {
 	u8 mask[25];
 	u8 gateway[25];
 } net_info;
+struct band_sn {
+	u8 sn[15];
+};
 typedef struct
 {
 	usr_group usr;
 	net_info net;
+	u8 unit_sn[15];
+	struct band_sn band_sn[MOD_NUM_IN_ONE_PCB];
 } pcb_share_para;
 /*****************************data struct define******************/
 

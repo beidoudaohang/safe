@@ -43,6 +43,7 @@ void log_printf(char* fmt, ...)
         }
         p++;
     }
+    fflush(stdout);
 }
 #endif
 

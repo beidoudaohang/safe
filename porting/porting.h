@@ -53,5 +53,7 @@ s8 rs485_tty_open(void);
 s8 rs485_tty_close(void);
 u8 RS485_SEND(u8 * src ,u32 len);
 u16 RS485_RECV(u8 *src,u16 len,u16 timeout);
-
+s8 led_open();
+s8 led_run_control(int val);
+s8 led_alarm_control(int val);
 #endif //PORTING_H_

@@ -19,7 +19,8 @@
                 "${workspaceFolder}/digmod/ad9370",
                 "/usr/include",
                 "${workspaceFolder}/monitor/rs485_old",
-                "${workspaceFolder}/monitor"
+                "${workspaceFolder}/monitor",
+                "/usr/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

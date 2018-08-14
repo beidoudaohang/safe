@@ -22,7 +22,7 @@ CPPFLAGS = $(foreach n,$(AllDirs) , -I$(n))
 LDFLAGS = 
 MYLIB=
 # SYSLIB=-lpthread 
-SYSLIB=-lpthread --static
+SYSLIB=-lpthread -lm --static 
 
 DBGCFLAGS =  -O0 -g -DDEBUG
 

@@ -23,6 +23,8 @@ description:
 #include <termios.h>
 #include <string.h>
 #include <stdarg.h>
+ #include <sys/ioctl.h>
+#include <poll.h>
 
 #include "para_table.h"
 #include "porting.h"
@@ -31,16 +33,16 @@ description:
 #include "log.h"
 /*****************************para define*************************/
 
-static const s8 para_file_path[] = {"datafile"};
+static const s8 para_file_path[] = {"/datafile"};
 
-static const s8 unit_file_name_a[] = {"datafile/unita"};
-static const s8 unit_file_name_b[] = {"datafile/unitb"};
+static const s8 unit_file_name_a[] = {"/datafile/unita"};
+static const s8 unit_file_name_b[] = {"/datafile/unitb"};
 
-static const s8 band_file_name_a[MOD_NUM_IN_ONE_PCB][20] = {"datafile/band0a","datafile/band1a","datafile/band2a"};
-static const s8 band_file_name_b[MOD_NUM_IN_ONE_PCB][20] = {"datafile/band0b","datafile/band1b","datafile/band2b"};
+static const s8 band_file_name_a[MOD_NUM_IN_ONE_PCB][20] = {"/datafile/band0a","/datafile/band1a","/datafile/band2a"};
+static const s8 band_file_name_b[MOD_NUM_IN_ONE_PCB][20] = {"/datafile/band0b","/datafile/band1b","/datafile/band2b"};
 
-static const s8 pcb_file_name_a[] = {"datafile/pcba"};
-static const s8 pcb_file_name_b[] = {"datafile/pcbb"};
+static const s8 pcb_file_name_a[] = {"/datafile/pcba"};
+static const s8 pcb_file_name_b[] = {"/datafile/pcbb"};
 
 static s8 file_buf[MAX(sizeof(unit_para), (MD5_CODE_SIZE + 32 +  sizeof(band_para)))] = {0};
 
@@ -1296,9 +1298,10 @@ s8 rs485_tty_open(void)
 
 	rs485_tty_flag = 0;
 	err = open(TTY_485NAME, O_RDWR | O_NOCTTY | O_NONBLOCK);
-	if (err < 0)
+	if (err < 0){
+		exit(1);
 		return -1;
-	else
+	}else
 		rs485_tty_file = err;
 
 	err = tty_cfg(rs485_tty_file, TTY_485BAUDRATE);
@@ -1390,8 +1393,135 @@ u16 RS485_RECV(u8 *src,u16 len, u16 timeout)
 
 }
 
+//ioctl cmd
+#define LED_IOC_MAGIC 'k'	//majic
+//cmd
+#define CMD_RUN_SET	_IOW(LED_IOC_MAGIC,0x20,int)
+#define CMD_ALARM_SET	_IOW(LED_IOC_MAGIC,0x21,int)
 
+// struct led_value{
+// 	int gpio;
+// 	int value;
+// };
 
+static int m_led_fd = 0;
+
+s8 led_open()
+{
+	m_led_fd = open("/dev/lukedev", O_RDWR);
+	if(m_led_fd < 0)
+	{
+		perror("open");
+		return -1;
+	}
+
+	return 0;
+}
+
+s8 led_run_control(int val)
+{
+	if(m_led_fd > 0){
+		if(ioctl(m_led_fd, CMD_RUN_SET, &val) < 0){
+			return -1;
+		} 
+
+	}
+	return 0;
+}
+
+s8 led_alarm_control(int val)
+{
+	if(m_led_fd > 0){
+		// RLDEBUG("led_alarm_control\n");
+		if(ioctl(m_led_fd, CMD_ALARM_SET, &val) < 0){
+			return -1;
+		} 
+	}
+	return 0;
+}
+
+static int m_alarm_fd = 0;
+struct alarm_event{
+	int code; // 表示按键IO位置
+	int value; // 表示按下还是抬起 1 / 0
+};
+
+#define ALARM_IO1  129
+#define ALARM_IO2  130
+#define ALARM_IO3  131
+#define ALARM_IO4  132
+#define INFTIM      -1
+
+s8 alarm_open()
+{
+	m_alarm_fd = open("/dev/alarm0", O_RDWR);
+	if(m_alarm_fd < 0)
+	{
+		perror("open");
+		return -1;
+	}
+
+	return 0;
+}
+
+s8 alarm_read()
+{
+	struct alarm_event event;
+	int ret;
+	struct pollfd pollfd_t;
+	int ready;
+
+	if(m_alarm_fd > 0){
+
+		pollfd_t.fd = m_alarm_fd;
+		pollfd_t.events = POLLIN;
+
+		ready = poll(&pollfd_t, 1, 0);
+	
+		if (ready == -1)
+		{
+			perror("poll error");
+			exit(1);
+		}
+		if(pollfd_t.revents & POLLIN){
+			ret = read(pollfd_t.fd, &event, sizeof(struct alarm_event));
+			if(ret != -1){
+				switch(event.code){
+					case ALARM_IO1:
+						if(event.value){
+							printf("APP__ ALARM_IO1 high \n");
+						}else{
+							printf("APP__ ALARM_IO1 low \n");
+						}
+					break;
+					case ALARM_IO2:
+						if(event.value){
+							printf("APP__ ALARM_IO2 high \n");
+						}else{
+							printf("APP__ ALARM_IO2 low \n");
+						}
+					break;
+					case ALARM_IO3:
+						if(event.value){
+							printf("APP__ ALARM_IO3 high \n");
+						}else{
+							printf("APP__ ALARM_IO3 low \n");
+						}
+					break;
+					case ALARM_IO4:
+						if(event.value){
+							printf("APP__ ALARM_IO4 high \n");
+						}else{
+							printf("APP__ ALARM_IO4 low \n");
+						}
+					break;
+				}
+			}
+		}
+	
+	}
+	return 0;
+}
 /************************monitor uart task**********************/
 
 /************************dig uart task**************************/

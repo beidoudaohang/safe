@@ -27,6 +27,7 @@
 #include "module_adr_def.h"
 #include "module_send.h"
 
+para_temp_save para_temp_save_t;
 
 extern MODULE_RP MOD_RP[SYS_NUM];
 
@@ -201,6 +202,7 @@ void query_old2new(Rs485Comm *data)
     if(index == 0xff) return ;
 
     set_new_mod_addr(&exmod_para_a[index], data->Func, data->Addr);
+    para_temp_save_t.sysnum = sys_num;
 
 	switch(data->Func)
 	{
@@ -216,47 +218,55 @@ void query_old2new(Rs485Comm *data)
                 // exmod_dynamic_para_a[index].ch_rf_t.dl[i].pout = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOutputP;
                 exmod_dynamic_para_a[index].md_dynamic_basic.pout.p = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOutputP;
                 exmod_dynamic_para_a[index].md_dynamic_basic.pin.p = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLInputP;
+
+                exmod_dynamic_para_a[index].alarm.ch_pin_ul_op[i] = MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x10;
+                exmod_dynamic_para_a[index].alarm.ch_pin_dl_op[i] = MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x20;
+            
             }
-            //TODO:alarm
             // MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x01; //62005
-            // MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x02; //VCO1
-            // MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x04; //VCO2
-            // MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x80; //自激告警
+            exmod_alarm_a[index].m_alarm.ad80305_1 = MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x02; //VCO1
+            exmod_alarm_a[index].m_alarm.ad80305_2 = MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x04; //VCO2
+            exmod_alarm_a[index].m_alarm.self_excited = MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x80; //自激告警
             exmod_dynamic_para_a[index].alarm.temp_h = MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x08;
             exmod_dynamic_para_a[index].alarm.temp_l = MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x40;
-            // exmod_dynamic_para_a[index].alarm.ch_pin_ul_op = MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x10;
-            // exmod_dynamic_para_a[index].alarm.ch_pin_dl_op = MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x20;
-            MOD_RP[sys_num].ICS_HT_RP.QueryRP.Alarm & 0x80;
+
             exmod_dynamic_para_a[index].md_dynamic_sundry.temperature = MOD_RP[sys_num].ICS_HT_RP.QueryRP.FPGATp;
             
         break;
         case PA_FUNC:
             if(data->Addr & 0x08){
-                //TODO:alarm
                 exmod_dynamic_para_a[index].alarm.ch_pin_ul_op[0] = MOD_RP[sys_num].UL_PA1.st & 0x02;
                 exmod_dynamic_para_a[index].alarm.temp_h = MOD_RP[sys_num].UL_PA1.st & 0x04;
                 exmod_dynamic_para_a[index].alarm.rl = MOD_RP[sys_num].UL_PA1.st & 0x08; //驻波比告警
                 exmod_dynamic_para_a[index].alarm.pa1 = MOD_RP[sys_num].UL_PA1.st & 0x10;
                 exmod_dynamic_para_a[index].alarm.pout_pre = MOD_RP[sys_num].UL_PA1.st & 0x80;
+                exmod_dynamic_para_a[index].alarm.iso_alarm = MOD_RP[sys_num].UL_PA1.st & 0x20; //自激告警 当做隔离度告警
                 exmod_para_a[index].md_basic.sw = MOD_RP[sys_num].UL_PA1.st & 0x01;
-                exmod_para_a[index].md_basic.att = MOD_RP[sys_num].UL_PA1.att;
+                // exmod_para_a[index].md_basic.att = MOD_RP[sys_num].UL_PA1.att;
+                exmod_para_a[index].md_sundry.dig_sundry.att_ul.pa_att = MOD_RP[sys_num].UL_PA1.att;
+                para_temp_save_t.ul_pa_att = MOD_RP[sys_num].UL_PA1.att;
+
                 exmod_dynamic_para_a[index].md_dynamic_sundry.temperature = MOD_RP[sys_num].UL_PA1.tp;
                 exmod_dynamic_para_a[index].md_dynamic_basic.pout.p = MOD_RP[sys_num].UL_PA1.po;
+                para_temp_save_t.ul_pa_pout = MOD_RP[sys_num].UL_PA1.po;
                 exmod_dynamic_para_a[index].md_dynamic_basic.rpout.p = MOD_RP[sys_num].UL_PA1.npo;
-                //TODO:SWR
+
             }else{
-                //TODO:alarm
                 exmod_dynamic_para_a[index].alarm.ch_pin_dl_op[0] = MOD_RP[sys_num].DL_PA1.st & 0x02;
                 exmod_dynamic_para_a[index].alarm.temp_h = MOD_RP[sys_num].DL_PA1.st & 0x04;
                 exmod_dynamic_para_a[index].alarm.rl = MOD_RP[sys_num].DL_PA1.st & 0x08; //驻波比告警
                 exmod_dynamic_para_a[index].alarm.pa1 = MOD_RP[sys_num].DL_PA1.st & 0x10;
                 exmod_dynamic_para_a[index].alarm.pout_pre = MOD_RP[sys_num].DL_PA1.st & 0x80;
+                exmod_dynamic_para_a[index].alarm.iso_alarm = MOD_RP[sys_num].DL_PA1.st & 0x20; //自激告警 当做隔离度告警
                 exmod_para_a[index].md_basic.sw = MOD_RP[sys_num].DL_PA1.st & 0x01;
-                exmod_para_a[index].md_basic.att = MOD_RP[sys_num].DL_PA1.att;
+                // exmod_para_a[index].md_basic.att = MOD_RP[sys_num].DL_PA1.att;
+                exmod_para_a[index].md_sundry.dig_sundry.att_dl.pa_att = MOD_RP[sys_num].DL_PA1.att;
+                para_temp_save_t.dl_pa_att = MOD_RP[sys_num].DL_PA1.att;
+
                 exmod_dynamic_para_a[index].md_dynamic_sundry.temperature = MOD_RP[sys_num].DL_PA1.tp;
                 exmod_dynamic_para_a[index].md_dynamic_basic.pout.p = MOD_RP[sys_num].DL_PA1.po;
+                para_temp_save_t.dl_pa_pout = MOD_RP[sys_num].DL_PA1.po;
                 exmod_dynamic_para_a[index].md_dynamic_basic.rpout.p = MOD_RP[sys_num].DL_PA1.npo;
-                //TODO:SWR alc
             }
         break;
         default:break;
@@ -430,6 +440,7 @@ void set_ics_old2new(Rs485Comm *data)
 	u8 sys_num, i=0;
 	u8 index=0, chnum;
     u8 tmp;
+    s8 power;
     f32 workfreq[ICSMAXCHNUM];
 	sys_num = (data->Addr & 0x07)/SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     index = oldaddr_find_mod(data->Func, data->Addr);
@@ -459,12 +470,12 @@ void set_ics_old2new(Rs485Comm *data)
                             
                             exmod_para_a[index].ch_info_t.dl[i].workfreq = MOD_RP[sys_num].ICS_HT_RP.ULFREQ.Arr[i].a;
                             exmod_para_a[index].ch_info_t.ul[i].workfreq = dl_freq_to_ul_freq(sys_num, MOD_RP[sys_num].ICS_HT_RP.ULFREQ.Arr[i].a);
-                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_int = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_int = INVALID_VALUE;
                             exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_float = 0;
-                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_int = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_int = INVALID_VALUE;
                             exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_float = 0;
-                            exmod_para_a[index].ch_info_t.tech[i] = 127;
-                            exmod_dynamic_para_a[index].md_wireless_net_t.modem_tech_a[i].tech = 127;
+                            exmod_para_a[index].ch_info_t.tech[i] = INVALID_VALUE;
+                            exmod_dynamic_para_a[index].md_wireless_net_t.modem_tech_a[i].tech = INVALID_VALUE;
                             exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.index = i+1; //信道从1开始
                         }
                     }
@@ -477,12 +488,12 @@ void set_ics_old2new(Rs485Comm *data)
                         }
                         for(i=0; i<chnum; ++i){
                             exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.enable = 1;
-                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_int = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_int = INVALID_VALUE;
                             exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_min_float = 0;
-                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_int = 127;
+                            exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_int = INVALID_VALUE;
                             exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.band_max_float = 0;
-                            exmod_para_a[index].ch_info_t.tech[i] = 127;
-                            exmod_dynamic_para_a[index].md_wireless_net_t.modem_tech_a[i].tech = 127;
+                            exmod_para_a[index].ch_info_t.tech[i] = INVALID_VALUE;
+                            exmod_dynamic_para_a[index].md_wireless_net_t.modem_tech_a[i].tech = INVALID_VALUE;
                             exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.index = i+1; //信道从1开始
 
                             exmod_para_a[index].ch_info_t.bandwidth[i] = workfreq[i*2+1] \
@@ -532,29 +543,27 @@ void set_ics_old2new(Rs485Comm *data)
                             }
                         }
                     }
-
                 break;
                 case 0x30:
-
                     for(i=0; i<chnum; ++i){
-                        // exmod_para_a[index].ch_info_t.ul[i].agc_th = MOD_RP[sys_num].ICS_HT_RP.ULSL.AGCDepth;//TODO:AGC
                         exmod_para_a[index].ch_info_t.ul[i].pin_op_th = MOD_RP[sys_num].ICS_HT_RP.ULSL.INOverGa;
-                        // exmod_para_a[index].ch_info_t.ul[i].att = MOD_RP[sys_num].ICS_HT_RP.ULSL.ManualAtt;
                         exmod_para_a[index].ch_info_t.ul[i].mute_th_h = MOD_RP[sys_num].ICS_HT_RP.ULSL.slHIGHGA;
                         exmod_para_a[index].ch_info_t.ul[i].mute_th_l = MOD_RP[sys_num].ICS_HT_RP.ULSL.slLOWGA;
                         exmod_para_a[index].ch_info_t.ul[i].mute_sw = MOD_RP[sys_num].ICS_HT_RP.ULSL.slSW;
                     }
+                    exmod_para_a[index].md_augment.max_agc_th.max_agc_th_ul = MOD_RP[sys_num].ICS_HT_RP.ULSL.AGCDepth;
+                    exmod_para_a[index].md_sundry.dig_sundry.att_ul.lna_att = MOD_RP[sys_num].ICS_HT_RP.ULSL.ManualAtt;
                     exmod_para_a[index].md_sundry.dig_sundry.ics_sw = MOD_RP[sys_num].ICS_HT_RP.DLSL.ICSSW;
                 break;
                 case 0x31:
                     for(i=0; i<chnum; ++i){
-                        // exmod_para_a[index].ch_info_t.dl[i].agc_th = MOD_RP[sys_num].ICS_HT_RP.DLSL.AGCDepth;//TODO:AGC
                         exmod_para_a[index].ch_info_t.dl[i].pin_op_th = MOD_RP[sys_num].ICS_HT_RP.DLSL.INOverGa;
-                        // exmod_para_a[index].ch_info_t.dl[i].att = MOD_RP[sys_num].ICS_HT_RP.DLSL.ManualAtt;
                         exmod_para_a[index].ch_info_t.dl[i].mute_th_h = MOD_RP[sys_num].ICS_HT_RP.DLSL.slHIGHGA;
                         exmod_para_a[index].ch_info_t.dl[i].mute_th_l = MOD_RP[sys_num].ICS_HT_RP.DLSL.slLOWGA;
                         exmod_para_a[index].ch_info_t.dl[i].mute_sw = MOD_RP[sys_num].ICS_HT_RP.DLSL.slSW;
                     }
+                    exmod_para_a[index].md_augment.max_agc_th.max_agc_th_dl = MOD_RP[sys_num].ICS_HT_RP.DLSL.AGCDepth;
+                    exmod_para_a[index].md_sundry.dig_sundry.att_dl.lna_att = MOD_RP[sys_num].ICS_HT_RP.DLSL.ManualAtt;
                     exmod_para_a[index].md_sundry.dig_sundry.ics_sw = MOD_RP[sys_num].ICS_HT_RP.DLSL.ICSSW;
                 break;
                 case 0x32:
@@ -563,14 +572,10 @@ void set_ics_old2new(Rs485Comm *data)
                     }
                 break;
                 case 0x07:
-                    // for(i=0; i<chnum; ++i){
-                    //     exmod_para_a[index].ch_info_t.ul[i].agc_th = MOD_RP[sys_num].ICS_HT_RP.ULSL.AGCDepth;
-                    // }
+                    exmod_para_a[index].md_augment.max_agc_th.max_agc_th_ul = MOD_RP[sys_num].ICS_HT_RP.ULSL.AGCDepth;
                 break;
                 case 0x08:
-                    // for(i=0; i<chnum; ++i){
-                    //     exmod_para_a[index].ch_info_t.dl[i].agc_th = MOD_RP[sys_num].ICS_HT_RP.DLSL.AGCDepth;
-                    // }
+                    exmod_para_a[index].md_augment.max_agc_th.max_agc_th_dl = MOD_RP[sys_num].ICS_HT_RP.DLSL.AGCDepth;
                 break;
                 case 0x09:
                     for(i=0; i<chnum; ++i){
@@ -583,14 +588,10 @@ void set_ics_old2new(Rs485Comm *data)
                     }
                 break;
                 case 0x0b:
-                    // for(i=0; i<chnum; ++i){
-                    //     exmod_para_a[index].ch_info_t.ul[i].att = MOD_RP[sys_num].ICS_HT_RP.ULSL.ManualAtt;
-                    // }
+                    exmod_para_a[0].md_sundry.dig_sundry.att_ul.lna_att = MOD_RP[sys_num].ICS_HT_RP.ULSL.ManualAtt;
                 break;
                 case 0x0c:
-                    // for(i=0; i<chnum; ++i){
-                    //     exmod_para_a[index].ch_info_t.dl[i].att = MOD_RP[sys_num].ICS_HT_RP.DLSL.ManualAtt;
-                    // }
+                    exmod_para_a[0].md_sundry.dig_sundry.att_dl.lna_att = MOD_RP[sys_num].ICS_HT_RP.DLSL.ManualAtt;
                 break;
                 case 0x0d:
                     exmod_para_a[index].md_sundry.dig_sundry.ics_sw = MOD_RP[sys_num].ICS_HT_RP.DLSL.ICSSW;
@@ -622,42 +623,88 @@ void set_ics_old2new(Rs485Comm *data)
                 break;
                 case 0x13:
 				    for(i = 0; i < chnum; ++i){
-                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
-                            tmp = i*2;
-                        }else{
-                            tmp = i;
-                        }
-                        exmod_dynamic_para_a[index].ch_rf_t.ul[i].pin = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULIP[tmp];
+                        // if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                        //     tmp = i*2;
+                        // }else{
+                        //     tmp = i;
+                        // }
+
+                        tmp = i;
+
+                        if(exmod_para_a[index].ch_info_t.dl[i].sw)
+                            exmod_dynamic_para_a[index].ch_rf_t.ul[i].pin = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULIP[tmp];
+                        else 
+                            exmod_dynamic_para_a[index].ch_rf_t.ul[i].pin = -127;
 					}
                 break;
                 case 0x14:
 				    for(i = 0; i < chnum; ++i){
-                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
-                            tmp = i*2;
+                        // if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                        //     tmp = i*2;
+                        // }else{
+                        //     tmp = i;
+                        // }
+
+                        tmp = i;
+
+                        power = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOP[tmp] + unit_para_t.band_whole.ul_gain_adjust[i] - para_temp_save_t.ul_pa_att - 1;
+                        if((power>=para_temp_save_t.ul_pa_pout) && (-126 != (para_temp_save_t.ul_pa_pout))){
+                            power = para_temp_save_t.ul_pa_pout;
                         }else{
-                            tmp = i;
+                            //@luke20170729 当pa不存在时，功放的过功率门限位-126，则此时信道功率的计算以pa的att位0来计算，并显示
+                            power = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOP[tmp] \
+                            + unit_para_t.band_whole.ul_gain_adjust[i] - 1;
                         }
-                        exmod_dynamic_para_a[index].ch_rf_t.ul[i].pout = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOP[tmp];
+                        // power = MOD_RP[sys_num].ICS_HT_RP.QueryRP.ULOP[tmp] \
+                        // + unit_para_t.band_whole.ul_gain_adjust[i] - 1;
+
+                        if(!exmod_para_a[index].ch_info_t.dl[i].sw)
+                            power = -127;
+
+                        exmod_dynamic_para_a[index].ch_rf_t.ul[i].pout = power; 
 					}
                 break;
                 case 0x15:
 				    for(i = 0; i < chnum; ++i){
-                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
-                            tmp = i*2;
-                        }else{
-                            tmp = i;
-                        }
-                        exmod_dynamic_para_a[index].ch_rf_t.dl[i].pin = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLIP[tmp];
+                        // if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                        //     tmp = i*2;
+                        // }else{
+                        //     tmp = i;
+                        // }
+
+                        tmp = i;
+
+                        if(exmod_para_a[index].ch_info_t.dl[i].sw)
+                            exmod_dynamic_para_a[index].ch_rf_t.dl[i].pin = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLIP[tmp];
+                        else 
+                            exmod_dynamic_para_a[index].ch_rf_t.dl[i].pin = -127;
 					}
                 break;
                 case 0x16:
 				    for(i = 0; i < chnum; ++i){
-                        if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
-                            tmp = i*2;
+                        // if(exmod_dynamic_para_a[index].ch_rf_t.feature[i].FEATURE.bandsel_type = 1){
+                        //     tmp = i*2;
+                        // }else{
+                        //     tmp = i;
+                        // }
+
+                        tmp = i;
+
+                        power = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOP[tmp] + unit_para_t.band_whole.dl_gain_adjust[i] - para_temp_save_t.dl_pa_att - 1;
+                        if((power>=para_temp_save_t.dl_pa_pout) && (-126 != (para_temp_save_t.dl_pa_pout))){
+                            power = para_temp_save_t.dl_pa_pout;
                         }else{
-                            tmp = i;
+                            //@luke20170729 当pa不存在时，功放的过功率门限位-126，则此时信道功率的计算以pa的att位0来计算，并显示
+                            power = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOP[tmp] \
+                            + unit_para_t.band_whole.dl_gain_adjust[i] - 1;
                         }
-                        exmod_dynamic_para_a[index].ch_rf_t.dl[i].pout = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOP[tmp];
+                        // power = MOD_RP[sys_num].ICS_HT_RP.QueryRP.DLOP[tmp] \
+                        // + unit_para_t.band_whole.dl_gain_adjust[i] - 1;
+
+                        if(!exmod_para_a[index].ch_info_t.dl[i].sw)
+                            power = -127;
+
+                        exmod_dynamic_para_a[index].ch_rf_t.dl[i].pout = power;
 					}
                 break;
                 case 0xe0:
@@ -719,6 +766,9 @@ void set_sn_old2new(Rs485Comm *data)
 	sys_num = (data->Addr & 0x07)/SYS_ADDR_SKIP - SYS_ADDR_BASE ; /*除选频选带模块外的模块地址*/
     index = oldaddr_find_mod(data->Func, data->Addr);
     if(index == 0xff) return ;
+
+    set_new_mod_addr(&exmod_para_a[index], data->Func, data->Addr);
+    para_temp_save_t.sysnum = sys_num;
 
 	switch(data->Func)
 	{
@@ -795,6 +845,37 @@ void protocol_old2new(Rs485Comm *Rstr)
 	} 
     //pthread_mutex_unlock(&exmod_para_mutex);
 }
+
+//重新设置信道agc
+void reset_ch_agc_val()
+{
+    u8 cnt;
+    ch_link link[FREQ_CHANNEL_NUMS_MAX];
+
+    RLDEBUG("ul_ch_agc: ");
+    for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+        link[cnt].agc_th = unit_para_t.band_whole.band_restrict_ul[unit_dynamic_para_t.band_current].ch_agc_th[cnt] \
+            - unit_para_t.band_whole.band_restrict_ul[0].max_gain + unit_para_t.band_whole.band_restrict_ul[0].ch_max_gain[0] \
+            + para_temp_save_t.ul_pa_att + 1 - unit_para_t.band_whole.passive_offset[0].bts;
+        
+        RLDEBUG("%d ", link[cnt].agc_th);
+    }
+    RLDEBUG("\n");
+
+    rs485_ch_agc_send(para_temp_save_t.sysnum, (void*)link, UL);
+
+    RLDEBUG("dl_ch_agc: ");
+    for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+        link[cnt].agc_th = unit_para_t.band_whole.band_restrict_dl[unit_dynamic_para_t.band_current].ch_agc_th[cnt] \
+            - unit_para_t.band_whole.band_restrict_dl[0].max_gain + unit_para_t.band_whole.band_restrict_dl[0].ch_max_gain[0] \
+            + para_temp_save_t.dl_pa_att + 1 - unit_para_t.band_whole.passive_offset[0].ms;
+
+        RLDEBUG("%d ", link[cnt].agc_th);
+    }
+    RLDEBUG("\n");
+    rs485_ch_agc_send(para_temp_save_t.sysnum, (void*)link, DL);
+}
+
 //工作频率
 s16 check_ul_workfreq_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
 {
@@ -838,24 +919,23 @@ s16 check_dl_workfreq_exmod(void* local, void* remote, md_adr_info *md_adr, u8 d
 	f32 *pf;
 	ch_link *pch;
 
-
 	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
 		return -1;
 
     sysnum = newaddr_to_sysnum(md_adr);
-
 
     if(sysnum == 0xff) return -1;
 
 	pf = (f32*)remote;
 	pch = (ch_link*)local;
     
-
 	if (PARA_RW == flag) {
+        printf("web set workfreq:");
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			pch[cnt].workfreq = pf[cnt];
+            printf("%8.4f,", pch[cnt].workfreq );
 		}
-
+        printf("\n");
         rs485_workfreq_send(newaddr_to_sysnum(md_adr), local);
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
@@ -867,7 +947,7 @@ s16 check_dl_workfreq_exmod(void* local, void* remote, md_adr_info *md_adr, u8 d
 
 	return 0;
 }
-//上行agc门限
+//上行模块信道agc门限
 s16 check_ul_ch_agc_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
 {
 	u8 cnt;
@@ -881,13 +961,22 @@ s16 check_ul_ch_agc_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 
 	pch = (ch_link*)local;
 
 	if (PARA_RW == flag) {
-		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
-			pch[cnt].agc_th = p[cnt];
-		}
-        rs485_ch_agc_send(newaddr_to_sysnum(md_adr), local, UL);
+        if(!ch_agc_check(p, md_adr, UL)){
+            for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+                unit_para_t.band_whole.band_restrict_ul[unit_dynamic_para_t.band_current].ch_agc_th[cnt] = p[cnt];
+
+                pch[cnt].agc_th = p[cnt] - unit_para_t.band_whole.band_restrict_ul[0].max_gain + \
+                unit_para_t.band_whole.band_restrict_ul[0].ch_max_gain[0] + para_temp_save_t.ul_pa_att + 1 - unit_para_t.band_whole.passive_offset[0].bts;
+            }
+            rs485_ch_agc_send(newaddr_to_sysnum(md_adr), local, UL);
+            data_update(DATA_TYPE_UNIT);
+        }else{
+            return -1;
+        }
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
-			p[cnt] = pch[cnt].agc_th;
+			//p[cnt] = pch[cnt].agc_th;
+            p[cnt] = unit_para_t.band_whole.band_restrict_ul[unit_dynamic_para_t.band_current].ch_agc_th[cnt];
 		}
 	} else {
 		return -1;
@@ -895,7 +984,7 @@ s16 check_ul_ch_agc_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 
 
 	return 0;
 }
-//下行agc门限
+//下行模块信道agc门限
 s16 check_dl_ch_agc_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
 {
 	u8 cnt;
@@ -909,13 +998,22 @@ s16 check_dl_ch_agc_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 
 	pch = (ch_link*)local;
 
 	if (PARA_RW == flag) {
-		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
-			pch[cnt].agc_th = p[cnt];
-		}
-        rs485_ch_agc_send(newaddr_to_sysnum(md_adr), local, DL);
+        if(!ch_agc_check(p, md_adr, DL)){
+            for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+                unit_para_t.band_whole.band_restrict_dl[unit_dynamic_para_t.band_current].ch_agc_th[cnt] = p[cnt];
+
+                pch[cnt].agc_th = p[cnt] - unit_para_t.band_whole.band_restrict_dl[0].max_gain + \
+                unit_para_t.band_whole.band_restrict_dl[0].ch_max_gain[0] + para_temp_save_t.dl_pa_att + 1 - unit_para_t.band_whole.passive_offset[0].ms;
+            }
+            rs485_ch_agc_send(newaddr_to_sysnum(md_adr), local, DL);
+            data_update(DATA_TYPE_UNIT);
+        }else{
+            return -1;
+        }
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
-			p[cnt] = pch[cnt].agc_th;
+			// p[cnt] = pch[cnt].agc_th;
+            p[cnt] = unit_para_t.band_whole.band_restrict_dl[unit_dynamic_para_t.band_current].ch_agc_th[cnt];
 		}
 	} else {
 		return -1;
@@ -995,10 +1093,14 @@ s16 check_ch_sw_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr
 	pch = (ch_link*)local;
 
 	if (PARA_RW == flag) {
-		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
-			pch[cnt].sw = p[cnt];
-		}
-        rs485_ch_sw_send(newaddr_to_sysnum(md_adr), local);
+        if(!ch_agc_check_sw(p, md_adr, UL) && !ch_agc_check_sw(p, md_adr, DL)){
+            for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+                pch[cnt].sw = p[cnt];
+            }
+            rs485_ch_sw_send(newaddr_to_sysnum(md_adr), local);
+        }else{
+            return -1;
+        }
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			p[cnt] = pch[cnt].sw;
@@ -1093,6 +1195,36 @@ s16 check_shiftfreq_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig
 
 	return 0;
 }
+//静燥开关
+s16 check_ch_mute_sw_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	u8 cnt;
+	u8 *p;
+	ch_link *pch;
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	dig_adr = dig_adr;
+
+	p = (u8*)remote;
+	pch = (ch_link*)local;
+
+	if (PARA_RW == flag) {
+		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+			pch[cnt].mute_sw = p[cnt];
+		}
+        rs485_ch_mute_sw_send(newaddr_to_sysnum(md_adr), local);
+	} else if (PARA_RD == flag) {
+		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+			p[cnt] = pch[cnt].mute_sw;
+		}
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
 //静燥高门限
 s16 check_ch_mute_h_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
 {
@@ -1110,7 +1242,7 @@ s16 check_ch_mute_h_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			pch[cnt].mute_th_h = p[cnt];
 		}
-        //TODO:
+        //rs485_ch_mute_th_send(newaddr_to_sysnum(md_adr), local);
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			p[cnt] = pch[cnt].mute_th_h;
@@ -1138,7 +1270,7 @@ s16 check_ch_mute_l_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			pch[cnt].mute_th_l = p[cnt];
 		}
-        //TODO:
+        rs485_ch_mute_th_send(newaddr_to_sysnum(md_adr), local);
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			p[cnt] = pch[cnt].mute_th_l;
@@ -1232,11 +1364,14 @@ s16 check_ch_bandwidth_exmod(void* local, void* remote, md_adr_info *md_adr, u8 
 	pch = (f32*)local;
 
 	if (PARA_RW == flag) {
-		dig_adr = 0xe8;
+		// dig_adr = 0xe8;
+        RLDEBUG("web set bandwidth:");
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			pch[cnt] = pf[cnt];
+            printf("%8.4f,", pch[cnt]);
 		}
-        rs485_ch_bandwidth_send(newaddr_to_sysnum(md_adr), local);
+        RLDEBUG("\n");
+        // rs485_ch_bandwidth_send(newaddr_to_sysnum(md_adr), local);
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
 			pf[cnt] = pch[cnt];
@@ -1290,6 +1425,137 @@ s16 check_blocking_compensation_exmod(void* local, void* remote, md_adr_info *md
         rs485_blocking_compensation_send(newaddr_to_sysnum(md_adr), local);
 	} else if (PARA_RD == flag) {
         *src = *blocking_compensation;
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_ul_max_agc_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+    s8 *max_agc_th, *src;
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+    max_agc_th = (s8*)local;
+    src = (s8*)remote;
+
+	if (PARA_RW == flag) {
+        *max_agc_th = *src;
+        rs485_max_agc_th_send(newaddr_to_sysnum(md_adr), local, UL);
+	} else if (PARA_RD == flag) {
+        *src = *max_agc_th;
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_dl_max_agc_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+    s8 *max_agc_th, *src;
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+    max_agc_th = (s8*)local;
+    src = (s8*)remote;
+
+	if (PARA_RW == flag) {
+        *max_agc_th = *src;
+        rs485_max_agc_th_send(newaddr_to_sysnum(md_adr), local, DL);
+	} else if (PARA_RD == flag) {
+        *src = *max_agc_th;
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_ul_att_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+    u8 *att_th, *src;
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+    att_th = (u8*)local;
+    src = (u8*)remote;
+
+	if (PARA_RW == flag) {
+        *att_th = *src;
+        rs485_att_th_send(newaddr_to_sysnum(md_adr), local, UL);
+	} else if (PARA_RD == flag) {
+        *src = *att_th;
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_dl_att_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+    u8 *att_th, *src;
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+    att_th = (u8*)local;
+    src = (u8*)remote;
+
+	if (PARA_RW == flag) {
+        *att_th = *src;
+        rs485_att_th_send(newaddr_to_sysnum(md_adr), local, DL);
+	} else if (PARA_RD == flag) {
+        *src = *att_th;
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+s16 check_pa_att_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+    u8 *att_th, *src, cnt;
+    // s8 agc[FREQ_CHANNEL_NUMS_MAX];
+    ch_link link[FREQ_CHANNEL_NUMS_MAX];
+
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+    att_th = (u8*)local;
+    src = (u8*)remote;
+
+	if (PARA_RW == flag) {
+        *att_th = *src;
+        if(md_adr->mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL){
+            rs485_pa_att_th_send(newaddr_to_sysnum(md_adr), local, UL);
+            para_temp_save_t.ul_pa_att = *att_th;
+            for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+                link[cnt].agc_th = unit_para_t.band_whole.band_restrict_ul[unit_dynamic_para_t.band_current].ch_agc_th[cnt] \
+                 - unit_para_t.band_whole.band_restrict_ul[0].max_gain + unit_para_t.band_whole.band_restrict_ul[0].ch_max_gain[0] \
+                 + *att_th + 1 - unit_para_t.band_whole.passive_offset[0].bts;
+            }
+            rs485_ch_agc_send(newaddr_to_sysnum(md_adr), &link, UL);
+        }else if(md_adr->mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL){
+            rs485_pa_att_th_send(newaddr_to_sysnum(md_adr), local, DL);
+            para_temp_save_t.dl_pa_att = *att_th;
+            for (cnt = 0; cnt < FREQ_CHANNEL_NUMS_MAX; cnt++) {
+                link[cnt].agc_th = unit_para_t.band_whole.band_restrict_dl[unit_dynamic_para_t.band_current].ch_agc_th[cnt] \
+                 - unit_para_t.band_whole.band_restrict_dl[0].max_gain + unit_para_t.band_whole.band_restrict_dl[0].ch_max_gain[0] \
+                 + *att_th + 1 - unit_para_t.band_whole.passive_offset[0].ms;
+            }
+            rs485_ch_agc_send(newaddr_to_sysnum(md_adr), &link, DL);
+        }else 
+            return -1;
+	} else if (PARA_RD == flag) {
+        *src = *att_th;
 	} else {
 		return -1;
 	}

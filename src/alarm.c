@@ -13,13 +13,15 @@ description:
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <semaphore.h>
 #include <math.h>
 #include "porting.h"
 #include "para_table.h"
 #include "digital.h"
 #include "log.h"
 #include "module_adr_def.h"
-
+#include "snmp_send.h"
+#include "mib.h"
 /****************************data def********************************/
 pthread_t alarm_ts_id;
 pthread_attr_t alarm_ts_attr;
@@ -522,6 +524,7 @@ void mod_alarm_census(void)
 void exmod_alarm_census(void)
 {
 	u8 md_index = 0;
+	s16 i;
 	s32 alarm_census_flag = 0;
 
 	for (md_index = 0; md_index < MONITOR_MOD_NUM; md_index++) {
@@ -529,9 +532,12 @@ void exmod_alarm_census(void)
 
 		//ul over power
 		if (exmod_dynamic_para_a[md_index].alarm.ch_pin_ul_op[0]) {
-			if ((exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_ul_op[0] > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_ul_op[0])) {
+			if (!exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0] && (exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_ul_op[0] > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_ul_op[0])) {
 				exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0] = 1;
 				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL ){
+					snmp_msg_send(MIB_ALARM_UL_PA1_OVER_POWER, 1);
+				}
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_ul_op[0])) {
 				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_ul_op[0]++;
 			} else {
@@ -542,14 +548,24 @@ void exmod_alarm_census(void)
 			if (exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0]) {
 				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_ul_op[0] = 0;
 				exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0] = 0;
-				alarm_send_flag = FALSE;
+				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL ){
+					snmp_msg_send(MIB_ALARM_UL_PA1_OVER_POWER, 0);
+				}
+				
 			}
 		}
 		//dl over power
 		if (exmod_dynamic_para_a[md_index].alarm.ch_pin_dl_op[0]) {
-			if ((exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_dl_op[0] > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_dl_op[0])) {
+			if (!exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0] && (exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_dl_op[0] > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_dl_op[0])) {
 				exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0] = 1;
 				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_type == MOD_TYPE_DIG){
+					snmp_msg_send(MIB_ALARM_INPUT_OVER_POWER, 1);
+				}else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL ){
+					snmp_msg_send(MIB_ALARM_DL_PA1_OVER_POWER, 1);
+				}
+
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.ch_pin_dl_op[0])) {
 				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_dl_op[0]++;
 			} else {
@@ -560,14 +576,27 @@ void exmod_alarm_census(void)
 			if (exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0]) {
 				exmod_alarm_a[md_index].m_alarm_cnt.ch_pin_dl_op[0] = 0;
 				exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0] = 0;
-				alarm_send_flag = FALSE;
+				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_type == MOD_TYPE_DIG){
+					snmp_msg_send(MIB_ALARM_INPUT_OVER_POWER, 0);
+				}else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL ){
+					snmp_msg_send(MIB_ALARM_DL_PA1_OVER_POWER, 0);
+				}
+
 			}
 		}
 		//temp_h
 		if (exmod_dynamic_para_a[md_index].alarm.temp_h) {
-			if ((exmod_alarm_a[md_index].m_alarm_cnt.temp_h > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_h)) {
+			if (!exmod_alarm_a[md_index].m_alarm.temp_h && (exmod_alarm_a[md_index].m_alarm_cnt.temp_h > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_h)) {
 				exmod_alarm_a[md_index].m_alarm.temp_h = 1;
 				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_type == MOD_TYPE_DIG){
+					snmp_msg_send(MIB_ALARM_OVER_TEMP, 1);
+				}else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL )
+					snmp_msg_send(MIB_ALARM_UL_PA1_OVER_TEMP, 1);
+				else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL ){
+					snmp_msg_send(MIB_ALARM_DL_PA1_OVER_TEMP, 1);
+				}
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_h)) {
 				exmod_alarm_a[md_index].m_alarm_cnt.temp_h++;
 			} else {
@@ -578,12 +607,19 @@ void exmod_alarm_census(void)
 			if (exmod_alarm_a[md_index].m_alarm.temp_h) {
 				exmod_alarm_a[md_index].m_alarm_cnt.temp_h = 0;
 				exmod_alarm_a[md_index].m_alarm.temp_h = 0;
-				alarm_send_flag = FALSE;
+				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_type == MOD_TYPE_DIG){
+					snmp_msg_send(MIB_ALARM_OVER_TEMP, 0);
+				}else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL )
+					snmp_msg_send(MIB_ALARM_UL_PA1_OVER_TEMP, 0);
+				else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL ){
+					snmp_msg_send(MIB_ALARM_DL_PA1_OVER_TEMP, 0);
+				}
 			}
 		}
-		//temp_l
+/* 		//temp_l
 		if (exmod_dynamic_para_a[md_index].alarm.temp_l) {
-			if ((exmod_alarm_a[md_index].m_alarm_cnt.temp_l > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_l)) {
+			if (!exmod_alarm_a[md_index].m_alarm.temp_l && (exmod_alarm_a[md_index].m_alarm_cnt.temp_l > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_l)) {
 				exmod_alarm_a[md_index].m_alarm.temp_l = 1;
 				alarm_send_flag = TRUE;
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.temp_l)) {
@@ -596,14 +632,19 @@ void exmod_alarm_census(void)
 			if (exmod_alarm_a[md_index].m_alarm.temp_l) {
 				exmod_alarm_a[md_index].m_alarm_cnt.temp_l = 0;
 				exmod_alarm_a[md_index].m_alarm.temp_l = 0;
-				alarm_send_flag = FALSE;
+				alarm_send_flag = TRUE;
 			}
-		}
+		} */
 		//pa1
 		if (exmod_dynamic_para_a[md_index].alarm.pa1) {
-			if ((exmod_alarm_a[md_index].m_alarm_cnt.pa1 > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.pa1)) {
+			if (!exmod_alarm_a[md_index].m_alarm.pa1 && (exmod_alarm_a[md_index].m_alarm_cnt.pa1 > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.pa1)) {
 				exmod_alarm_a[md_index].m_alarm.pa1 = 1;
 				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL )
+					snmp_msg_send(MIB_ALARM_UL_PA1_FAULT, 1);
+				else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL ){
+					snmp_msg_send(MIB_ALARM_DL_PA1_FAULT, 1);
+				}
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.pa1)) {
 				exmod_alarm_a[md_index].m_alarm_cnt.pa1++;
 			} else {
@@ -614,12 +655,17 @@ void exmod_alarm_census(void)
 			if (exmod_alarm_a[md_index].m_alarm.pa1) {
 				exmod_alarm_a[md_index].m_alarm_cnt.pa1 = 0;
 				exmod_alarm_a[md_index].m_alarm.pa1 = 0;
-				alarm_send_flag = FALSE;
+				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL )
+					snmp_msg_send(MIB_ALARM_UL_PA1_FAULT, 0);
+				else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL ){
+					snmp_msg_send(MIB_ALARM_DL_PA1_FAULT, 0);
+				}
 			}
 		}
-		//pout_pre
+/* 		//pout_pre
 		if (exmod_dynamic_para_a[md_index].alarm.pout_pre) {
-			if ((exmod_alarm_a[md_index].m_alarm_cnt.pout_pre > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.pout_pre)) {
+			if (!exmod_alarm_a[md_index].m_alarm.pout_pre && (exmod_alarm_a[md_index].m_alarm_cnt.pout_pre > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.pout_pre)) {
 				exmod_alarm_a[md_index].m_alarm.pout_pre = 1;
 				alarm_send_flag = TRUE;
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.pout_pre)) {
@@ -632,14 +678,19 @@ void exmod_alarm_census(void)
 			if (exmod_alarm_a[md_index].m_alarm.pout_pre) {
 				exmod_alarm_a[md_index].m_alarm_cnt.pout_pre = 0;
 				exmod_alarm_a[md_index].m_alarm.pout_pre = 0;
-				alarm_send_flag = FALSE;
+				alarm_send_flag = TRUE;
 			}
-		}
+		} */
 		//驻波比告警(回波损耗告警)
 		if (exmod_dynamic_para_a[md_index].alarm.rl) {
-			if ((exmod_alarm_a[md_index].m_alarm_cnt.rl > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.rl)) {
+			if (!exmod_alarm_a[md_index].m_alarm.rl && (exmod_alarm_a[md_index].m_alarm_cnt.rl > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.rl)) {
 				exmod_alarm_a[md_index].m_alarm.rl = 1;
 				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL )
+					snmp_msg_send(MIB_ALARM_UL_PA1_VSWR, 1);
+				else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL ){
+					snmp_msg_send(MIB_ALARM_DL_PA1_VSWR, 1);
+				}
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.rl)) {
 				exmod_alarm_a[md_index].m_alarm_cnt.rl++;
 			} else {
@@ -650,7 +701,92 @@ void exmod_alarm_census(void)
 			if (exmod_alarm_a[md_index].m_alarm.rl) {
 				exmod_alarm_a[md_index].m_alarm_cnt.rl = 0;
 				exmod_alarm_a[md_index].m_alarm.rl = 0;
-				alarm_send_flag = FALSE;
+				alarm_send_flag = TRUE;
+				if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL )
+					snmp_msg_send(MIB_ALARM_UL_PA1_VSWR, 0);
+				else if(exmod_para_a[md_index].md_adr_t.mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL ){
+					snmp_msg_send(MIB_ALARM_DL_PA1_VSWR, 0);
+				}
+			}
+		}
+		//隔离度告警
+		if (exmod_dynamic_para_a[md_index].alarm.iso_alarm) {
+			if (!exmod_alarm_a[md_index].m_alarm.iso_alarm && (exmod_alarm_a[md_index].m_alarm_cnt.iso_alarm > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.iso_alarm)) {
+				exmod_alarm_a[md_index].m_alarm.iso_alarm = 1;
+				alarm_send_flag = TRUE;
+				snmp_msg_send(MIB_ALARM_ISOLATION, 1);
+			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.iso_alarm)) {
+				exmod_alarm_a[md_index].m_alarm_cnt.iso_alarm++;
+			} else {
+				exmod_alarm_a[md_index].m_alarm_cnt.iso_alarm = 0;
+				exmod_alarm_a[md_index].m_alarm.iso_alarm = 0;
+			}
+		} else if (exmod_dynamic_para_a[md_index].alarm.iso_alarm == 0) {
+			if (exmod_alarm_a[md_index].m_alarm.iso_alarm) {
+				exmod_alarm_a[md_index].m_alarm_cnt.iso_alarm = 0;
+				exmod_alarm_a[md_index].m_alarm.iso_alarm = 0;
+				alarm_send_flag = TRUE;
+				snmp_msg_send(MIB_ALARM_ISOLATION, 0);
+			}
+		}
+		//vco1
+		if (exmod_dynamic_para_a[md_index].alarm.ad80305_1) {
+			if (!exmod_alarm_a[md_index].m_alarm.ad80305_1 && (exmod_alarm_a[md_index].m_alarm_cnt.ad80305_1 > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.ad80305_1)) {
+				exmod_alarm_a[md_index].m_alarm.ad80305_1 = 1;
+				alarm_send_flag = TRUE;
+				snmp_msg_send(MIB_ALARM_VCO1_UNLOCK, 1);
+			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.ad80305_1)) {
+				exmod_alarm_a[md_index].m_alarm_cnt.ad80305_1++;
+			} else {
+				exmod_alarm_a[md_index].m_alarm_cnt.ad80305_1 = 0;
+				exmod_alarm_a[md_index].m_alarm.ad80305_1 = 0;
+			}
+		} else if (exmod_dynamic_para_a[md_index].alarm.ad80305_1 == 0) {
+			if (exmod_alarm_a[md_index].m_alarm.ad80305_1) {
+				exmod_alarm_a[md_index].m_alarm_cnt.ad80305_1 = 0;
+				exmod_alarm_a[md_index].m_alarm.ad80305_1 = 0;
+				alarm_send_flag = TRUE;
+				snmp_msg_send(MIB_ALARM_VCO1_UNLOCK, 0);
+			}
+		}
+		//vco2
+		if (exmod_dynamic_para_a[md_index].alarm.ad80305_2) {
+			if (!exmod_alarm_a[md_index].m_alarm.ad80305_2 && (exmod_alarm_a[md_index].m_alarm_cnt.ad80305_2 > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.ad80305_2)) {
+				exmod_alarm_a[md_index].m_alarm.ad80305_2 = 1;
+				alarm_send_flag = TRUE;
+				snmp_msg_send(MIB_ALARM_VCO2_UNLOCK, 1);
+			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.ad80305_2)) {
+				exmod_alarm_a[md_index].m_alarm_cnt.ad80305_2++;
+			} else {
+				exmod_alarm_a[md_index].m_alarm_cnt.ad80305_2 = 0;
+				exmod_alarm_a[md_index].m_alarm.ad80305_2 = 0;
+			}
+		} else if (exmod_dynamic_para_a[md_index].alarm.ad80305_2 == 0) {
+			if (exmod_alarm_a[md_index].m_alarm.ad80305_2) {
+				exmod_alarm_a[md_index].m_alarm_cnt.ad80305_2 = 0;
+				exmod_alarm_a[md_index].m_alarm.ad80305_2 = 0;
+				alarm_send_flag = TRUE;
+				snmp_msg_send(MIB_ALARM_VCO2_UNLOCK, 0);
+			}
+		}
+		//自激告警
+		if (exmod_dynamic_para_a[md_index].alarm.self_excited) {
+			if (!exmod_alarm_a[md_index].m_alarm.self_excited && (exmod_alarm_a[md_index].m_alarm_cnt.self_excited > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.self_excited)) {
+				exmod_alarm_a[md_index].m_alarm.self_excited = 1;
+				alarm_send_flag = TRUE;
+				snmp_msg_send(MIB_ALARM_SELF_OSCILLATION, 1);
+			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.self_excited)) {
+				exmod_alarm_a[md_index].m_alarm_cnt.self_excited++;
+			} else {
+				exmod_alarm_a[md_index].m_alarm_cnt.self_excited = 0;
+				exmod_alarm_a[md_index].m_alarm.self_excited = 0;
+			}
+		} else if (exmod_dynamic_para_a[md_index].alarm.self_excited == 0) {
+			if (exmod_alarm_a[md_index].m_alarm.self_excited) {
+				exmod_alarm_a[md_index].m_alarm_cnt.self_excited = 0;
+				exmod_alarm_a[md_index].m_alarm.self_excited = 0;
+				alarm_send_flag = TRUE;
+				snmp_msg_send(MIB_ALARM_SELF_OSCILLATION, 0);
 			}
 		}
 	}
@@ -661,33 +797,105 @@ s32 alarm_send(void)
 	return 0;
 }
 
-void alarm_snmp_rep(void)
+void alarm_deal_rep(void)
 {
+	s32 err;
+	s16 i;
 	u8 md_index = 0;
+	u8 is_alarm = 0;
 
 	if(alarm_send_flag){
 		for (md_index = 0; md_index < MONITOR_MOD_NUM; md_index++) {
 			if(exmod_para_a[md_index].md_adr_t.mod_band == 0) continue;
 
-			if (exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0]){
+			switch(exmod_para_a[md_index].md_adr_t.mod_type){
+				case MOD_TYPE_DIG:
+					if (exmod_alarm_a[md_index].m_alarm.temp_h){
+						//
+						is_alarm = 1;
+					}else if (exmod_alarm_a[md_index].m_alarm.ad80305_1){
+						//VCO1
+						is_alarm = 1;
+					}else if (exmod_alarm_a[md_index].m_alarm.ad80305_2){
+						//VCO2 
+						is_alarm = 1;
+					}else if (exmod_alarm_a[md_index].m_alarm.self_excited){
+						//self_excited 
+						is_alarm = 1;
+					}else if (exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0]){
+						//DL  Over power
+						is_alarm = 1;
+						// for(i=0; i<FREQ_CHANNEL_NUMS_MAX; ++i){
+						// 	if(exmod_para_a[md_index].ch_info_t.dl[i].sw){
+						// 		exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[i] = 1;
+						// 	}
+						// }
+					}
 
-			}else if (exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0]){
+					// for(i=0; i<FREQ_CHANNEL_NUMS_MAX; ++i){
+						
+					// 	exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[i] = 0;
+						
+					// }
+				break;
+				case MOD_TYPE_PA:
+					if (exmod_alarm_a[md_index].m_alarm.ch_pin_ul_op[0]){
+						//UL PA Over power
+						is_alarm = 1;
+					}else if (exmod_alarm_a[md_index].m_alarm.ch_pin_dl_op[0]){
+						//DL PA Over power
+						is_alarm = 1;
+					}else if (exmod_alarm_a[md_index].m_alarm.temp_h){
+						//PA Over Temp
+						is_alarm = 1;
+					}else if (exmod_alarm_a[md_index].m_alarm.pa1){
+						//PA Fault
+						
+						is_alarm = 1;
+					}else if (exmod_alarm_a[md_index].m_alarm.rl){
+						//
+						is_alarm = 1;
+					}else if (exmod_alarm_a[md_index].m_alarm.iso_alarm){
+						//Isolation 
+						is_alarm = 1;
+					}
 
-			}else if (exmod_alarm_a[md_index].m_alarm.temp_h){
-
-			}else if (exmod_alarm_a[md_index].m_alarm.temp_l){
-
-			}else if (exmod_alarm_a[md_index].m_alarm.pa1){
-
-			}else if (exmod_alarm_a[md_index].m_alarm.pout_pre){
-
-			}else if (exmod_alarm_a[md_index].m_alarm.rl){
-				
+				break;
 			}
+
 		}
+
+		if(is_alarm){
+			RLDEBUG("===========================system alarm========================\n");
+			led_alarm_control(1);
+
+		}else{
+			RLDEBUG("===========================system normal========================\n");
+			led_alarm_control(0);
+		}
+		
+		alarm_send_flag = FALSE;
 	}
 }
 
+void alarm_enable_init()
+{
+	s16 cnt;
+	for(cnt=0; cnt<MONITOR_MOD_NUM; cnt++){
+		exmod_para_a[cnt].alarm_sw.ch_pin_ul_op[0] = 1;
+		exmod_para_a[cnt].alarm_sw.ch_pin_dl_op[0] = 1;
+		exmod_para_a[cnt].alarm_sw.temp_h = 1;
+		exmod_para_a[cnt].alarm_sw.temp_l = 1;
+		exmod_para_a[cnt].alarm_sw.pa1 = 1;
+		exmod_para_a[cnt].alarm_sw.pout_pre = 1;
+		exmod_para_a[cnt].alarm_sw.rl = 1;
+		exmod_para_a[cnt].alarm_sw.iso_alarm = 1;
+		exmod_para_a[cnt].alarm_sw.ad80305_1 = 1;
+		exmod_para_a[cnt].alarm_sw.ad80305_2 = 1;
+		exmod_para_a[cnt].alarm_sw.self_excited = 1;
+	}
+	
+}
 
 void *alarm_task(void* arg)
 {
@@ -695,10 +903,13 @@ void *alarm_task(void* arg)
 
 	RLDEBUG("alarm task start!\r\n");
 	arg = arg;
-
+	snmp_msg_init();
+	
 	memset((void*)&u_alarm_t, 0, sizeof(u_alarm_t));
 	memset((void*)&m_alarm_a, 0, (MOD_NUM_IN_ONE_PCB * sizeof(md_alarm_c)));
-	memset((void*)&exmod_alarm_a, 0, (MONITOR_MOD_NUM * sizeof(exmod_alarm_a)));
+	memset((void*)&exmod_alarm_a, 0, (MONITOR_MOD_NUM * sizeof(md_alarm_c)));
+
+	alarm_enable_init();
 
 	while (1) {
 		timedelay(0, 1, 0, 0);
@@ -706,7 +917,7 @@ void *alarm_task(void* arg)
 		mod_alarm_census();
 		exmod_alarm_census();
 
-		alarm_snmp_rep();
+		alarm_deal_rep();
 	}
 }
 

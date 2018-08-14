@@ -81,6 +81,7 @@ typedef struct {
 	u8 temperature;		/*整机外壳温度*/
 	fan_check fan;		//FAN_STATUS /*风扇状态*/
 	unit_alarm alarm;
+	u8 band_current; //表示当前操作的band  0-11
 } unit_dynamic_para;
 
 /*****************************************模块动态信息****************************/
