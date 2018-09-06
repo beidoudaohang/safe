@@ -234,16 +234,16 @@ s32 dig_center_freq_update(md_adr_info *md_adr)
 		return -1;
 	}
 
-	#if 0
+	#if 1
 	index = md_adr_to_index(md_adr);
 	if (index < 0) {
 		RLDEBUG("dig_center_freq_update:md_adr_to_index() false \r\n");
 		return -1;
 	}
 
-	if (MOD_TYPE_RELAY == band_para_a[index].md_adr_t.mod_type) {
+	if (MOD_TYPE_BROADBAND == band_para_a[index].md_adr_t.mod_type) {
 		//cal center freq int&float
-		err = adi_center_freq_cal(&(band_para_a[index].md_sundry.dig_sundry.center_freq.ul), \
+/* 		err = adi_center_freq_cal(&(band_para_a[index].md_sundry.dig_sundry.center_freq.ul), \
 		                          & (band_dynamic_para_a[index].adi_regulator_cur_ul));
 		if (err < 0) {
 			RLDEBUG("dig_center_freq_update:ul adi_center_freq_cal() false \r\n");
@@ -273,9 +273,11 @@ s32 dig_center_freq_update(md_adr_info *md_adr)
 			set_adr_add(cnt, &(band_para_a[index].md_adr_t));
 		}
 		adi_adjust_once(md_adr);
-		dig_adi_adjust_update(md_adr);
+		dig_adi_adjust_update(md_adr); */
+
+		
 	} else {
-		RLDEBUG("dig_center_freq_update: mod_type!=MOD_TYPE_RELAY \r\n");
+		RLDEBUG("dig_center_freq_update: mod_type!=MOD_TYPE_BROADBAND \r\n");
 		return -1;
 	}
 	#endif

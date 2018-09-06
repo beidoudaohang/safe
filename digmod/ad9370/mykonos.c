@@ -40,7 +40,7 @@
 #include "mykonos_gpio.h"
 #include "mykonos_macros.h"
 #include "mykonos_user.h"
-#include "device.h"
+// #include "device.h"
 #include "log.h"
 
 /* Private helper functions local to this file */

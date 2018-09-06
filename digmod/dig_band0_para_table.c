@@ -1997,7 +1997,7 @@ const dig_para_item dig_para_table_set[] =
 		.len = DIG_LEN_U8,
 		.pdatadeal = NULL
 	},
-	{
+/* 	{
 		.key = 0xd3,
 		.pdat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.gain_att.tx_att),
 		.adr = DIG_ADR_BYTE_16,
@@ -2164,7 +2164,7 @@ const dig_para_item dig_para_table_set[] =
 		.adr = DIG_ADR_BYTE_0,
 		.len = DIG_LEN_U32,
 		.pdatadeal = f32tou32
-	},
+	}, */
 	{
 		.key = 0xe5,
 		.pdat = (void*) & (band_para_a[0].ch_info_t.uldl_mix_th[0]),
@@ -2359,6 +2359,55 @@ const dig_para_item dig_para_table_set[] =
 		.pdat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_dl.pa_att),
 		.adr = DIG_ADR_BYTE_0,
 		.len = DIG_LEN_U8,// DIG_LEN_U16 @ccTag20170808
+		.pdatadeal = NULL
+	},
+	{//ad9370 config
+		.key = 0xf4,
+		.pdat = (void*) & (band_dynamic_para_a[0].ad9370_conf.chip_select),
+		.adr = DIG_ADR_BIT6,
+		.len = DIG_LEN_BIT,
+		.pdatadeal = NULL
+	},
+	{
+		.key = 0x00,
+		.pdat = (void*) & (band_dynamic_para_a[0].ad9370_conf.jesd204b_fb_rst),
+		.adr = DIG_ADR_BIT5,
+		.len = DIG_LEN_BIT,
+		.pdatadeal = NULL
+	},
+	{
+		.key = 0x00,
+		.pdat = (void*) & (band_dynamic_para_a[0].ad9370_conf.jesd204b_tx_rst),
+		.adr = DIG_ADR_BIT4,
+		.len = DIG_LEN_BIT,
+		.pdatadeal = NULL
+	},
+	{
+		.key = 0x00,
+		.pdat = (void*) & (band_dynamic_para_a[0].ad9370_conf.jesd204b_rx_rst),
+		.adr = DIG_ADR_BIT3,
+		.len = DIG_LEN_BIT,
+		.pdatadeal = NULL
+	},
+	{
+		.key = 0x00,
+		.pdat = (void*) & (band_dynamic_para_a[0].ad9370_conf.gtp_rx),
+		.adr = DIG_ADR_BIT2,
+		.len = DIG_LEN_BIT,
+		.pdatadeal = NULL
+	},
+	{
+		.key = 0x00,
+		.pdat = (void*) & (band_dynamic_para_a[0].ad9370_conf.gtp_tx),
+		.adr = DIG_ADR_BIT1,
+		.len = DIG_LEN_BIT,
+		.pdatadeal = NULL
+	},
+	{
+		.key = 0x00,
+		.pdat = (void*) & (band_dynamic_para_a[0].ad9370_conf.reset_fpga),
+		.adr = DIG_ADR_BIT0,
+		.len = DIG_LEN_BIT,
 		.pdatadeal = NULL
 	},
 	{

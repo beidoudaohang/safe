@@ -31,5 +31,6 @@ s32 dig_band0_read_sv(void);
 s32 dig_band0_init(void);
 void dig_read_deal(void); //@ccTag20170809
 void *band0_task(void* arg);
+void dig_cmd_set_deal(void);
 #endif
 

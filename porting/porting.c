@@ -1276,6 +1276,7 @@ s8 dig_band0_tty_recv(void)
 			break;
 		}
 	}
+
 	if ((err < 0) || (!cnt)) {
 		band_dynamic_para_a[0].alarm.fpga_uart = 1;
 		RLDEBUG("dig_band0_tty_recv:read() false: err=%d,cnt=%d \r\n", err, cnt);
@@ -1439,6 +1440,146 @@ s8 led_alarm_control(int val)
 	}
 	return 0;
 }
+
+//==============================================================================//
+
+
+//ioctl cmd
+#define LED_IOC_MAGIC 'k' //majic
+//cmd
+#define CMD_GPIO_GPT_RST1     _IOW(LED_IOC_MAGIC,0x40,int)
+#define CMD_GPIO_GPT_RST2     _IOW(LED_IOC_MAGIC,0x41,int)
+#define CMD_GPIO_SYS_RST      _IOW(LED_IOC_MAGIC,0x42,int)
+#define CMD_GPIO_JESD_RX_RST  _IOW(LED_IOC_MAGIC,0x43,int)
+#define CMD_GPIO_JESD_TX_RST  _IOW(LED_IOC_MAGIC,0x44,int)
+#define CMD_GPIO_JESD_FB_RST  _IOW(LED_IOC_MAGIC,0x45,int)
+#define CMD_GPIO_CHIP_SWITCH  _IOW(LED_IOC_MAGIC,0x46,int)
+
+static int m_fpga_tmp_fd = 0;
+
+s8 fpga_tmp_open()
+{
+	if(m_fpga_tmp_fd == 0){
+		m_fpga_tmp_fd = open("/dev/gpio433", O_RDWR);
+		if(m_fpga_tmp_fd < 0)
+		{
+			perror("open");
+			return -1;
+		}
+	}else if(m_fpga_tmp_fd < 0){
+		return -1;
+	}
+
+
+	return 0;
+}
+s8 DevFpgaWrite(u8 code, u8 dat)
+{
+	int val;
+
+	fpga_tmp_open();
+
+	if(m_fpga_tmp_fd <= 0) return -1;
+
+	switch(code){
+		case 0xc8:
+			if(dat & 0x01){
+				val = 1;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_CHIP_SWITCH, &val) < 0){
+					return -1;
+				} 
+			}else{
+				val = 0;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_CHIP_SWITCH, &val) < 0){
+					return -1;
+				} 
+			}
+		break;
+		case 0xc0:
+			if(dat & 0x01){
+				val = 1;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_SYS_RST, &val) < 0){
+					return -1;
+				} 
+			}else{
+				val = 0;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_SYS_RST, &val) < 0){
+					return -1;
+				} 
+			}
+		break;
+		case 0x60:
+			if(dat & 0x01){
+				val = 1;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_GPT_RST1, &val) < 0){
+					return -1;
+				} 
+			}else{
+				val = 0;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_GPT_RST1, &val) < 0){
+					return -1;
+				} 
+			}
+			if(dat & 0x02){
+				val = 1;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_GPT_RST2, &val) < 0){
+					return -1;
+				} 
+			}else{
+				val = 0;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_GPT_RST2, &val) < 0){
+					return -1;
+				} 
+			}
+		break;
+		case 0xc5:
+			if(dat & 0x01){
+				val = 1;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_JESD_RX_RST, &val) < 0){
+					return -1;
+				} 
+			}else{
+				val = 0;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_JESD_RX_RST, &val) < 0){
+					return -1;
+				} 
+			}
+		break;
+		case 0xc6:
+			if(dat & 0x01){
+				val = 1;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_JESD_TX_RST, &val) < 0){
+					return -1;
+				} 
+			}else{
+				val = 0;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_JESD_TX_RST, &val) < 0){
+					return -1;
+				} 
+			}
+		break;
+		case 0xc7:
+			if(dat & 0x01){
+				val = 1;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_JESD_FB_RST, &val) < 0){
+					return -1;
+				} 
+			}else{
+				val = 0;
+				if(ioctl(m_fpga_tmp_fd, CMD_GPIO_JESD_FB_RST, &val) < 0){
+					return -1;
+				} 
+			}
+		break;
+	}
+
+
+	return 0;
+}
+
+
+//==============================================================================//
+
 
 static int m_alarm_fd = 0;
 struct alarm_event{

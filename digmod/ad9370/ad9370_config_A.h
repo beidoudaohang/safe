@@ -8,9 +8,9 @@
  * to these settings.
  */
 
-#ifndef ad9370_config_H_
-#define ad9370_config_H_
+#ifndef ad9370_config_A_H_
+#define ad9370_config_A_H_
 
-extern mykonosDevice_t mykDevice;
+extern mykonosDevice_t AD9370_Device_A;
 #endif
 

@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "common_ad9370.h" 
-#include "device.h"
+#include "ad9370.h"
 #include "log.h"
 
 
@@ -22,9 +22,6 @@ ADI_LOGLEVEL CMB_LOGLEVEL = ADIHAL_LOG_NONE;
 
 
 
-extern void Ad9370Reset(void);
-extern u8 Ad9370SpiWrite( u16 addr, u8 data);
-extern u8 Ad9370SpiRead(u16 addr);
 
 commonErr_t CMB_closeHardware(void)
 {
@@ -42,14 +39,13 @@ commonErr_t CMB_setGPIO(u32 GPIO)
 commonErr_t CMB_hardReset(u8 spiChipSelectIndex)
 {
 
-    //if(1 == spiChipSelectIndex)
-	{
-		Ad9370Reset();
-	}
-    /*else if(2 == spiChipSelectIndex)
-	{
-		Ad9528Reset();
-	}*/
+    if(spiChipSelectIndex>0)
+        spiChipSelectIndex--;
+    else
+        return COMMONERR_FAILED;
+    
+    ad9370_dev_reset(spiChipSelectIndex);
+
     return(COMMONERR_OK);
 }
 
@@ -81,28 +77,16 @@ commonErr_t CMB_SPIWriteByte(spiSettings_t *spiSettings, u16 addr, u8 data)
 {
 	long retval = 0;
 	u8 Temp1 =0;
-	u8 txbuf[] = {0x00,0x00,0x00};
+	// u8 txbuf[] = {0x00,0x00,0x00};
 
-/*
-    if (_chipSelectIndex != spiSettings->chipSelectIndex)
-    {
-        if(CMB_setSPIOptions(spiSettings))
-        {
-            return(COMMONERR_FAILED);
-        }
 
-        if(CMB_setSPIChannel(spiSettings->chipSelectIndex))
-        {
-            return(COMMONERR_FAILED);
-        }
-    }
+    if(spiSettings->chipSelectIndex>0)
+        Temp1 = spiSettings->chipSelectIndex-1;
+    else
+        return COMMONERR_FAILED;
 
-    if(CMB_LOGLEVEL & LOG_SPI)
-    {
-        RLDEBUG("SPIWrite: CS:%2d, ADDR:0x%03X, DATA:0x%02X \n", spiSettings->chipSelectIndex,addr, data);
-    }
-*/
-	Ad9370SpiWrite(addr, data);
+	
+    ad9370_dev_reg_set(Temp1, addr, data);
 
     return(COMMONERR_OK);
 }
@@ -114,27 +98,19 @@ commonErr_t CMB_SPIWriteBytes(spiSettings_t *spiSettings, u16 *addr, u8 *data, u
 	u32 i = 0;
 	long retval = 0;
 
-/*
-    if (_chipSelectIndex != spiSettings->chipSelectIndex)
+
+    if(spiSettings->chipSelectIndex>0)
+        retval = spiSettings->chipSelectIndex-1;
+    else
+        return COMMONERR_FAILED;
+
+	
+    for (i = 0; i < count; i++)
     {
-        if(CMB_setSPIOptions(spiSettings))
-        {
-            return(COMMONERR_FAILED);
-        }
-
-        if(CMB_setSPIChannel(spiSettings->chipSelectIndex))
-        {
-            return(COMMONERR_FAILED);
-        }
+        usAddr = addr[i];
+        usData = data[i];
+        ad9370_dev_reg_set(retval, usAddr, usData);
     }
-*/
-        for (i = 0; i < count; i++)
-        {
-		usAddr = addr[i];
-		usData = data[i];
-		Ad9370SpiWrite(usAddr, usData);	
-    	}
-
     return(COMMONERR_OK);
 }
 
@@ -160,11 +136,17 @@ commonErr_t CMB_SPIReadByte(spiSettings_t *spiSettings, u16 addr, u8 *readdata)
     }
 	*/
 	
-   *readdata = Ad9370SpiRead(addr);
-	
-    if(CMB_LOGLEVEL & ADIHAL_LOG_SPI)
+    if(spiSettings->chipSelectIndex>0)
+        retval = spiSettings->chipSelectIndex-1;
+    else
+        return COMMONERR_FAILED;	
+
+    //*readdata = Ad9370SpiRead(addr);
+    ad9370_dev_reg_read(retval, addr, readdata);
+
+    if (CMB_LOGLEVEL & ADIHAL_LOG_SPI)
     {
-        RLDEBUG("SPIRead: CS:%2d, ADDR:0x%03X, ReadData:0x%02X\n", spiSettings->chipSelectIndex, addr, *readdata);
+        RLDEBUG("SPIRead: CS:%2d, ADDR:0x%X, ReadData:0x%X\n", spiSettings->chipSelectIndex, addr, *readdata);
     }
 
     return(COMMONERR_OK);
@@ -327,39 +309,64 @@ commonErr_t CMB_wait_ms(u32 time_ms)
 }
 #endif
 
-commonErr_t CMB_wait_us(u32 time_us)
-{
-
-        volatile unsigned int i, j;
-	for (i = 0; i < time_us; i++)
-		for (j = 0; j < 17; j++);
-       return(COMMONERR_OK);
-}
-
 commonErr_t CMB_wait_ms(u32 time_ms)
 {
-      volatile unsigned int i, j;
-	for (i = 0; i < time_ms; i++)
-		for (j = 0; j < 30000; j++);
-      return(COMMONERR_OK);
+#if 0
+	volatile unsigned int i, j;
+    for (i = 0; i < time_ms; i++)
+        for (j = 0; j < 30000; j++);
+#endif
+
+#if 1	
+    struct timespec t0;
+    struct timespec t1;
+    struct timespec *temp;
+    struct timespec *waitTime = &t0;
+    struct timespec *remaining = &t1;
+
+    waitTime->tv_sec = time_ms/1000;
+    waitTime->tv_nsec = (time_ms % 1000) * (1000000);
+
+    while((nanosleep(waitTime, remaining) == (-1)) && (errno == EINTR))
+    {
+        /* if nanosleep returned early due to a interrupt, nanosleep again using remaining time */
+        temp = waitTime;
+        waitTime = remaining;
+        remaining = temp;
+    }
+#endif
+
+    return (COMMONERR_OK);
+}
+
+
+commonErr_t CMB_wait_us(u32 time_us)
+{
+#if 0
+    volatile unsigned int i, j;
+    for (i = 0; i < time_us; i++)
+        for (j = 0; j < 17; j++);
+#endif
+	CMB_wait_ms(time_us/1000);
+
+    return (COMMONERR_OK);
 }
 
 commonErr_t CMB_setTimeout_ms(u32 timeOut_ms)
 {
-	    return(COMMONERR_OK);
-           #if 0
-	    u8 retval;
-           retval = 0;
-	     retval= CMB_wait_ms(timeOut_ms);
-	    if (retval > 0)
-	    {
-	        return (COMMONERR_FAILED);
-	    }
-	    else 
-	    {
-	        return(COMMONERR_OK);
-	    }
-	    #endif
+#if 1
+    u8 retval;
+    retval = 0;
+    retval = CMB_wait_ms(timeOut_ms);
+    if (retval > 0)
+    {
+        return (COMMONERR_FAILED);
+    }
+    else
+    {
+        return (COMMONERR_OK);
+    }
+#endif
 		 
 }
 

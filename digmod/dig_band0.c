@@ -415,6 +415,7 @@ void dig_read_deal(void)
 {
 	u16 cnt, index, size;
 	dig_adrs adrs, check;
+	static u32 total = 0, fail_cnt = 0;
 
 	size = get_dig_read_table_size();
 	index = 0;
@@ -422,15 +423,36 @@ void dig_read_deal(void)
 		memset((void*)&check, 0, sizeof(check));
 		memset((void*)&adrs, 0, sizeof(adrs));
 		if (get_dig_read_table_next_adrs(index, &index, (s8*)(adrs.adr)) >= 0) {
-			//RLDEBUG("dig_read_deal:read adr is %x,%x,%x,%x \r\n", adrs.adr[0], adrs.adr[1], adrs.adr[2], adrs.adr[3]);
+			// RLDEBUG("dig_read_deal:read adr is %x,%x,%x,%x \r\n", adrs.adr[0], adrs.adr[1], adrs.adr[2], adrs.adr[3]);
 			dig_comm_send(&adrs, DIG_CMD_READ);
+			
+			total++;
 
 			/*等待数据返回*/
 			dig_band0_tty_recv();
 			/*处理返回的数据*/
-			dig_comm_recv_deal((dig_comm_recv_buf.arr), sizeof(dig_comm_recv_buf));
+			if(dig_comm_recv_deal((dig_comm_recv_buf.arr), sizeof(dig_comm_recv_buf))){
+				fail_cnt++;
+			}else{
+				
+				if(dig_comm_err_adr[0]+dig_comm_err_adr[1]+dig_comm_err_adr[2]+dig_comm_err_adr[3] > 0){
+					fail_cnt++;
+				}
+			}
+			if(total%1000 == 0)
+				printf("total: %d, error rate: %0.2f\n", total, fail_cnt/total);
+			
 			dig_comm_feedback(&check);
 		}
+	}
+}
+
+void dig_cmd_set_deal(void)
+{
+	s32 err;
+	err = dig_set_deal();
+	if (!err) {
+		dig_transmit_deal();
 	}
 }
 
@@ -451,6 +473,8 @@ void dig_band0_handle(void)
 	} else {
 		read_cycle++;
 	}
+	
+
 }
 
 /*

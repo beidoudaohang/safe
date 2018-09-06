@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 #include "t_mykonos.h"
-#include "ad9370_config.h"
+#include "ad9370_config_B.h"
 #include "common_ad9370.h" 
 
 
@@ -329,7 +329,7 @@ static mykonosRxSettings_t  rxSettings =
     &rxAgcConfig,	/* Rx AGC control settings structure */
     3,	/* The desired Rx Channels to enable during initialization */
     0,	/* Internal LO = 0, external LO*2 = 1 */
-    870000000U,	/* Rx PLL LO Frequency (internal or external LO) */
+    380000000U,	/* Rx PLL LO Frequency (internal or external LO) */
     0	/* Flag to choose if complex baseband or real IF data are selected for Rx and ObsRx paths. Where, if > 0 = real IF data, '0' = zero IF (IQ) data */
 };
 
@@ -364,7 +364,7 @@ static mykonosTxSettings_t txSettings =
     &deframer,	/* Mykonos JESD204b deframer config for the Tx data path */
     TX1_TX2,	/* The desired Tx channels to enable during initialization */
     0,	/* Internal LO=0, external LO*2 if =1 */
-    915000000U,	/* Tx PLL LO frequency (internal or external LO) */
+    390000000U,	/* Tx PLL LO frequency (internal or external LO) */
     TXATTEN_0P05_DB,	/* Initial and current Tx1 Attenuation */
     10000,	/* Initial and current Tx1 Attenuation mdB */
     10000,	/* Initial and current Tx2 Attenuation mdB */
@@ -445,7 +445,7 @@ static mykonosAuxIo_t mykonosAuxIo =
 
 static spiSettings_t mykSpiSettings =
 {
-    1, /* chip select index - valid 1~8 */
+    2, /* chip select index - valid 1~8 */
     0, /* the level of the write bit of a SPI write instruction word, value is inverted for SPI read operation */
     1, /* 1 = 16-bit instruction word, 0 = 8-bit instruction word */
     1, /* 1 = MSBFirst, 0 = LSBFirst */
@@ -456,7 +456,7 @@ static spiSettings_t mykSpiSettings =
     1  /* 1: Use 4-wire SPI, 0: 3-wire SPI (SDIO pin is bidirectional). NOTE: ADI's FPGA platform always uses 4-wire mode */
 };
 
-mykonosDevice_t mykDevice =
+mykonosDevice_t AD9370_Device_B =
 {
     &mykSpiSettings,    /* SPI settings data structure pointer */
     &rxSettings,        /* Rx settings data structure pointer */

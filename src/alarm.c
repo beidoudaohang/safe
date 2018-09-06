@@ -885,7 +885,7 @@ void alarm_enable_init()
 		exmod_para_a[cnt].alarm_sw.ch_pin_ul_op[0] = 1;
 		exmod_para_a[cnt].alarm_sw.ch_pin_dl_op[0] = 1;
 		exmod_para_a[cnt].alarm_sw.temp_h = 1;
-		exmod_para_a[cnt].alarm_sw.temp_l = 1;
+		// exmod_para_a[cnt].alarm_sw.temp_l = 1;
 		exmod_para_a[cnt].alarm_sw.pa1 = 1;
 		exmod_para_a[cnt].alarm_sw.pout_pre = 1;
 		exmod_para_a[cnt].alarm_sw.rl = 1;

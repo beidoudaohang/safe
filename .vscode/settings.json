@@ -11,8 +11,11 @@
         "web_protocol.h": "c",
         "porting.h": "c",
         "usr_def.h": "c",
-        "module_adr_def.h": "c"
+        "module_adr_def.h": "c",
+        "termios.h": "c",
+        "termbits.h": "c"
     },
+    "editor.formatOnPaste": false,
     "C_Cpp.errorSquiggles": "Disabled",
     "C_Cpp.dimInactiveRegions": false
 }

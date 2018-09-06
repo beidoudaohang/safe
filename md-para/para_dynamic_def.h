@@ -284,6 +284,16 @@ typedef struct
 } md_wireless_net;
 
 typedef struct {
+	u8 chip_select;
+	u8 jesd204b_fb_rst;
+	u8 jesd204b_tx_rst;
+	u8 jesd204b_rx_rst;
+	u8 gtp_rx;
+	u8 gtp_tx;
+	u8 reset_fpga;
+} ad9370_conf_st;
+
+typedef struct {
 
 	ch_rf ch_rf_t;
 	md_dynamic_basic md_dynamic_basic;
@@ -292,6 +302,7 @@ typedef struct {
 	adi_link_regulator_cur adi_regulator_cur_dl;
 	md_alarm alarm;
 	md_wireless_net md_wireless_net_t;
+	ad9370_conf_st ad9370_conf;
 } band_dynamic_para;
 
 /*****************************data struct define******************/

@@ -17,7 +17,7 @@ description:
 /*****************************para define*************************/
 #define MONITOR_TTY_NAME 			"/dev/ttyGS3"
 #define TTY_BAUDRATE				B115200
-#define DIG_TTY_NAME 				"/dev/ttyS0"
+#define DIG_TTY_NAME 				"/dev/ttymxc4"
 
 #define TTY_485NAME 				"/dev/ttymxc1"
 #define TTY_485BAUDRATE				B9600
@@ -56,4 +56,8 @@ u16 RS485_RECV(u8 *src,u16 len,u16 timeout);
 s8 led_open();
 s8 led_run_control(int val);
 s8 led_alarm_control(int val);
+
+
+
+s8 DevFpgaWrite(u8 code, u8 dat);
 #endif //PORTING_H_

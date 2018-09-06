@@ -13,6 +13,9 @@
 #include <pthread.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/un.h> 
+#include <sys/socket.h>
+#include <sys/select.h>
 
 #include "helios.h"
 #include "log.h"
@@ -24,11 +27,18 @@
 #include "porting.h"
 #include "common_api.h"
 
-#define WEBMSGPATHNAME "/tmp/webmsg"  
+/* #define WEBMSGPATHNAME "/tmp/webmsg"  
 #define ID 27  
 #define MODE IPC_CREAT|0666
 #define SENDMSG 1  
-#define RECVMSG 2  
+#define RECVMSG 2   */
+#define WEBCLIENTCNT 10
+#define MAXDATASIZE 1024
+#define WEB_SOCK_FILE "/tmp/web_socket"
+
+int web_clientfd[WEBCLIENTCNT] = {0};
+extern para_stream para_stream_t;
+
 
 static s8 web_md_adr_check(web_protocol_t *pw)
 {
@@ -433,8 +443,173 @@ s16 new_protocol_to_web_protocol(s8 *str, u16 len, web_protocol_t *pw)
     return 0;
 }
 
-extern para_stream para_stream_t;
 
+int socket_init()
+{
+    int sockfd; 
+    struct sockaddr_un sun;
+
+    if((sockfd = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1){
+        RLDEBUG("socket create error");
+        exit(1);
+    }
+
+    //RLDEBUG("socket success!,sockfd = %d\n", sockfd);
+
+    memset(&sun, 0, sizeof(sun));
+    sun.sun_family = AF_LOCAL;
+    strcpy (sun.sun_path, WEB_SOCK_FILE);    
+
+    if(bind(sockfd, (struct sockaddr *)&sun, sizeof(sun)) == -1){
+        RLDEBUG("bind error ");
+        exit(1);
+    }
+
+    //RLDEBUG("bind success!\n");
+    if(listen(sockfd, WEBCLIENTCNT) == -1){
+        RLDEBUG("listen error");
+        exit(1);
+    }
+    RLDEBUG("listening....\n");
+
+    return sockfd;
+}
+
+void client_deal(fd_set rset, fd_set mainset, u16 ready)
+{
+    socklen_t recvbytes, sendbytes;
+    u16 i;
+    s32 err, cnt;
+    int client_fd;
+    web_msg_t web_msg_recv, web_msg_send;
+
+    for(i=0; i<WEBCLIENTCNT; ++i){
+        client_fd = web_clientfd[i];
+        if(FD_ISSET(client_fd, &rset)){
+            if((recvbytes = recv(client_fd, (void*)&web_msg_recv.data, sizeof(web_protocol_t), 0)) == -1){
+                RLDEBUG("recv error");
+                continue;
+            }
+
+            if(recvbytes == 0){
+                close(client_fd); 
+                FD_CLR(client_fd, &mainset);
+                web_clientfd[i] = 0;
+                RLDEBUG("client:%d off!\n", client_fd);
+            }else{
+                RLDEBUG("web recv data:");
+                hexdata_debug((s8*)&web_msg_recv.data, recvbytes/* web_msg_recv.data.len + WEB_PROTOCOL_HEAD_LEN */);
+
+                if(!get_rs485_mod_init_state()){
+                    continue;
+                }
+
+                if(web_msg_recv.data.md_adr.mod_type == MOD_TYPE_RELAY){
+                    //RELAY模块是新协议，需要把web数据包打包成新协议发送，再把收到的数据包重新打包成web数据包返回给CGI程序
+
+                }else{
+                    //check para_stream_t is busy?
+                    err = 10;
+                    while (err > 0) {
+                        if (PARA_STREAM_BUSY == para_stream_t.flag) {
+                            timedelay(0, 0, 50, 0);
+                        } else
+                            break;
+
+                        err--;
+                    }
+                    memset(&para_stream_t, 0, sizeof(para_stream));
+                    if(err){
+                        err = web_recv_deal((s8*)&web_msg_recv.data, &para_stream_t);
+                    }else{
+                        RLDEBUG("local_web_thread:para stream busy\r\n");
+                        continue;
+                    }
+                    
+                    if (err < 0) {
+                        RLDEBUG("local_web_thread:recv data processing err\r\n");
+                        continue;
+                    }
+                }
+
+                memset(&web_msg_send, 0, sizeof(web_msg_send));
+                // web_msg_send.type = SENDMSG;
+                cnt = (s32)web_pack((const para_stream*)&para_stream_t, (web_protocol_t*)&web_msg_send.data);
+                para_stream_t.flag = PARA_STREAM_NORMAL;
+
+                RLDEBUG("web send data:");
+                hexdata_debug((s8*)&web_msg_send.data, cnt);
+
+                if((sendbytes = send(client_fd, (void *)&web_msg_send.data, cnt, 0)) == -1){
+                    RLDEBUG("send error ");
+                    continue;
+                }
+            }
+
+            if(--ready == 0) break;
+        }
+    }
+}
+
+void *local_web_thread(void *arg)
+{
+    struct sockaddr_un cun;
+    socklen_t client_size;
+    int sockfd, client_fd, maxfd;
+    fd_set rset, mainset;
+    u16 ready, i;
+
+    // RLDEBUG("start local web thread...\r\n"); 
+
+    unlink(WEB_SOCK_FILE);  
+
+    sockfd = socket_init();
+
+    client_size = sizeof(struct sockaddr);
+    FD_ZERO(&mainset);
+    FD_SET(sockfd, &mainset);
+    maxfd = sockfd;
+    while(1){
+        rset = mainset;
+        ready = select(maxfd+1, &rset, NULL, NULL, NULL);
+        if(ready == -1){
+            RLDEBUG("select error");
+            continue;
+        }
+
+        if(FD_ISSET(sockfd, &rset)){
+            if((client_fd = accept(sockfd, (struct sockaddr *)&cun, &client_size)) != -1){
+                RLDEBUG("client:%d enter!\n", client_fd);
+
+                for(i=0; i<WEBCLIENTCNT; ++i){
+                    if(web_clientfd[i] <= 0) {
+                        web_clientfd[i] = client_fd;
+                        break;
+                    }
+                }
+
+                if(i < WEBCLIENTCNT){
+                    FD_SET(client_fd, &mainset);
+
+                    if(client_fd > maxfd){
+                        maxfd = client_fd;
+                    }
+                }
+
+
+            }
+            if(--ready == 0) continue;
+        }
+
+        client_deal(rset, mainset, ready);
+    }
+
+    close(sockfd);
+    unlink (WEB_SOCK_FILE);  
+    RLDEBUG("close web server\n");
+
+}
+#if 0
 void *local_web_thread(void *arg)
 {
     s32 err, cnt;
@@ -529,3 +704,4 @@ void *local_web_thread(void *arg)
     RLDEBUG("close web server\n");
 
 }
+#endif

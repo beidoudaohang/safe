@@ -33,11 +33,7 @@
 #include "alarm_def.h"
 #include "protocol_trans.h"
 
-/* #define FILE_SAFE_EEXIST "/tmp/safe_eexist_abc"
-void delete_file(void)
-{
-	remove(FILE_SAFE_EEXIST);
-} */
+
 u8 reset_agc_flag = 0;
 
 int main(int argc, char const *argv[])
@@ -45,22 +41,10 @@ int main(int argc, char const *argv[])
     s32 err;
 	u8 run_led=0;
 	u16 Search_Sys_Time=0;
-/*     // 程序执行之初，先去判断文件是否存在
-    int fd = -1;
-    fd = open(FILE_SAFE_EEXIST, O_RDWR | O_TRUNC | O_CREAT | O_EXCL, 0664);
-    if (fd < 0)
-    {
-        if (errno == EEXIST)
-        {
-            printf("进程已经存在，并不要重复执行\n");
-            return -1;
-        }
-    }
 
-	atexit(delete_file);	// 注册进程清理函数 */
 	
     RLDEBUG("start system...\r\n");
-	RLDEBUG("software version: 0.0.5\r\n");
+	RLDEBUG("software version: 0.0.6\r\n");
 
 	//init data
 	err = data_init();
@@ -87,7 +71,7 @@ int main(int argc, char const *argv[])
 
     pthread_attr_init(&digmod_attr);
     pthread_attr_setdetachstate(&digmod_attr, PTHREAD_CREATE_DETACHED);
-	pthread_attr_setstacksize(&digmod_attr, STACKSIZE);
+	// pthread_attr_setstacksize(&digmod_attr, STACKSIZE);
     err = pthread_create(&digmod_tid, &digmod_attr, digmod_thread, NULL);
     if (err < 0) {
         RLDEBUG("creat digmod thread false!\r\n");
@@ -161,16 +145,13 @@ int main(int argc, char const *argv[])
 		RLDEBUG("led dev open err!\r\n");
 	}
 
+
+
+
     while(1){
         sleep(1);
 		usr_auth_lapse();//授权计时
 		led_run_control(run_led++%2);
-
-/* 		if(Search_Sys_Time++ >= 60)
-		{
-			Search_Sys_Time = 0;
-			Search_Sys();
-		} */
 
 		if(reset_agc_flag){
 			reset_agc_flag = 0;
