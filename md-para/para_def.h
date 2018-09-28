@@ -193,11 +193,6 @@ struct gprs_retry
 	u8 try_times;
 	u8 try_interval;
 };
-struct unit_augment_para
-{
-	struct bat_manual_ctl_sw bat_sw;
-	struct gprs_retry gprs_retry;
-};
 
 struct snmp_para
 {
@@ -214,6 +209,27 @@ struct snmp_para
 	unsigned char snmp_sw;
 };
 
+struct ext_alarm_para
+{
+	char ext_name_1[30];
+	char ext_name_2[30];
+	char ext_name_3[30];
+	char ext_name_4[30];
+	char ext_name_5[30];
+	char ext_name_6[30];
+	char reserve[30];
+};
+
+struct unit_augment_para
+{
+	struct bat_manual_ctl_sw bat_sw;
+	struct gprs_retry gprs_retry;
+	u8 oldsys_band_table[8];
+	struct snmp_para snmp_t;
+	struct ext_alarm_para ext_alarm_para;
+	
+};
+
 typedef struct {
 	site_info site;
 	gps_pen gps_pen_t;
@@ -228,8 +244,7 @@ typedef struct {
 	md_adr_info md_adr_t;
 	md_mfrs_info md_mfrs;
 	struct unit_augment_para unit_augment;
-	u8 oldsys_band_table[8];
-	struct snmp_para snmp_t;
+
 } unit_para;
 
 /******************************模块信息*********************************/

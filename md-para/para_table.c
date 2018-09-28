@@ -95,7 +95,9 @@ static s16 check_power_calibration_power(void* local, void* remote, md_adr_info 
 static s16 check_ch_bandwidth(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_dig_pa_sw(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_manual_cellid(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
-
+static s16 check_lan_gateway(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
+static s16 check_backup_data(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
+static s16 check_recover_data(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 //处理与业务相关的回调函数
 static s16 check_relay_sw(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_center_freq(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
@@ -105,7067 +107,7248 @@ static s16 check_relay_mode(void* local, void* remote, md_adr_info *md_adr, u8 d
 #if MONITOR_MODULE_ENABLE
 const para_table u_para_table_a[] =
 {
-    {
-        .index = 1,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 10,
-                    .dat = (void*)(unit_para_t.md_mfrs.para_table_ver),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x10,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 40,
-                    .dat = (void*)(unit_para_t.md_mfrs.factory),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 15,
-                    .dat = (void*) & (unit_para_t.u_mfrs.sn),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x13,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.u_mfrs.type),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x14,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.u_mfrs.model_no),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x15,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.u_mfrs.part_no),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x16,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_para_t.gps_point_t.Longitude),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .f32l = -180.0,
-                    },
-                    .max = {
-                        .f32l = 180.0,
-                    },
-                    .paradeal = check_gps_longitude,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x17,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_para_t.gps_point_t.Latitude),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .f32l = -90.0,
-                    },
-                    .max = {
-                        .f32l = 90.0,
-                    },
-                    .paradeal = check_gps_latitude,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x18,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_para_t.gps_pen_t.left_top.Longitude),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .f32l = -180.0,
-                    },
-                    .max = {
-                        .f32l = 180.0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x19,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_para_t.gps_pen_t.left_top.Latitude),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .f32l = -90.0,
-                    },
-                    .max = {
-                        .f32l = 90.0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x1a,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_para_t.gps_pen_t.right_bottom.Longitude),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .f32l = -180.0,
-                    },
-                    .max = {
-                        .f32l = 180.0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x1b,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_para_t.gps_pen_t.right_bottom.Latitude),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .f32l = -90.0,
-                    },
-                    .max = {
-                        .f32l = 90.0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x1c,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.gps_offline),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x1d,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 30,
-                    .dat = (void*) & (unit_para_t.site.creat_time),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x20,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 30,
-                    .dat = (void*) & (unit_dynamic_para_t.time),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW //PARA_RD @ccTagOK
-    },
-    {
-        .index = 0x21,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.md_mfrs.hv),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x22,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.md_mfrs.sv),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x23,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 50,
-                    .dat = (void*) & (unit_para_t.site.name),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x24,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 100,
-                    .dat = (void*) & (unit_para_t.site.addr),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x25,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.site.site_no),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x26,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.site.proprietor),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x27,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.site.asset),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x28,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.site.manager),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x2c,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_dynamic_para_t.gprs_t.status),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 5,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x2d,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 50,
-                    .dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.net_info.apn),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x2e,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.net_info.usr),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x2f,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.net_info.pw),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x30,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 25,
-                    .dat = (void*) & (unit_dynamic_para_t.gprs_t.wlan_ip),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x31,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 25,
-                    .dat = (void*) & (unit_para_t.monitor_cfg_t.nms.ip),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x32,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (unit_para_t.monitor_cfg_t.nms.port),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 65535,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x33,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.monitor_cfg_t.nms.sim),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x34,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.site.sim),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x35,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.monitor_cfg_t.nms.alarm_sim),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x36,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.monitor_cfg_t.monitor_mode),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x37,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.timeout),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 255,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x3a,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1 * 12,
-                    .dat = (void*) & (unit_para_t.band_whole.passive_offset),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 50,
-                    },
-                    .paradeal = check_band_bts,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x3b,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1 * 12, //1 @ccTagOK
-                    .dat = (void*) & (unit_para_t.band_whole.passive_offset),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 50,
-                    },
-                    .paradeal = check_band_ms,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x3c,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (unit_dynamic_para_t.temperature),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x3d,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.unit_sundry.case_temp_regulator),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -25,
-                    },
-                    .max = {
-                        .s8l = 25,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x3f,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (unit_para_t.unit_sundry.device_id),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x40,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8}, //@ccTagOK
-                    .len = 12, //1 @ccTagOK
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 120,
-                    },
-                    .paradeal = check_band_max_gain,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x41,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8}, //PARA_TYPE_U8 @ccTagOK
-                    .len = 12, //1 @ccTagOK
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 120,
-                    },
-                    .paradeal = check_band_max_gain,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x42,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12, //1 @ccTagOK
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53,
-                    },
-                    .paradeal = check_band_max_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x43,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12, //1 @ccTagOK
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53,
-                    },
-                    .paradeal = check_band_max_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x44,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48, //4 @ccTagOK
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_band_max_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x45,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48, //4 @ccTagOK
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_band_min_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x46,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.door_open),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x47,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.power_ac),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x48,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.power_dc),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x49,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.movement),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x4a,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.gps_offline),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x4b,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.bat_low_volt),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x4c,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_1),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x4d,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_2),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x4e,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_3),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x4f,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_4),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x50,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_1),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x51,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_2),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x52,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_3),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x53,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_4),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x54,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_5),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x55,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_6),
-                    .dat_size = sizeof(unit_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x56,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_1),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x57,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_2),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x58,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_3),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x59,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_4),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x5a,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_5),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x5b,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_6),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x5c,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.door_open),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x5d,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.power_ac),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x5e,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.power_dc),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x5f,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.movement),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x60,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.gps_offline),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x61,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.bat_low_volt),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x62,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_1),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x63,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_2),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x64,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_3),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x65,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_4),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x66,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_1),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x67,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_2),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x68,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_3),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x69,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_4),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x6a,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_5),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x6b,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_6),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x6c,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_dynamic_para_t.fan.fan1),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x6d,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_dynamic_para_t.fan.fan2),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x6e,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_dynamic_para_t.fan.fan3),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x6f,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_dynamic_para_t.fan.fan4),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x70,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.fan_ctrl_t.fan_temp_h),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 30,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x71,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.fan_ctrl_t.fan_temp_l),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 20,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x72,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.bat_in_t.ctrl_mode),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x73,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.bat_in_t.cut_out_time),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x74,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_dynamic_para_t.bat_status),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x77,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 10,
-                    .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.plmn),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x78,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 10,
-                    .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.tech),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x79,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.band),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 63,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x7a,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.cell),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 65535,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x7b,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.arfcn),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 65535,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x7c,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.rxlev),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x7d,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_dynamic_para_t.gprs_t.net.rsq),
-                    .dat_size = sizeof(unit_dynamic_para),
-                    .min = {
-                        .f32l = -50,
-                    },
-                    .max = {
-                        .f32l = 50,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x119,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (unit_para_t.gps_point_t.altitude),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .f32l = -100,
-                    },
-                    .max = {
-                        .f32l = 1000,
-                    },
-                    .paradeal = check_gps_altitude,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x11e,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 15,
-                    .dat = (void*) & (unit_para_t.md_mfrs.para_table_date),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x11d,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 15,
-                    .dat = (void*) & (unit_para_t.unit_sundry.prj_code),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x129,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.md_mfrs.model_no),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12a,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.md_mfrs.part_no),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12b,
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (unit_para_t.band_whole.band),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 1,
-                    },
-                    .max = {
-                        .s8l = 63,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+	{
+		.index = 1,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 10,
+					.dat = (void*)(unit_para_t.md_mfrs.para_table_ver),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x10,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 40,
+					.dat = (void*)(unit_para_t.md_mfrs.factory),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 15,
+					.dat = (void*) & (unit_para_t.u_mfrs.sn),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x13,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.u_mfrs.type),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x14,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.u_mfrs.model_no),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x15,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.u_mfrs.part_no),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x16,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (unit_para_t.gps_point_t.Longitude),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.f32l = -180.0,
+					},
+					.max = {
+						.f32l = 180.0,
+					},
+					.paradeal = check_gps_longitude,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x17,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (unit_para_t.gps_point_t.Latitude),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.f32l = -90.0,
+					},
+					.max = {
+						.f32l = 90.0,
+					},
+					.paradeal = check_gps_latitude,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x18,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (unit_para_t.gps_pen_t.left_top.Longitude),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.f32l = -180.0,
+					},
+					.max = {
+						.f32l = 180.0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x19,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (unit_para_t.gps_pen_t.left_top.Latitude),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.f32l = -90.0,
+					},
+					.max = {
+						.f32l = 90.0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x1a,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (unit_para_t.gps_pen_t.right_bottom.Longitude),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.f32l = -180.0,
+					},
+					.max = {
+						.f32l = 180.0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x1b,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (unit_para_t.gps_pen_t.right_bottom.Latitude),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.f32l = -90.0,
+					},
+					.max = {
+						.f32l = 90.0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x1c,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.gps_offline),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x1d,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 30,
+					.dat = (void*) & (unit_para_t.site.creat_time),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x20,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 30,
+					.dat = (void*) & (unit_dynamic_para_t.time),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW //PARA_RD @ccTagOK
+	},
+	{
+		.index = 0x21,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.md_mfrs.hv),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x22,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.md_mfrs.sv),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x23,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 50,
+					.dat = (void*) & (unit_para_t.site.name),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x24,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 100,
+					.dat = (void*) & (unit_para_t.site.addr),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x25,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.site.site_no),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x26,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.site.proprietor),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x27,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.site.asset),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x28,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.site.manager),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x29,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 25,
+					.dat = (void*) & (pcb_share.net.ip),
+					.dat_size = sizeof(pcb_share_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x2a,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 25,
+					.dat = (void*) & (pcb_share.net.mask),
+					.dat_size = sizeof(pcb_share_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x2b,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 25,
+					.dat = (void*) & (pcb_share.net.gateway),
+					.dat_size = sizeof(pcb_share_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = check_lan_gateway,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x2c,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_dynamic_para_t.gprs_t.status),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 5,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x2d,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 50,
+					.dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.net_info.apn),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x2e,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.net_info.usr),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x2f,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.net_info.pw),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x30,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 25,
+					.dat = (void*) & (unit_dynamic_para_t.gprs_t.wlan_ip),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x31,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 25,
+					.dat = (void*) & (unit_para_t.monitor_cfg_t.nms.ip),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x32,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (unit_para_t.monitor_cfg_t.nms.port),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 65535,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x33,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.monitor_cfg_t.nms.sim),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x34,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.site.sim),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x35,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.monitor_cfg_t.nms.alarm_sim),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x36,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.monitor_cfg_t.monitor_mode),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x37,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.monitor_cfg_t.gprs.timeout),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 255,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x3a,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1 * 12,
+					.dat = (void*) & (unit_para_t.band_whole.passive_offset),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 50,
+					},
+					.paradeal = check_band_bts,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x3b,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1 * 12, //1 @ccTagOK
+					.dat = (void*) & (unit_para_t.band_whole.passive_offset),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 50,
+					},
+					.paradeal = check_band_ms,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x3c,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (unit_dynamic_para_t.temperature),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x3d,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_sundry.case_temp_regulator),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -25,
+					},
+					.max = {
+						.s8l = 25,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x3f,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (unit_para_t.unit_sundry.device_id),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x40,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8}, //@ccTagOK
+					.len = 12, //1 @ccTagOK
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 120,
+					},
+					.paradeal = check_band_max_gain,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x41,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8}, //PARA_TYPE_U8 @ccTagOK
+					.len = 12, //1 @ccTagOK
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 120,
+					},
+					.paradeal = check_band_max_gain,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x42,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12, //1 @ccTagOK
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = check_band_max_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x43,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12, //1 @ccTagOK
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = check_band_max_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x44,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48, //4 @ccTagOK
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_band_max_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x45,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48, //4 @ccTagOK
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_band_min_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x46,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.door_open),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x47,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.power_ac),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x48,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.power_dc),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x49,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.movement),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x4a,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.gps_offline),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x4b,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.bat_low_volt),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x4c,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_1),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x4d,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_2),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x4e,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_3),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x4f,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.fan_alarm_4),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x50,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_1),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x51,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_2),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x52,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_3),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x53,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_4),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x54,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_5),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x55,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (u_alarm_t.u_alarm.ext_alarm_6),
+					.dat_size = sizeof(unit_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x56,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_1),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x57,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_2),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x58,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_3),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x59,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_4),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x5a,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_5),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x5b,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_sundry.ext_condition.ext_6),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x5c,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.door_open),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x5d,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.power_ac),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x5e,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.power_dc),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x5f,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.movement),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x60,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.gps_offline),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x61,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.bat_low_volt),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x62,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_1),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x63,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_2),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x64,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_3),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x65,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.fan_alarm_4),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x66,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_1),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x67,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_2),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x68,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_3),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x69,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_4),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x6a,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_5),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x6b,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.alarm_sw.ext_alarm_6),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x6c,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_dynamic_para_t.fan.fan1),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x6d,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_dynamic_para_t.fan.fan2),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x6e,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_dynamic_para_t.fan.fan3),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x6f,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_dynamic_para_t.fan.fan4),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x70,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.fan_ctrl_t.fan_temp_h),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 30,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x71,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.fan_ctrl_t.fan_temp_l),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 20,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x72,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.bat_in_t.ctrl_mode),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x73,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.bat_in_t.cut_out_time),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x74,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_dynamic_para_t.bat_status),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x77,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 10,
+					.dat = (void*) & (unit_dynamic_para_t.gprs_t.net.plmn),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x78,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 10,
+					.dat = (void*) & (unit_dynamic_para_t.gprs_t.net.tech),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x79,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_dynamic_para_t.gprs_t.net.band),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 63,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x7a,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (unit_dynamic_para_t.gprs_t.net.cell),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 65535,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x7b,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (unit_dynamic_para_t.gprs_t.net.arfcn),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 65535,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x7c,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (unit_dynamic_para_t.gprs_t.net.rxlev),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x7d,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (unit_dynamic_para_t.gprs_t.net.rsq),
+					.dat_size = sizeof(unit_dynamic_para),
+					.min = {
+						.f32l = -50,
+					},
+					.max = {
+						.f32l = 50,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x119,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (unit_para_t.gps_point_t.altitude),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.f32l = -100,
+					},
+					.max = {
+						.f32l = 1000,
+					},
+					.paradeal = check_gps_altitude,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x11e,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 15,
+					.dat = (void*) & (unit_para_t.md_mfrs.para_table_date),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x11d,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 15,
+					.dat = (void*) & (unit_para_t.unit_sundry.prj_code),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x129,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.md_mfrs.model_no),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12a,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.md_mfrs.part_no),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12b,
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (unit_para_t.band_whole.band),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 1,
+					},
+					.max = {
+						.s8l = 63,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 /*     {
-        .index = 0x14f, //channel agc
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x150, //channel agc
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, */
-    {
-        .index = 0x151, //module max gain 
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 120,
-                    },
-                    .paradeal = check_band_ch_max_gain,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x152, //module max gain 
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 120,
-                    },
-                    .paradeal = check_band_ch_max_gain,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x153, //channel gain adjust
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (unit_para_t.band_whole.dl_gain_adjust),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 120,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x156, //SNMP VERSION
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_ver),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 2,
-                    },
-                    .max = {
-                        .u8l = 3,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x157, //SNMP IP
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_ip),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x158, //SNMP PORT
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_port),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u16l = 1,
-                    },
-                    .max = {
-                        .u16l = 65535,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x159, //SNMP COMMUNITY
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_community),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },   
-    {
-        .index = 0x15a, //SNMP  UserName
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_username),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },   
-    {
-        .index = 0x15b, //SNMP auth
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_auth),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, 
-    {
-        .index = 0x15c, //SNMP  authpass
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_authpass),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, 
-    {
-        .index = 0x15d, //SNMP priv
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_priv),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 3,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, 
-    {
-        .index = 0x15e, //SNMP  privpass
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_privpass),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, 
-    {
-        .index = 0x15f, //SNMP  engine_id
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 25,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_engine_id),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, 
-    {
-        .index = 0x160, //SNMP sw
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (unit_para_t.snmp_t.snmp_sw),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, 
-    {
-        .index = 0x161, //ul channel gain adjust
-        .link_para_a = {
-                .md_adr = &(unit_para_t.md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (unit_para_t.band_whole.ul_gain_adjust),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 120,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+		.index = 0x14f, //channel agc
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x150, //channel agc
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, */
+	{
+		.index = 0x151, //module max gain 
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_ul),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 120,
+					},
+					.paradeal = check_band_ch_max_gain,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x152, //module max gain 
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (unit_para_t.band_whole.band_restrict_dl),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 120,
+					},
+					.paradeal = check_band_ch_max_gain,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x153, //channel gain adjust
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (unit_para_t.band_whole.dl_gain_adjust),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 120,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x156, //SNMP VERSION
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_ver),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 2,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x157, //SNMP IP
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_ip),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x158, //SNMP PORT
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_port),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u16l = 1,
+					},
+					.max = {
+						.u16l = 65535,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x159, //SNMP COMMUNITY
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_community),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},   
+	{
+		.index = 0x15a, //SNMP  UserName
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_username),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},   
+	{
+		.index = 0x15b, //SNMP auth
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_auth),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, 
+	{
+		.index = 0x15c, //SNMP  authpass
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_authpass),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, 
+	{
+		.index = 0x15d, //SNMP priv
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_priv),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, 
+	{
+		.index = 0x15e, //SNMP  privpass
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_privpass),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, 
+	{
+		.index = 0x15f, //SNMP  engine_id
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 25,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_engine_id),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, 
+	{
+		.index = 0x160, //SNMP sw
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (unit_para_t.unit_augment.snmp_t.snmp_sw),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, 
+	{
+		.index = 0x161, //ul channel gain adjust
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (unit_para_t.band_whole.ul_gain_adjust),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 120,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x162, //ext alarm name
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 30,
+					.dat = (void*) & (unit_para_t.unit_augment.ext_alarm_para.ext_name_1),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x163, //ext alarm name
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 30,
+					.dat = (void*) & (unit_para_t.unit_augment.ext_alarm_para.ext_name_2),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x164, //ext alarm name
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 30,
+					.dat = (void*) & (unit_para_t.unit_augment.ext_alarm_para.ext_name_3),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x165, //ext alarm name
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 30,
+					.dat = (void*) & (unit_para_t.unit_augment.ext_alarm_para.ext_name_4),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x166, //ext alarm name
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 30,
+					.dat = (void*) & (unit_para_t.unit_augment.ext_alarm_para.ext_name_5),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x167, //ext alarm name
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 30,
+					.dat = (void*) & (unit_para_t.unit_augment.ext_alarm_para.ext_name_6),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x168, //
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 8,
+					.dat = (void*) & (pcb_share.usr.usr[3].pass),
+					.dat_size = sizeof(pcb_share_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = check_backup_data,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x169, //
+		.link_para_a = {
+				.md_adr = &(unit_para_t.md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = NULL,
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 1,
+					},
+					.paradeal = check_recover_data,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 };
 //=============================###########=================================//
 //=========================================================================//
 const para_table exmod_table_a[] =
 {
-    {
-        .index = 1,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 10,
-                    .dat = (void*)(exmod_para_a[0].md_mfrs.para_table_ver),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x10,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 40,
-                    .dat = (void*)(exmod_para_a[0].md_mfrs.factory),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+	{
+		.index = 1,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 10,
+					.dat = (void*)(exmod_para_a[0].md_mfrs.para_table_ver),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x10,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 40,
+					.dat = (void*)(exmod_para_a[0].md_mfrs.factory),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 /*     {
-        .index = 0x11,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 3,
-                    .dat = (void*) & (exmod_para_a[0].md_adr_t),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = check_md_adr,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, */
-    {
-        .index = 0x21,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (exmod_para_a[0].md_mfrs.hv),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x22,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (exmod_para_a[0].md_mfrs.sv),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+		.index = 0x11,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 3,
+					.dat = (void*) & (exmod_para_a[0].md_adr_t),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = check_md_adr,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, */
+	{
+		.index = 0x21,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (exmod_para_a[0].md_mfrs.hv),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x22,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (exmod_para_a[0].md_mfrs.sv),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x38,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1, //12 @ccTagOK
+					.dat = (void*) & (exmod_para_a[0].md_augment.dig_agc.dl_agc_mode),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1, //2 @ccTagOK
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x39,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.shutdown_ul),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120, //120 @ccTagOK
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x3e,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.max_gain),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 120,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x75,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.reset_para),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_reset_para,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	/*{
+		.index = 0x76,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_residue_t.reset_para),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = 0,
+					.max = 0,
+					.paradeal = NULL,
+				},
+			}
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.
+	},*/
+	{
+		.index = 0x7e,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x7f,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = check_pa_att_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x80,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.temperature),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x81,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_regulator),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -25,
+					},
+					.max = {
+						.s8l = 25,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x82,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pin),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x83,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pout),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x84,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.rpout),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x85,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.cur_gain),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -100,
+					},
+					.max = {
+						.f32l = 120,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x86,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.rl),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = 1,
+					},
+					.max = {
+						.f32l = 40,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x87,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.rl_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 1,
+					},
+					.max = {
+						.f32l = 40,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x88,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].md_basic.pout.p_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x89,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8a,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_rate_pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8b,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8c,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_rate_pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8d,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_l_th_pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8e,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_h_th_pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8f,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_l_th_pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x90,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_h_th_pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x91,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1 * 40,
+					.dat = (void*) & (exmod_para_a[0].md_basic.pin.table),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x92,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 40,
+					.dat = (void*) & (exmod_para_a[0].md_basic.pin.table),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x93,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1 * 40,
+					.dat = (void*) & (exmod_para_a[0].md_basic.pout.table[0]), //.table
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53, //10
+					},
+					.paradeal = check_power_calibration_power,//NULL @ccTagOK
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x94,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 40,
+					.dat = (void*) & (exmod_para_a[0].md_basic.pout.table[0]), //.table
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = check_power_calibration_voltage,//NULL, @ccTagOK
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x95,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1 * 40,
+					.dat = (void*) & (exmod_para_a[0].md_basic.rpout.table[0]), //.table
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53, //10
+					},
+					.paradeal = check_power_calibration_power,//NULL @ccTagOK
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x96,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 40,
+					.dat = (void*) & (exmod_para_a[0].md_basic.rpout.table[0]), //.table
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = check_power_calibration_voltage,//NULL, @ccTagOK
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x97,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pin.max_v),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x98,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pout.max_v),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x99,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.rpout.max_v),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9a,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.rl),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9b,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.pout),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9c,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.pout_pre),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9d,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.temp_h),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9e,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.pa1),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9f,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.pa2),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xa0,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.rl),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa1,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.pout),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa2,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.pout_pre),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa3,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.temp_h),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa4,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa5,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa6,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa7,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.wk_mode),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa8,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.major),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 167,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa9,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.minor),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xaa,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.dl_ul_config),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 6,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xab,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.cp),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xac,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.sf_config),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 9,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xad,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sync_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xae,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.tdd_dynamic_sundry.sync_st),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xaf,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.tdd_sync_lost),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xb0,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.tdd_sync_lost),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb1,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sync_keep),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 255,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb2,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S16},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sync_offset),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s16l = -100,
+					},
+					.max = {
+						.s16l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb3,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U32},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.guard_time),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 10,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{ //@sujj digpico setting dl
+		.index = 0xb4,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_ul_workfreq_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x01,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb5,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_shiftfreq_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb6,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 10.000,
+					},
+					.paradeal = check_ch_pin,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xb7,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 10.000,
+					},
+					.paradeal = check_ch_pout,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xb8,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -80,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = check_ul_ch_pin_op_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb9,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_ul_op),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_pin_op,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xba,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_pin_lp_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xbb,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_ul_lp),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_pin_lp,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xbc,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30, //1 @ccTagOK
+					},
+					.paradeal = check_ul_ch_att_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xbd,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_mute_sw_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xbe,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_mute_l_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xbf,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,//0 @ccTagOK
+					},
+					.max = {
+						.s8l = 10, //1@ccTagOK
+					},
+					.paradeal = check_ch_mute_h_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc0,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = check_ul_ch_agc_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc1,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = check_ch_agc_att,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xc2,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 10,
+					},
+					.paradeal = check_ch_gain_compensate,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xc3,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 12,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 3600,
+					},
+					.paradeal = check_ch_traffic,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
 /*     {
-        .index = 0x29,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 25,
-                    .dat = (void*) & (pcb_share.net.ip),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x2a,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 25,
-                    .dat = (void*) & (pcb_share.net.mask),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x2b,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 25,
-                    .dat = (void*) & (pcb_share.net.gateway),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, */
-    {
-        .index = 0x38,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1, //12 @ccTagOK
-                    .dat = (void*) & (exmod_para_a[0].md_augment.dig_agc.dl_agc_mode),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1, //2 @ccTagOK
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x39,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.shutdown_ul),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120, //120 @ccTagOK
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x3e,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.max_gain),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 120,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x75,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.reset_para),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_reset_para,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    /*{
-        .index = 0x76,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_residue_t.reset_para),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = 0,
-                    .max = 0,
-                    .paradeal = NULL,
-                },
-            }
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .
-    },*/
-    {
-        .index = 0x7e,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x7f,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = check_pa_att_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x80,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.temperature),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x81,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_regulator),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -25,
-                    },
-                    .max = {
-                        .s8l = 25,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x82,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pin),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x83,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pout),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 53,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x84,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.rpout),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 53,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x85,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.cur_gain),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -100,
-                    },
-                    .max = {
-                        .f32l = 120,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x86,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.rl),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = 1,
-                    },
-                    .max = {
-                        .f32l = 40,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x87,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.rl_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 1,
-                    },
-                    .max = {
-                        .f32l = 40,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x88,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.pout.p_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 53,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x89,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8a,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_rate_pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8b,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8c,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_rate_pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8d,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_l_th_pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8e,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_h_th_pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8f,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_l_th_pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x90,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.pa_unique.vgs_h_th_pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x91,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1 * 40,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.pin.table),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x92,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 40,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.pin.table),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x93,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1 * 40,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.pout.table[0]), //.table
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53, //10
-                    },
-                    .paradeal = check_power_calibration_power,//NULL @ccTagOK
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x94,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 40,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.pout.table[0]), //.table
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = check_power_calibration_voltage,//NULL, @ccTagOK
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x95,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1 * 40,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.rpout.table[0]), //.table
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53, //10
-                    },
-                    .paradeal = check_power_calibration_power,//NULL @ccTagOK
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x96,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 40,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.rpout.table[0]), //.table
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = check_power_calibration_voltage,//NULL, @ccTagOK
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x97,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pin.max_v),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x98,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.pout.max_v),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x99,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_basic.rpout.max_v),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9a,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.rl),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9b,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.pout),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9c,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.pout_pre),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9d,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.temp_h),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9e,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.pa1),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9f,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.pa2),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xa0,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.rl),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa1,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.pout),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa2,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.pout_pre),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa3,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.temp_h),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa4,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa5,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa6,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 3,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa7,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.wk_mode),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa8,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.major),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 167,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa9,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.minor),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xaa,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.dl_ul_config),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 6,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xab,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.cp),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xac,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.work_para.sf_config),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 9,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xad,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sync_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xae,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.tdd_dynamic_sundry.sync_st),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xaf,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.tdd_sync_lost),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xb0,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.tdd_sync_lost),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb1,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sync_keep),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 255,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb2,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.sync_offset),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s16l = -100,
-                    },
-                    .max = {
-                        .s16l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb3,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U32},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.td_unique.guard_time),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 10,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    { //@sujj digpico setting dl
-        .index = 0xb4,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_ul_workfreq_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x01,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb5,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_shiftfreq_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb6,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 10.000,
-                    },
-                    .paradeal = check_ch_pin,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xb7,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 10.000,
-                    },
-                    .paradeal = check_ch_pout,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xb8,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -80,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = check_ul_ch_pin_op_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb9,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_ul_op),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_pin_op,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xba,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_pin_lp_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xbb,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_ul_lp),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_pin_lp,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xbc,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30, //1 @ccTagOK
-                    },
-                    .paradeal = check_ul_ch_att_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xbd,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_mute_sw_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xbe,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_mute_l_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xbf,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,//0 @ccTagOK
-                    },
-                    .max = {
-                        .s8l = 10, //1@ccTagOK
-                    },
-                    .paradeal = check_ch_mute_h_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc0,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53,
-                    },
-                    .paradeal = check_ul_ch_agc_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc1,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = check_ch_agc_att,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xc2,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 10,
-                    },
-                    .paradeal = check_ch_gain_compensate,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xc3,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 12,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 3600,
-                    },
-                    .paradeal = check_ch_traffic,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
+		.index = 0xc4,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.freq_rx),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc5,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.freq_tx),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc6,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_offset_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0, //0x3c @ccTagOK20170725
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc7,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc8,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc9,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xca,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.freq_rx),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd5,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xcb,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.freq_tx),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xdb,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xcc,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_offset_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x3c,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xcd,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x3c,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xce,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x3c,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xcf,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x3c,
+		.flag = PARA_RW
+	}, */
+	{
+		.index = 0xd0,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_ul),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -1,
+					},
+					.max = {
+						.f32l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd1,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_ul.adc_att),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u32l = 0,
+					},
+					.max = {
+						.u32l = 30,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd2,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_dl_workfreq_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x00,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd3,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_shiftfreq_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd4,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_ch_pin,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xd5,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 53,
+					},
+					.paradeal = check_ch_pout,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xd6,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -80,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = check_dl_ch_pin_op_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd7,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_dl_op[0]),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_pin_op,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xd8,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_pin_lp_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd9,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_dl_lp),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_pin_lp,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xda,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = check_dl_ch_att_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xdb,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_sw_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xdc,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = check_dl_ch_agc_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xdd,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = check_ch_agc_att,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xde,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 10,
+					},
+					.paradeal = check_ch_gain_compensate,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
 /*     {
-        .index = 0xc4,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.freq_rx),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc5,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.freq_tx),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc6,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.adi_offset[0]),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_offset_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0, //0x3c @ccTagOK20170725
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc7,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.adi_offset[0]),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc8,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc9,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xca,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.freq_rx),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd5,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xcb,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.freq_tx),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xdb,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xcc,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.adi_offset[0]),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_offset_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3c,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xcd,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.adi_offset[0]),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3c,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xce,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3c,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xcf,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3c,
-        .flag = PARA_RW
-    }, */
-    {
-        .index = 0xd0,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_ul),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -1,
-                    },
-                    .max = {
-                        .f32l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd1,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_ul.adc_att),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u32l = 0,
-                    },
-                    .max = {
-                        .u32l = 30,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd2,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_dl_workfreq_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x68,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd3,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_shiftfreq_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd4,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_ch_pin,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xd5,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 53,
-                    },
-                    .paradeal = check_ch_pout,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xd6,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -80,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = check_dl_ch_pin_op_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd7,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_dl_op[0]),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_pin_op,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xd8,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_pin_lp_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd9,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.ch_pin_dl_lp),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_pin_lp,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xda,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = check_dl_ch_att_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xdb,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_sw_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xdc,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53,
-                    },
-                    .paradeal = check_dl_ch_agc_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xdd,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = check_ch_agc_att,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xde,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.dl[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 10,
-                    },
-                    .paradeal = check_ch_gain_compensate,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
+		.index = 0xdf,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.freq_rx),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd9,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe0,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.freq_tx),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd7,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe1,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_offset_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,//0x9a @ccTagOK20170725
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe2,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe3,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe4,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe5,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.freq_rx),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd9,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe6,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.freq_tx),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd7,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe7,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_offset_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe8,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe9,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xea,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	}, */
+	{
+		.index = 0xeb,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_dl),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -1,
+					},
+					.max = {
+						.f32l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xec,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_dl.adc_att),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xed,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.ics_sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xee,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.ics_iso_dl),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xef,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.ad80305_1),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xf0,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.ad80305_2),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xf1,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.ad80305_1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf2,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.ad80305_2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, 
+	{
+		.index = 0xf3,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_ul_op),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf4,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_ul_lp),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf5,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_dl_op),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf6,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_dl_lp),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf7,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U32},
+					.len = 48,
+					.dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.feature[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u32l = 0,
+					},
+					.max = {
+						.u32l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xf8,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING10},
+					.len = 120,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ch_remark[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf9,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.work_mode),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 /*     {
-        .index = 0xdf,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.freq_rx),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd9,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe0,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.freq_tx),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd7,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe1,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.adi_offset[0]),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_offset_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,//0x9a @ccTagOK20170725
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe2,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.adi_offset[0]),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe3,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe4,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe5,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.freq_rx),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd9,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe6,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.freq_tx),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd7,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe7,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.adi_offset[0]),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_offset_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe8,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.adi_offset[0]),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe9,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xea,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.adi_offset[0]),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    }, */
-    {
-        .index = 0xeb,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_dl),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -1,
-                    },
-                    .max = {
-                        .f32l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xec,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_dl.adc_att),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xed,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.ics_sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xee,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.ics_iso_dl),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xef,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.ad80305_1),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xf0,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.ad80305_2),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xf1,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.ad80305_1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf2,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.ad80305_2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, 
-    {
-        .index = 0xf3,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_ul_op),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf4,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_ul_lp),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf5,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_dl_op),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf6,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.ch_pin_dl_lp),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf7,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U32},
-                    .len = 48,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].ch_rf_t.feature[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u32l = 0,
-                    },
-                    .max = {
-                        .u32l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xf8,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING10},
-                    .len = 120,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ch_remark[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf9,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.work_mode),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 3,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+		.index = 0xfa,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.gain_att),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 60,
+					},
+					.paradeal = check_adi_gain_att,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xfb,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.gain_att),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 60,
+					},
+					.paradeal = check_adi_gain_att,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xfc,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.gain_att),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 60,
+					},
+					.paradeal = check_adi_gain_att,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xfd,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 2,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.gain_att),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 60,
+					},
+					.paradeal = check_adi_gain_att,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xfe,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.dc_image),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = check_adi_dc_image,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xff,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.dc_image),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = check_adi_dc_image,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x100,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.dc_image),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = check_adi_dc_image,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x101,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.dc_image),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = check_adi_dc_image,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, */
+	{
+		.index = 0x102,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.relay_sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x103,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.temp_l),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
 /*     {
-        .index = 0xfa,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.gain_att),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 60,
-                    },
-                    .paradeal = check_adi_gain_att,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xfb,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.gain_att),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 60,
-                    },
-                    .paradeal = check_adi_gain_att,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xfc,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.gain_att),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 60,
-                    },
-                    .paradeal = check_adi_gain_att,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xfd,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 2,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.gain_att),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 60,
-                    },
-                    .paradeal = check_adi_gain_att,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xfe,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].ul.dc_image),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = check_adi_dc_image,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xff,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].ul.dc_image),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = check_adi_dc_image,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x100,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[0].dl.dc_image),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = check_adi_dc_image,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x101,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].adi_para_t[1].dl.dc_image),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = check_adi_dc_image,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, */
-    {
-        .index = 0x102,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.relay_sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x103,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.temp_l),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
+		.index = 0x104,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.fpga_loaded),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},*/
+	{
+		.index = 0x105,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.fpga_uart),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	}, 
+	{
+		.index = 0x106,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.fpga_spi),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x107,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.net_status),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x108,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dig_pa_sw),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = check_dig_pa_sw,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x109,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 40,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.ser_cell),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x10a,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 388,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.nei_cell),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x10b,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 388,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.after_relay),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x10c,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 250,
+					.dat = (void*) & (exmod_para_a[0].tel_operator.plmn_t.plmn),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 65535,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x10d,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].tel_operator.band),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 64,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x10e,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.scan_tech),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 12,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x10f,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.swn_manual_cell),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 503,
+					},
+					.paradeal = check_manual_cellid,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	// {
+	//     .index = 0x110,
+	//     .link_para_a = {
+	//             .md_adr = &(exmod_para_a[0].md_adr_t),
+	//             .link_para_t = {
+	//                 .para_type_t = {PARA_TYPE_FLOAT},
+	//                 .len = 48,
+	//                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+	//                 .min = {
+	//                     .f32l = -10,
+	//                 },
+	//                 .max = {
+	//                     .f32l = 10,
+	//                 },
+	//                 .paradeal = check_adi_offset_flat,
+	//             },
+	//     },
+	//     .authority = USR_TERMINAL,
+	//     .dig_adr = 0,
+	//     .flag = PARA_RD
+	// },
+	// {
+	//     .index = 0x111,
+	//     .link_para_a = {
+	//             .md_adr = &(exmod_para_a[0].md_adr_t),
+	//             .link_para_t = {
+	//                 .para_type_t = {PARA_TYPE_FLOAT},
+	//                 .len = 48,
+	//                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+	//                 .min = {
+	//                     .f32l = -120,
+	//                 },
+	//                 .max = {
+	//                     .f32l = 100,
+	//                 },
+	//                 .paradeal = check_adi_offset_pin,
+	//             },
+	//     },
+	//     .authority = USR_TERMINAL,
+	//     .dig_adr = 0,
+	//     .flag = PARA_RD
+	// },
+	// {
+	//     .index = 0x112,
+	//     .link_para_a = {
+	//             .md_adr = &(exmod_para_a[0].md_adr_t),
+	//             .link_para_t = {
+	//                 .para_type_t = {PARA_TYPE_FLOAT},
+	//                 .len = 48,
+	//                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+	//                 .min = {
+	//                     .f32l = -120,
+	//                 },
+	//                 .max = {
+	//                     .f32l = 100,
+	//                 },
+	//                 .paradeal = check_adi_offset_pout,
+	//             },
+	//     },
+	//     .authority = USR_TERMINAL,
+	//     .dig_adr = 0,
+	//     .flag = PARA_RD
+	// },
+	// {
+	//     .index = 0x113,
+	//     .link_para_a = {
+	//             .md_adr = &(exmod_para_a[0].md_adr_t),
+	//             .link_para_t = {
+	//                 .para_type_t = {PARA_TYPE_FLOAT},
+	//                 .len = 48,
+	//                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+	//                 .min = {
+	//                     .f32l = -10,
+	//                 },
+	//                 .max = {
+	//                     .f32l = 10,
+	//                 },
+	//                 .paradeal = check_adi_offset_flat,
+	//             },
+	//     },
+	//     .authority = USR_TERMINAL,
+	//     .dig_adr = 0,
+	//     .flag = PARA_RD
+	// },
+	// {
+	//     .index = 0x114,
+	//     .link_para_a = {
+	//             .md_adr = &(exmod_para_a[0].md_adr_t),
+	//             .link_para_t = {
+	//                 .para_type_t = {PARA_TYPE_FLOAT},
+	//                 .len = 48,
+	//                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+	//                 .min = {
+	//                     .f32l = -120,
+	//                 },
+	//                 .max = {
+	//                     .f32l = 100,
+	//                 },
+	//                 .paradeal = check_adi_offset_pin,
+	//             },
+	//     },
+	//     .authority = USR_TERMINAL,
+	//     .dig_adr = 0,
+	//     .flag = PARA_RD
+	// },
+	// {
+	//     .index = 0x115,
+	//     .link_para_a = {
+	//             .md_adr = &(exmod_para_a[0].md_adr_t),
+	//             .link_para_t = {
+	//                 .para_type_t = {PARA_TYPE_FLOAT},
+	//                 .len = 48,
+	//                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+	//                 .min = {
+	//                     .f32l = -120,
+	//                 },
+	//                 .max = {
+	//                     .f32l = 100,
+	//                 },
+	//                 .paradeal = check_adi_offset_pout,
+	//             },
+	//     },
+	//     .authority = USR_TERMINAL,
+	//     .dig_adr = 0,
+	//     .flag = PARA_RD
+	// },
+	{
+		.index = 0x116,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.cell_resel_sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_cell_resel_sw,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x117,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 15,
+					.dat = (void*) & (exmod_para_a[0].md_mfrs.sn),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW //PARA_RD @ccTagOK
+	},
 /*     {
-        .index = 0x104,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.fpga_loaded),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },*/
-    {
-        .index = 0x105,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.fpga_uart),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    }, 
-    {
-        .index = 0x106,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.fpga_spi),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x107,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.net_status),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x108,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dig_pa_sw),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = check_dig_pa_sw,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x109,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 40,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.ser_cell),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x10a,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 388,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.nei_cell),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x10b,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 388,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.after_relay),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x10c,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 250,
-                    .dat = (void*) & (exmod_para_a[0].tel_operator.plmn_t.plmn),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 65535,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x10d,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].tel_operator.band),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 64,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x10e,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.scan_tech),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 12,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x10f,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.swn_manual_cell),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 503,
-                    },
-                    .paradeal = check_manual_cellid,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    // {
-    //     .index = 0x110,
-    //     .link_para_a = {
-    //             .md_adr = &(exmod_para_a[0].md_adr_t),
-    //             .link_para_t = {
-    //                 .para_type_t = {PARA_TYPE_FLOAT},
-    //                 .len = 48,
-    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
-    //                 .min = {
-    //                     .f32l = -10,
-    //                 },
-    //                 .max = {
-    //                     .f32l = 10,
-    //                 },
-    //                 .paradeal = check_adi_offset_flat,
-    //             },
-    //     },
-    //     .authority = USR_TERMINAL,
-    //     .dig_adr = 0,
-    //     .flag = PARA_RD
-    // },
-    // {
-    //     .index = 0x111,
-    //     .link_para_a = {
-    //             .md_adr = &(exmod_para_a[0].md_adr_t),
-    //             .link_para_t = {
-    //                 .para_type_t = {PARA_TYPE_FLOAT},
-    //                 .len = 48,
-    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
-    //                 .min = {
-    //                     .f32l = -120,
-    //                 },
-    //                 .max = {
-    //                     .f32l = 100,
-    //                 },
-    //                 .paradeal = check_adi_offset_pin,
-    //             },
-    //     },
-    //     .authority = USR_TERMINAL,
-    //     .dig_adr = 0,
-    //     .flag = PARA_RD
-    // },
-    // {
-    //     .index = 0x112,
-    //     .link_para_a = {
-    //             .md_adr = &(exmod_para_a[0].md_adr_t),
-    //             .link_para_t = {
-    //                 .para_type_t = {PARA_TYPE_FLOAT},
-    //                 .len = 48,
-    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
-    //                 .min = {
-    //                     .f32l = -120,
-    //                 },
-    //                 .max = {
-    //                     .f32l = 100,
-    //                 },
-    //                 .paradeal = check_adi_offset_pout,
-    //             },
-    //     },
-    //     .authority = USR_TERMINAL,
-    //     .dig_adr = 0,
-    //     .flag = PARA_RD
-    // },
-    // {
-    //     .index = 0x113,
-    //     .link_para_a = {
-    //             .md_adr = &(exmod_para_a[0].md_adr_t),
-    //             .link_para_t = {
-    //                 .para_type_t = {PARA_TYPE_FLOAT},
-    //                 .len = 48,
-    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
-    //                 .min = {
-    //                     .f32l = -10,
-    //                 },
-    //                 .max = {
-    //                     .f32l = 10,
-    //                 },
-    //                 .paradeal = check_adi_offset_flat,
-    //             },
-    //     },
-    //     .authority = USR_TERMINAL,
-    //     .dig_adr = 0,
-    //     .flag = PARA_RD
-    // },
-    // {
-    //     .index = 0x114,
-    //     .link_para_a = {
-    //             .md_adr = &(exmod_para_a[0].md_adr_t),
-    //             .link_para_t = {
-    //                 .para_type_t = {PARA_TYPE_FLOAT},
-    //                 .len = 48,
-    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
-    //                 .min = {
-    //                     .f32l = -120,
-    //                 },
-    //                 .max = {
-    //                     .f32l = 100,
-    //                 },
-    //                 .paradeal = check_adi_offset_pin,
-    //             },
-    //     },
-    //     .authority = USR_TERMINAL,
-    //     .dig_adr = 0,
-    //     .flag = PARA_RD
-    // },
-    // {
-    //     .index = 0x115,
-    //     .link_para_a = {
-    //             .md_adr = &(exmod_para_a[0].md_adr_t),
-    //             .link_para_t = {
-    //                 .para_type_t = {PARA_TYPE_FLOAT},
-    //                 .len = 48,
-    //                 .dat = (void*) & (exmod_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
-    //                 .min = {
-    //                     .f32l = -120,
-    //                 },
-    //                 .max = {
-    //                     .f32l = 100,
-    //                 },
-    //                 .paradeal = check_adi_offset_pout,
-    //             },
-    //     },
-    //     .authority = USR_TERMINAL,
-    //     .dig_adr = 0,
-    //     .flag = PARA_RD
-    // },
-    {
-        .index = 0x116,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.cell_resel_sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_cell_resel_sw,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-/*    {
-        .index = 0x117,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 15,
-                    .dat = (void*) & (unit_para_t.md_mfrs.sn),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW //PARA_RD @ccTagOK
-    },*/
-    /*{
-        .index = 0x118,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 15,
-                    .dat = (void*) & (unit_para_t.mfrs_info.sn),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },*/
-    {
-        .index = 0x11a,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.temp_l),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x11b,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_traffic_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    /*{
-        .index = 0x11c,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = 0,
-                    .max = 0,
-                    .paradeal = check_ch_traffic_th,
-                },
-            }
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, */
-    {
-        .index = 0x11e,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 15,
-                    .dat = (void*) & (exmod_para_a[0].md_mfrs.para_table_date),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x11f,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.iso_alarm_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 255,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x120,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.iso_alarm),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x121,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_over_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x122,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_over_clean),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x123,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_lower_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x124,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_lower_clean),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x125,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_rf_sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+		.index = 0x118,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 15,
+					.dat = (void*) & (unit_para_t.mfrs_info.sn),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	}, */
+	{
+		.index = 0x11a,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.temp_l),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x11b,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_traffic_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	/*{
+		.index = 0x11c,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = 0,
+					.max = 0,
+					.paradeal = check_ch_traffic_th,
+				},
+			}
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, */
+	{
+		.index = 0x11e,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 15,
+					.dat = (void*) & (exmod_para_a[0].md_mfrs.para_table_date),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x11f,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.iso_alarm_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 255,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x120,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.iso_alarm),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x121,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_over_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x122,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_over_clean),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x123,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_lower_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x124,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_lower_clean),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x125,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.temp_ctrl.temp_rf_sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 /*     {
-        .index = 0x126,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.uldl_mix_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 62,
-                    },
-                    .paradeal = check_ch_uldl_mix,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xe5,
-        .flag = PARA_RW
-    }, */
-    {
-        .index = 0x127,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.iso_alarm),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x128,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1 * 250, //@ccTag20170803
-                    .dat = (void*) & (exmod_para_a[0].tel_operator.plmn_t.enable),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 3,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x129,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (exmod_para_a[0].md_mfrs.model_no),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12a,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (exmod_para_a[0].md_mfrs.part_no),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12c,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_ul.lna_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 30,
-                    },
-                    .paradeal = check_ul_att_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12d,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_dl.lna_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 30,
-                    },
-                    .paradeal = check_dl_att_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12e,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_ul.pa_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 30,
-                    },
-                    .paradeal = check_pa_att_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12f,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_dl.pa_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 30,
-                    },
-                    .paradeal = check_pa_att_th_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x130,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.center_freq.ul),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.00,
-                    },
-                    .paradeal = check_ul_center_freq_exmod,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x131,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.center_freq.dl),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.00,
-                    },
-                    .paradeal = check_dl_center_freq_exmod,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x132,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.mflag),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x133,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.tech),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 5,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x134,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.modem_tech_a),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 5,
-                    },
-                    .paradeal = check_modem_tech,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x135,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.cp_init),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x136,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.cp_init),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x137,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.ap_init),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x138,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.ap_init),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+		.index = 0x126,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.uldl_mix_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 62,
+					},
+					.paradeal = check_ch_uldl_mix,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xe5,
+		.flag = PARA_RW
+	}, */
+	{
+		.index = 0x127,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.iso_alarm),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x128,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1 * 250, //@ccTag20170803
+					.dat = (void*) & (exmod_para_a[0].tel_operator.plmn_t.enable),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x129,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (exmod_para_a[0].md_mfrs.model_no),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12a,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (exmod_para_a[0].md_mfrs.part_no),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12c,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_ul.lna_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 30,
+					},
+					.paradeal = check_ul_att_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12d,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_dl.lna_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 30,
+					},
+					.paradeal = check_dl_att_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12e,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_ul.pa_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 30,
+					},
+					.paradeal = check_pa_att_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12f,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.att_dl.pa_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 30,
+					},
+					.paradeal = check_pa_att_th_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x130,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.center_freq.ul),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.00,
+					},
+					.paradeal = check_ul_center_freq_exmod,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x131,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.dig_sundry.center_freq.dl),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.00,
+					},
+					.paradeal = check_dl_center_freq_exmod,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x132,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.mflag),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x133,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.tech),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 5,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x134,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (exmod_dynamic_para_a[0].md_wireless_net_t.modem_tech_a),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 5,
+					},
+					.paradeal = check_modem_tech,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x135,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.cp_init),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x136,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.cp_init),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x137,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.ap_init),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x138,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.ap_init),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 /*     {
-        .index = 0x139,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_sundry.relay_mode),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = check_relay_mode, //null @ccTag20170807
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    }, */
-    {
-        .index = 0x13a,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (exmod_para_a[0].ch_info_t.bandwidth),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0, //.u8l = 0, //@ccTag20170808
-                    },
-                    .max = {
-                        .f32l = 100.00, //.u8l = 100,
-                    },
-                    .paradeal = check_ch_bandwidth_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x13b,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_augment.relay_about_t.after_relay_rsrp_revise),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -127,
-                    },
-                    .max = {
-                        .s8l = 127.00,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+		.index = 0x139,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_sundry.relay_mode),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = check_relay_mode, //null @ccTag20170807
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	}, */
+	{
+		.index = 0x13a,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (exmod_para_a[0].ch_info_t.bandwidth),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0, //.u8l = 0, //@ccTag20170808
+					},
+					.max = {
+						.f32l = 100.00, //.u8l = 100,
+					},
+					.paradeal = check_ch_bandwidth_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x13b,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_augment.relay_about_t.after_relay_rsrp_revise),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -127,
+					},
+					.max = {
+						.s8l = 127.00,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 	{
 		.index = 0x14a,
 		.link_para_a = {
@@ -7174,7 +7357,7 @@ const para_table exmod_table_a[] =
 					.para_type_t = {PARA_TYPE_S8},
 					.len = 1,
 					.dat = (void*) & (exmod_para_a[0].md_augment.max_agc_th.max_agc_th_ul),
-                    .dat_size = sizeof(band_para),
+					.dat_size = sizeof(band_para),
 					.min = {
 						.s8l = -120,
 					},
@@ -7196,7 +7379,7 @@ const para_table exmod_table_a[] =
 					.para_type_t = {PARA_TYPE_S8},
 					.len = 1,
 					.dat = (void*) & (exmod_para_a[0].md_augment.max_agc_th.max_agc_th_dl),
-                    .dat_size = sizeof(band_para),
+					.dat_size = sizeof(band_para),
 					.min = {
 						.s8l = -120,
 					},
@@ -7210,72 +7393,72 @@ const para_table exmod_table_a[] =
 		.dig_adr = 0,
 		.flag = PARA_RW
 	},
-    {
-        .index = 0x14e,
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].md_basic.blocking_compensation),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 20,
-                    },
-                    .paradeal = check_blocking_compensation_exmod,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x154, //自激告警
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_alarm_a[0].m_alarm.self_excited),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x155, //自激告警开关
-        .link_para_a = {
-                .md_adr = &(exmod_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (exmod_para_a[0].alarm_sw.self_excited),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+	{
+		.index = 0x14e,
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].md_basic.blocking_compensation),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 20,
+					},
+					.paradeal = check_blocking_compensation_exmod,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x154, //自激告警
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_alarm_a[0].m_alarm.self_excited),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x155, //自激告警开关
+		.link_para_a = {
+				.md_adr = &(exmod_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (exmod_para_a[0].alarm_sw.self_excited),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 };
 #else
 const para_table u_para_table_a[] = {};
@@ -7300,4396 +7483,4396 @@ const para_table exmod_table_a[] = {};
 #if OTHER_MODULE_ENABLE
 const para_table para_table_a[] =
 {
-    {
-        .index = 1,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 10,
-                    .dat = (void*)(band_para_a[0].md_mfrs.para_table_ver),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x10,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 40,
-                    .dat = (void*)(band_para_a[0].md_mfrs.factory),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x11,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 3,
-                    .dat = (void*) & (band_para_a[0].md_adr_t),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = check_md_adr,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x21,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (band_para_a[0].md_mfrs.hv),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x22,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (band_para_a[0].md_mfrs.sv),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+	{
+		.index = 1,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 10,
+					.dat = (void*)(band_para_a[0].md_mfrs.para_table_ver),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x10,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 40,
+					.dat = (void*)(band_para_a[0].md_mfrs.factory),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x11,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 3,
+					.dat = (void*) & (band_para_a[0].md_adr_t),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = check_md_adr,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x21,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (band_para_a[0].md_mfrs.hv),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x22,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (band_para_a[0].md_mfrs.sv),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 /*    {
-        .index = 0x29,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 25,
-                    .dat = (void*) & (pcb_share.net.ip),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x2a,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 25,
-                    .dat = (void*) & (pcb_share.net.mask),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x2b,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 25,
-                    .dat = (void*) & (pcb_share.net.gateway),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },*/
-    {
-        .index = 0x38,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1, //12 @ccTagOK
-                    .dat = (void*) & (band_para_a[0].md_augment.dig_agc.dl_agc_mode),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1, //2 @ccTagOK
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x39,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.shutdown_ul),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120, //120 @ccTagOK
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x3e,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_basic.max_gain),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 120,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x75,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.reset_para),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_reset_para,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    /*{
-        .index = 0x76,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_residue_t.reset_para),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = 0,
-                    .max = 0,
-                    .paradeal = NULL,
-                },
-            }
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .
-    },*/
-    {
-        .index = 0x7e,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_basic.sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x7f,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_basic.att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x80,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.temperature),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x81,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_regulator),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -25,
-                    },
-                    .max = {
-                        .s8l = 25,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x82,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pin),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x83,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pout),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 53,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x84,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.rpout),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 53,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x85,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.cur_gain),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -100,
-                    },
-                    .max = {
-                        .f32l = 120,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x86,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.rl),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = 1,
-                    },
-                    .max = {
-                        .f32l = 40,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x87,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.rl_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 1,
-                    },
-                    .max = {
-                        .f32l = 40,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x88,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].md_basic.pout.p_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 53,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x89,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8a,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_rate_pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8b,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8c,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_rate_pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8d,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_l_th_pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8e,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_h_th_pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x8f,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_l_th_pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x90,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_h_th_pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x91,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1 * 40,
-                    .dat = (void*) & (band_para_a[0].md_basic.pin.table),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x92,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 40,
-                    .dat = (void*) & (band_para_a[0].md_basic.pin.table),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x93,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1 * 40,
-                    .dat = (void*) & (band_para_a[0].md_basic.pout.table[0]), //.table
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53, //10
-                    },
-                    .paradeal = check_power_calibration_power,//NULL @ccTagOK
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x94,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 40,
-                    .dat = (void*) & (band_para_a[0].md_basic.pout.table[0]), //.table
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = check_power_calibration_voltage,//NULL, @ccTagOK
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x95,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1 * 40,
-                    .dat = (void*) & (band_para_a[0].md_basic.rpout.table[0]), //.table
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53, //10
-                    },
-                    .paradeal = check_power_calibration_power,//NULL @ccTagOK
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x96,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 40,
-                    .dat = (void*) & (band_para_a[0].md_basic.rpout.table[0]), //.table
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = check_power_calibration_voltage,//NULL, @ccTagOK
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x97,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pin.max_v),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x98,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pout.max_v),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x99,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.rpout.max_v),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 5500,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9a,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.rl),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9b,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.pout),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9c,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.pout_pre),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9d,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.temp_h),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9e,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.pa1),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x9f,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.pa2),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xa0,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.rl),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa1,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.pout),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa2,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.pout_pre),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa3,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.temp_h),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa4,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.pa1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa5,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.pa2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa6,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 3,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa7,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.wk_mode),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa8,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.major),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 167,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xa9,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.minor),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xaa,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.dl_ul_config),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 6,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xab,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.cp),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xac,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.sf_config),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 9,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xad,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.sync_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xae,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.tdd_dynamic_sundry.sync_st),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xaf,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.tdd_sync_lost),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xb0,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.tdd_sync_lost),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb1,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.sync_keep),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 255,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb2,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S16},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.sync_offset),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s16l = -100,
-                    },
-                    .max = {
-                        .s16l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb3,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U32},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].md_sundry.td_unique.guard_time),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 10,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb4,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_workfreq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x01,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb5,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_shiftfreq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x0d,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb6,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 10.000,
-                    },
-                    .paradeal = check_ch_pin,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xb7,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 10.000,
-                    },
-                    .paradeal = check_ch_pout,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xb8,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_pin_op_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x19,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xb9,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_ul_op),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_pin_op,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xba,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_pin_lp_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x19,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xbb,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_ul_lp),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_pin_lp,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xbc,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30, //1 @ccTagOK
-                    },
-                    .paradeal = check_ch_lna_att,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x2f,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xbd,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_mute_sw,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x25,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xbe,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_mute_l_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x35,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xbf,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,//0 @ccTagOK
-                    },
-                    .max = {
-                        .s8l = 10, //1@ccTagOK
-                    },
-                    .paradeal = check_ch_mute_h_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x35,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc0,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53,
-                    },
-                    .paradeal = check_ch_agc_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x26,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc1,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = check_ch_agc_att,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xc2,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 10,
-                    },
-                    .paradeal = check_ch_gain_compensate,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xc3,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 12,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 3600,
-                    },
-                    .paradeal = check_ch_traffic,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xc4,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.freq_rx),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc5,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.freq_tx),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc6,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_offset_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0, //0x3c @ccTagOK20170725
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc7,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc8,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xc9,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xca,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.freq_rx),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd5,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xcb,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.freq_tx),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xdb,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xcc,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_offset_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3c,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xcd,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3c,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xce,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3c,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xcf,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3c,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd0,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_ul),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -1,
-                    },
-                    .max = {
-                        .f32l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x3b,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd1,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_ul.adc_att),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u32l = 0,
-                    },
-                    .max = {
-                        .u32l = 30,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd2,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_workfreq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x68,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd3,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_shiftfreq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x74,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd4,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_ch_pin,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xd5,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 53,
-                    },
-                    .paradeal = check_ch_pout,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xd6,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_pin_op_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x80,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd7,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_dl_op[0]),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_pin_op,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xd8,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_pin_lp_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x80,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xd9,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_dl_lp),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_pin_lp,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xda,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = check_ch_lna_att,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x93,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xdb,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_ch_sw,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x8c,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xdc,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 53,
-                    },
-                    .paradeal = check_ch_agc_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x8d,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xdd,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = check_ch_agc_att,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xde,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 10,
-                    },
-                    .paradeal = check_ch_gain_compensate,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xdf,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.freq_rx),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd9,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe0,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.freq_tx),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_freq,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd7,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe1,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_offset_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,//0x9a @ccTagOK20170725
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe2,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe3,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe4,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe5,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.freq_rx),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd9,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe6,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.freq_tx),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd7,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe7,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.000,
-                    },
-                    .paradeal = check_adi_offset_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe8,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xe9,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xea,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 80,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x9a,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xeb,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_dl),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = -1,
-                    },
-                    .max = {
-                        .f32l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0x99,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xec,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_dl.adc_att),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 30,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xed,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.ics_sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x8c,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xee,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.ics_iso_dl),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xef,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.ad80305_1),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xf0,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.ad80305_2),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xf1,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.ad80305_1),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf2,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.ad80305_2),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf3,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_ul_op),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf4,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_ul_lp),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf5,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_dl_op),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf6,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_dl_lp),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf7,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U32},
-                    .len = 48,
-                    .dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.feature[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u32l = 0,
-                    },
-                    .max = {
-                        .u32l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0xf8,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING10},
-                    .len = 120,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ch_remark[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xf9,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.work_mode),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 3,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd2,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xfa,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.gain_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 60,
-                    },
-                    .paradeal = check_adi_gain_att,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd3,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xfb,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.gain_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 60,
-                    },
-                    .paradeal = check_adi_gain_att,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd3,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xfc,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.gain_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 60,
-                    },
-                    .paradeal = check_adi_gain_att,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd4,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xfd,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 2,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.gain_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 60,
-                    },
-                    .paradeal = check_adi_gain_att,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0xd4,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xfe,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].ul.dc_image),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = check_adi_dc_image,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0xdd,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0xff,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].ul.dc_image),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = check_adi_dc_image,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0xdd,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x100,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[0].dl.dc_image),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = check_adi_dc_image,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0xdf,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x101,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].adi_para_t[1].dl.dc_image),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -100,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = check_adi_dc_image,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0xdf,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x102,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.relay_sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xd0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x103,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.temp_l),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x104,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.fpga_loaded),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x105,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.fpga_uart),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x106,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.fpga_spi),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x107,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.net_status),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
+		.index = 0x29,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 25,
+					.dat = (void*) & (pcb_share.net.ip),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x2a,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 25,
+					.dat = (void*) & (pcb_share.net.mask),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x2b,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 25,
+					.dat = (void*) & (pcb_share.net.gateway),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},*/
+	{
+		.index = 0x38,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1, //12 @ccTagOK
+					.dat = (void*) & (band_para_a[0].md_augment.dig_agc.dl_agc_mode),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1, //2 @ccTagOK
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x39,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.shutdown_ul),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120, //120 @ccTagOK
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x3e,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_basic.max_gain),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 120,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x75,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.reset_para),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_reset_para,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	/*{
+		.index = 0x76,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_residue_t.reset_para),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = 0,
+					.max = 0,
+					.paradeal = NULL,
+				},
+			}
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.
+	},*/
+	{
+		.index = 0x7e,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_basic.sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x7f,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_basic.att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x80,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.temperature),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x81,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_regulator),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -25,
+					},
+					.max = {
+						.s8l = 25,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x82,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pin),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x83,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pout),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x84,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.rpout),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x85,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.cur_gain),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -100,
+					},
+					.max = {
+						.f32l = 120,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x86,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.rl),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = 1,
+					},
+					.max = {
+						.f32l = 40,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x87,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].md_sundry.pa_unique.rl_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 1,
+					},
+					.max = {
+						.f32l = 40,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x88,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].md_basic.pout.p_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 53,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x89,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8a,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_rate_pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8b,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8c,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_rate_pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8d,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_l_th_pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8e,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_h_th_pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x8f,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_l_th_pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x90,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].md_sundry.pa_unique.vgs_h_th_pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x91,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1 * 40,
+					.dat = (void*) & (band_para_a[0].md_basic.pin.table),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x92,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 40,
+					.dat = (void*) & (band_para_a[0].md_basic.pin.table),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x93,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1 * 40,
+					.dat = (void*) & (band_para_a[0].md_basic.pout.table[0]), //.table
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53, //10
+					},
+					.paradeal = check_power_calibration_power,//NULL @ccTagOK
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x94,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 40,
+					.dat = (void*) & (band_para_a[0].md_basic.pout.table[0]), //.table
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = check_power_calibration_voltage,//NULL, @ccTagOK
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x95,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1 * 40,
+					.dat = (void*) & (band_para_a[0].md_basic.rpout.table[0]), //.table
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53, //10
+					},
+					.paradeal = check_power_calibration_power,//NULL @ccTagOK
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x96,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 40,
+					.dat = (void*) & (band_para_a[0].md_basic.rpout.table[0]), //.table
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = check_power_calibration_voltage,//NULL, @ccTagOK
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x97,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pin.max_v),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x98,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.pout.max_v),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x99,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_basic.rpout.max_v),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 5500,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9a,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.rl),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9b,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.pout),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9c,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.pout_pre),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9d,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.temp_h),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9e,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.pa1),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x9f,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.pa2),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xa0,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.rl),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa1,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.pout),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa2,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.pout_pre),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa3,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.temp_h),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa4,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.pa1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa5,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.pa2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa6,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa7,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.wk_mode),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa8,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.major),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 167,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xa9,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.minor),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xaa,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.dl_ul_config),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 6,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xab,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.cp),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xac,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.work_para.sf_config),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 9,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xad,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.sync_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xae,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.tdd_dynamic_sundry.sync_st),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xaf,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.tdd_sync_lost),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xb0,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.tdd_sync_lost),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb1,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.sync_keep),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 255,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb2,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S16},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.sync_offset),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s16l = -100,
+					},
+					.max = {
+						.s16l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb3,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U32},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].md_sundry.td_unique.guard_time),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 10,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb4,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_workfreq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x01,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb5,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_shiftfreq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x0d,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb6,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 10.000,
+					},
+					.paradeal = check_ch_pin,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xb7,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 10.000,
+					},
+					.paradeal = check_ch_pout,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xb8,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_pin_op_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x19,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xb9,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_ul_op),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_pin_op,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xba,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_pin_lp_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x19,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xbb,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_ul_lp),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_pin_lp,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xbc,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30, //1 @ccTagOK
+					},
+					.paradeal = check_ch_lna_att,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x2f,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xbd,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_mute_sw,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x25,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xbe,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_mute_l_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x35,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xbf,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,//0 @ccTagOK
+					},
+					.max = {
+						.s8l = 10, //1@ccTagOK
+					},
+					.paradeal = check_ch_mute_h_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x35,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc0,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = check_ch_agc_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x26,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc1,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = check_ch_agc_att,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xc2,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 10,
+					},
+					.paradeal = check_ch_gain_compensate,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xc3,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 12,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.ul[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 3600,
+					},
+					.paradeal = check_ch_traffic,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xc4,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].ul.freq_rx),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc5,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].ul.freq_tx),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc6,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_offset_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0, //0x3c @ccTagOK20170725
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc7,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc8,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xc9,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].ul.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xca,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].ul.freq_rx),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd5,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xcb,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].ul.freq_tx),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xdb,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xcc,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_offset_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x3c,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xcd,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x3c,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xce,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x3c,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xcf,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].ul.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x3c,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd0,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_ul),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -1,
+					},
+					.max = {
+						.f32l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x3b,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd1,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_ul.adc_att),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u32l = 0,
+					},
+					.max = {
+						.u32l = 30,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd2,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_workfreq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x68,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd3,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_shiftfreq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x74,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd4,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_ch_pin,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xd5,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 53,
+					},
+					.paradeal = check_ch_pout,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xd6,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_pin_op_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x80,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd7,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_dl_op[0]),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_pin_op,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xd8,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_pin_lp_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x80,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xd9,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.ch_pin_dl_lp),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_pin_lp,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xda,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = check_ch_lna_att,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x93,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xdb,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_ch_sw,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x8c,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xdc,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 53,
+					},
+					.paradeal = check_ch_agc_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x8d,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xdd,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = check_ch_agc_att,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xde,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.dl[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 10,
+					},
+					.paradeal = check_ch_gain_compensate,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xdf,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].dl.freq_rx),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd9,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe0,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].dl.freq_tx),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_freq,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd7,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe1,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_offset_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,//0x9a @ccTagOK20170725
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe2,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe3,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe4,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].dl.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe5,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].dl.freq_rx),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd9,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe6,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].dl.freq_tx),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd7,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe7,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.000,
+					},
+					.paradeal = check_adi_offset_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe8,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xe9,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xea,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 80,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].dl.adi_offset[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x9a,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xeb,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.gain_equalize_rate_dl),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = -1,
+					},
+					.max = {
+						.f32l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0x99,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xec,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dds_dl.adc_att),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 30,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xed,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.ics_sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x8c,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xee,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.ics_iso_dl),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xef,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.ad80305_1),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xf0,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.ad80305_2),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xf1,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.ad80305_1),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf2,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.ad80305_2),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf3,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_ul_op),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf4,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_ul_lp),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf5,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_dl_op),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf6,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.ch_pin_dl_lp),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf7,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U32},
+					.len = 48,
+					.dat = (void*) & (band_dynamic_para_a[0].ch_rf_t.feature[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u32l = 0,
+					},
+					.max = {
+						.u32l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0xf8,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING10},
+					.len = 120,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ch_remark[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xf9,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.work_mode),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0xd2,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xfa,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].ul.gain_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 60,
+					},
+					.paradeal = check_adi_gain_att,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0xd3,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xfb,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].ul.gain_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 60,
+					},
+					.paradeal = check_adi_gain_att,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0xd3,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xfc,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].dl.gain_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 60,
+					},
+					.paradeal = check_adi_gain_att,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0xd4,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xfd,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 2,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].dl.gain_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 60,
+					},
+					.paradeal = check_adi_gain_att,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0xd4,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xfe,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].ul.dc_image),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = check_adi_dc_image,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0xdd,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0xff,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].ul.dc_image),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = check_adi_dc_image,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0xdd,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x100,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[0].dl.dc_image),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = check_adi_dc_image,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0xdf,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x101,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].adi_para_t[1].dl.dc_image),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -100,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = check_adi_dc_image,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0xdf,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x102,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.relay_sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xd0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x103,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.temp_l),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x104,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.fpga_loaded),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x105,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.fpga_uart),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x106,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.fpga_spi),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x107,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.net_status),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
 /*     {
-        .index = 0x108,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dig_pa_sw),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = check_dig_pa_sw,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    }, */
-    {
-        .index = 0x109,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 40,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.ser_cell),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x10a,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 388,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.nei_cell),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x10b,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 388,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.after_relay),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x10c,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2 * 250,
-                    .dat = (void*) & (band_para_a[0].tel_operator.plmn_t.plmn),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 65535,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x10d,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].tel_operator.band),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 64,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x10e,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.scan_tech),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 12,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x10f,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U16},
-                    .len = 2,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.swn_manual_cell),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u16l = 0,
-                    },
-                    .max = {
-                        .u16l = 503,
-                    },
-                    .paradeal = check_manual_cellid,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x110,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x111,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x112,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x113,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -10,
-                    },
-                    .max = {
-                        .f32l = 10,
-                    },
-                    .paradeal = check_adi_offset_flat,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x114,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pin,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x115,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 48,
-                    .dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .f32l = -120,
-                    },
-                    .max = {
-                        .f32l = 100,
-                    },
-                    .paradeal = check_adi_offset_pout,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x116,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.cell_resel_sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = check_cell_resel_sw,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x117,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 15,
-                    .dat = (void*) & (unit_para_t.md_mfrs.sn),
-                    .dat_size = sizeof(unit_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW //PARA_RD @ccTagOK
-    },
-    /*{
-        .index = 0x118,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 15,
-                    .dat = (void*) & (unit_para_t.mfrs_info.sn),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },*/
-    {
-        .index = 0x11a,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.temp_l),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x11b,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -120,
-                    },
-                    .max = {
-                        .s8l = 10,
-                    },
-                    .paradeal = check_ch_traffic_th,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0x2c,
-        .flag = PARA_RW
-    },
-    /*{
-        .index = 0x11c,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
-                    .dat_size = sizeof(band_para),
-                    .min = 0,
-                    .max = 0,
-                    .paradeal = check_ch_traffic_th,
-                },
-            }
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .
-    },*/
-    {
-        .index = 0x11e,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 15,
-                    .dat = (void*) & (band_para_a[0].md_mfrs.para_table_date),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x11f,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.iso_alarm_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 255,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x120,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.iso_alarm),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_TERMINAL,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x121,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_over_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x122,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_over_clean),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x123,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_lower_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x124,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_lower_clean),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -50,
-                    },
-                    .max = {
-                        .s8l = 100,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x125,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_rf_sw),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x126,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.uldl_mix_th),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 62,
-                    },
-                    .paradeal = check_ch_uldl_mix,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xe5,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x127,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.iso_alarm),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x128,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1 * 250, //@ccTag20170803
-                    .dat = (void*) & (band_para_a[0].tel_operator.plmn_t.enable),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 3,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x129,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (band_para_a[0].md_mfrs.model_no),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12a,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_STRING},
-                    .len = 20,
-                    .dat = (void*) & (band_para_a[0].md_mfrs.part_no),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 0,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12c,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_ul.lna_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 30,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xee,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12d,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_dl.lna_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 30,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xee,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12e,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_ul.pa_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 30,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xee,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x12f,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_dl.pa_att),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = 0,
-                    },
-                    .max = {
-                        .s8l = 30,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xee,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x130,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.ul),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.00,
-                    },
-                    .paradeal = check_center_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x131,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4,
-                    .dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.dl),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0,
-                    },
-                    .max = {
-                        .f32l = 100000.00,
-                    },
-                    .paradeal = check_center_freq,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x132,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.mflag),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x133,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.tech),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 5,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x134,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 12,
-                    .dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.modem_tech_a),
-                    .dat_size = sizeof(band_dynamic_para),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 5,
-                    },
-                    .paradeal = check_modem_tech,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x135,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.cp_init),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x136,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.cp_init),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x137,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (m_alarm_a[0].m_alarm.ap_init),
-                    .dat_size = sizeof(md_alarm_c),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RD
-    },
-    {
-        .index = 0x138,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].alarm_sw.ap_init),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 0,
-                    },
-                    .max = {
-                        .u8l = 1,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x139,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_U8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_sundry.relay_mode),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .u8l = 1,
-                    },
-                    .max = {
-                        .u8l = 2,
-                    },
-                    .paradeal = check_relay_mode, //null @ccTag20170807
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x13a,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_FLOAT},
-                    .len = 4 * 12,
-                    .dat = (void*) & (band_para_a[0].ch_info_t.bandwidth),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .f32l = 0, //.u8l = 0, //@ccTag20170808
-                    },
-                    .max = {
-                        .f32l = 100.00, //.u8l = 100,
-                    },
-                    .paradeal = check_ch_bandwidth,
-                },
-        },
-        .authority = USR_OPERATOR,
-        .dig_adr = 0xe8,
-        .flag = PARA_RW
-    },
-    {
-        .index = 0x13b,
-        .link_para_a = {
-                .md_adr = &(band_para_a[0].md_adr_t),
-                .link_para_t = {
-                    .para_type_t = {PARA_TYPE_S8},
-                    .len = 1,
-                    .dat = (void*) & (band_para_a[0].md_augment.relay_about_t.after_relay_rsrp_revise),
-                    .dat_size = sizeof(band_para),
-                    .min = {
-                        .s8l = -127,
-                    },
-                    .max = {
-                        .s8l = 127.00,
-                    },
-                    .paradeal = NULL,
-                },
-        },
-        .authority = USR_MANUFACTURER,
-        .dig_adr = 0,
-        .flag = PARA_RW
-    },
+		.index = 0x108,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.dig_pa_sw),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = check_dig_pa_sw,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	}, */
+	{
+		.index = 0x109,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 40,
+					.dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.ser_cell),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x10a,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 388,
+					.dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.wireless_info_t.nei_cell),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x10b,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 388,
+					.dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.after_relay),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x10c,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2 * 250,
+					.dat = (void*) & (band_para_a[0].tel_operator.plmn_t.plmn),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 65535,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x10d,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].tel_operator.band),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 64,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x10e,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.scan_tech),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 12,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x10f,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U16},
+					.len = 2,
+					.dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.swn_manual_cell),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u16l = 0,
+					},
+					.max = {
+						.u16l = 503,
+					},
+					.paradeal = check_manual_cellid,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x110,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x111,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x112,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.adi_offset[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x113,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -10,
+					},
+					.max = {
+						.f32l = 10,
+					},
+					.paradeal = check_adi_offset_flat,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x114,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pin,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x115,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 48,
+					.dat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.adi_offset[0]),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.f32l = -120,
+					},
+					.max = {
+						.f32l = 100,
+					},
+					.paradeal = check_adi_offset_pout,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x116,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.cell_resel_sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = check_cell_resel_sw,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x117,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 15,
+					.dat = (void*) & (unit_para_t.md_mfrs.sn),
+					.dat_size = sizeof(unit_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW //PARA_RD @ccTagOK
+	},
+	/*{
+		.index = 0x118,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 15,
+					.dat = (void*) & (unit_para_t.mfrs_info.sn),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},*/
+	{
+		.index = 0x11a,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.temp_l),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x11b,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.ul[0]),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -120,
+					},
+					.max = {
+						.s8l = 10,
+					},
+					.paradeal = check_ch_traffic_th,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0x2c,
+		.flag = PARA_RW
+	},
+	/*{
+		.index = 0x11c,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.dl[0]),
+					.dat_size = sizeof(band_para),
+					.min = 0,
+					.max = 0,
+					.paradeal = check_ch_traffic_th,
+				},
+			}
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.
+	},*/
+	{
+		.index = 0x11e,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 15,
+					.dat = (void*) & (band_para_a[0].md_mfrs.para_table_date),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x11f,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.iso_alarm_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 255,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x120,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.iso_alarm),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_TERMINAL,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x121,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_over_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x122,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_over_clean),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x123,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_lower_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x124,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_lower_clean),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -50,
+					},
+					.max = {
+						.s8l = 100,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x125,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_basic.temp_ctrl.temp_rf_sw),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x126,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.uldl_mix_th),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 62,
+					},
+					.paradeal = check_ch_uldl_mix,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xe5,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x127,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.iso_alarm),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x128,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1 * 250, //@ccTag20170803
+					.dat = (void*) & (band_para_a[0].tel_operator.plmn_t.enable),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x129,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (band_para_a[0].md_mfrs.model_no),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12a,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_STRING},
+					.len = 20,
+					.dat = (void*) & (band_para_a[0].md_mfrs.part_no),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 0,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12c,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_ul.lna_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 30,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xee,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12d,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_dl.lna_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 30,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xee,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12e,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_ul.pa_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 30,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xee,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x12f,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.att_dl.pa_att),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = 0,
+					},
+					.max = {
+						.s8l = 30,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xee,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x130,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.ul),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.00,
+					},
+					.paradeal = check_center_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x131,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4,
+					.dat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.dl),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0,
+					},
+					.max = {
+						.f32l = 100000.00,
+					},
+					.paradeal = check_center_freq,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x132,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.mflag),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x133,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.tech),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 5,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x134,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 12,
+					.dat = (void*) & (band_dynamic_para_a[0].md_wireless_net_t.modem_tech_a),
+					.dat_size = sizeof(band_dynamic_para),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 5,
+					},
+					.paradeal = check_modem_tech,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x135,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.cp_init),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x136,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.cp_init),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x137,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (m_alarm_a[0].m_alarm.ap_init),
+					.dat_size = sizeof(md_alarm_c),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 1,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RD
+	},
+	{
+		.index = 0x138,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].alarm_sw.ap_init),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 0,
+					},
+					.max = {
+						.u8l = 3,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x139,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_U8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_sundry.relay_mode),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.u8l = 1,
+					},
+					.max = {
+						.u8l = 2,
+					},
+					.paradeal = check_relay_mode, //null @ccTag20170807
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x13a,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_FLOAT},
+					.len = 4 * 12,
+					.dat = (void*) & (band_para_a[0].ch_info_t.bandwidth),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.f32l = 0, //.u8l = 0, //@ccTag20170808
+					},
+					.max = {
+						.f32l = 100.00, //.u8l = 100,
+					},
+					.paradeal = check_ch_bandwidth,
+				},
+		},
+		.authority = USR_OPERATOR,
+		.dig_adr = 0xe8,
+		.flag = PARA_RW
+	},
+	{
+		.index = 0x13b,
+		.link_para_a = {
+				.md_adr = &(band_para_a[0].md_adr_t),
+				.link_para_t = {
+					.para_type_t = {PARA_TYPE_S8},
+					.len = 1,
+					.dat = (void*) & (band_para_a[0].md_augment.relay_about_t.after_relay_rsrp_revise),
+					.dat_size = sizeof(band_para),
+					.min = {
+						.s8l = -127,
+					},
+					.max = {
+						.s8l = 127.00,
+					},
+					.paradeal = NULL,
+				},
+		},
+		.authority = USR_MANUFACTURER,
+		.dig_adr = 0,
+		.flag = PARA_RW
+	},
 	{
 		.index = 0x14a,
 		.link_para_a = {
@@ -11698,7 +11881,7 @@ const para_table para_table_a[] =
 					.para_type_t = {PARA_TYPE_S8},
 					.len = 1,
 					.dat = (void*) & (band_para_a[0].md_augment.max_agc_th.max_agc_th_ul),
-                    .dat_size = sizeof(band_para),
+					.dat_size = sizeof(band_para),
 					.min = {
 						.s8l = -120,
 					},
@@ -11720,7 +11903,7 @@ const para_table para_table_a[] =
 					.para_type_t = {PARA_TYPE_S8},
 					.len = 1,
 					.dat = (void*) & (band_para_a[0].md_augment.max_agc_th.max_agc_th_dl),
-                    .dat_size = sizeof(band_para),
+					.dat_size = sizeof(band_para),
 					.min = {
 						.s8l = -120,
 					},
@@ -12650,7 +12833,7 @@ static s16 check_band_bts(void* local, void* remote, md_adr_info *md_adr, u8 dig
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			po[cnt].bts = p[cnt];
 		}
-        reset_agc_flag = 1;
+		reset_agc_flag = 1;
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			p[cnt] = po[cnt].bts;
@@ -12679,7 +12862,7 @@ static s16 check_band_ms(void* local, void* remote, md_adr_info *md_adr, u8 dig_
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			po[cnt].ms = p[cnt];
 		}
-        reset_agc_flag = 1;
+		reset_agc_flag = 1;
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			p[cnt] = po[cnt].ms;
@@ -12708,7 +12891,7 @@ static s16 check_band_max_gain(void* local, void* remote, md_adr_info *md_adr, u
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			br[cnt].max_gain = p[cnt];
 		}
-        reset_agc_flag = 1;
+		reset_agc_flag = 1;
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			p[cnt] = br[cnt].max_gain;
@@ -12737,7 +12920,7 @@ static s16 check_band_ch_max_gain(void* local, void* remote, md_adr_info *md_adr
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			br[cnt].ch_max_gain[0] = p[cnt];
 		}
-        reset_agc_flag = 1;
+		reset_agc_flag = 1;
 	} else if (PARA_RD == flag) {
 		for (cnt = 0; cnt < BANDS_IN_ONE_MONITOR; cnt++) {
 			p[cnt] = br[cnt].ch_max_gain[0];
@@ -12995,7 +13178,83 @@ static s16 check_manual_cellid(void* local, void* remote, md_adr_info *md_adr, u
 
 	return 0;
 }
+static s16 check_lan_ip(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	printf("check_lan_ip() start \r\n");
 
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	dig_adr = dig_adr;
+
+	if (PARA_RW == flag) {
+		memcpy((void*)local, (void*)remote, 25);
+		local_network_config();
+	} else if (PARA_RD == flag) {
+		memcpy((void*)remote, (void*)local, 25);
+
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+static s16 check_lan_gateway(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	dig_adr = dig_adr;
+
+	if (PARA_RW == flag) {
+		memcpy(local, remote, 25);
+		local_network_config();
+	} else if (PARA_RD == flag) {
+		memcpy(remote, local, 25);
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+
+static s16 check_backup_data(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	dig_adr = dig_adr;
+
+	if (PARA_RW == flag) {
+		if(memcmp(local, remote, 20)){
+			return -1;
+		}
+		return backup_data_para();
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+static s16 check_recover_data(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	dig_adr = dig_adr;
+
+	if (PARA_RW == flag) {
+		if(*(u8*)remote == 1)
+			return recover_data_para();
+		else{
+			return -1;
+		}
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
 /**********************处理与流程相关的回调函数*************************/
 extern s32 md_adr_to_index(md_adr_info *md_adr);
 static s16 check_relay_sw(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
@@ -13124,33 +13383,33 @@ s32 find_para_adr_mod( md_adr_info *md, u8 *is_exmod)
 	if (NULL == md)
 		return -1;
 
-    #if OTHER_MODULE_ENABLE
+	#if OTHER_MODULE_ENABLE
 	for (cnt = 0; cnt < MOD_NUM_IN_ONE_PCB; cnt++) {
 		if (((md->mod_type) == (band_para_a[cnt].md_adr_t.mod_type)) && \
-		        ((md->mod_band) == (band_para_a[cnt].md_adr_t.mod_band)) && \
-		        ((md->mod_adr_t.dat) == (band_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
-                    *is_exmod = FALSE;
-			        return cnt;
+				((md->mod_band) == (band_para_a[cnt].md_adr_t.mod_band)) && \
+				((md->mod_adr_t.dat) == (band_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
+					*is_exmod = FALSE;
+					return cnt;
 		}
 	}
-    #endif
+	#endif
 
-    #if MONITOR_MODULE_ENABLE
-    if(md->mod_type > 0){
-        cnt = (md->mod_type-1)<<4;
-    }else{
-        return -1;
-    }
+	#if MONITOR_MODULE_ENABLE
+	if(md->mod_type > 0){
+		cnt = (md->mod_type-1)<<4;
+	}else{
+		return -1;
+	}
   
 	for (; cnt < MONITOR_MOD_NUM; cnt++) {
 		if (((md->mod_type) == (exmod_para_a[cnt].md_adr_t.mod_type)) && \
-		        ((md->mod_band) == (exmod_para_a[cnt].md_adr_t.mod_band)) && \
-		        ((md->mod_adr_t.dat) == (exmod_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
-                    *is_exmod = TRUE;
-			        return cnt;
+				((md->mod_band) == (exmod_para_a[cnt].md_adr_t.mod_band)) && \
+				((md->mod_adr_t.dat) == (exmod_para_a[cnt].md_adr_t.mod_adr_t.dat))) {
+					*is_exmod = TRUE;
+					return cnt;
 		}
 	}
-    #endif
+	#endif
 
 	return -1;
 }
@@ -13361,12 +13620,12 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	para *_para = NULL;
 	paradeal parafun = NULL;
 	para_table *ptable = NULL;
-    //band_para *ppara_a = NULL;
-    u8 is_exmod = 0; //true: 外部模块
+	//band_para *ppara_a = NULL;
+	u8 is_exmod = 0; //true: 外部模块
 	u16 para_table_size = 0;
 	USR_AUTHORITY adr_permission = 0;
-    md_adr_info table_para_adr;
-    void *ptable_para_dat=NULL;
+	md_adr_info table_para_adr;
+	void *ptable_para_dat=NULL;
 
 	if ((NULL == ps) || (NULL == (ps->next)))
 		return -1;
@@ -13377,9 +13636,9 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 	if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type))
 		mod_index = 0;
 	else{
-        mod_index = find_para_adr_mod( &(ps->md_adr), &is_exmod);
-    }
-    // printf("mod_index = %d\n", mod_index);
+		mod_index = find_para_adr_mod( &(ps->md_adr), &is_exmod);
+	}
+	// printf("mod_index = %d\n", mod_index);
 
 	if (mod_index < 0)
 	{
@@ -13397,24 +13656,24 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 		ptable = NULL;
 #endif
 	} else {
-        if(is_exmod){
-            #if MONITOR_MODULE_ENABLE
-            ptable = (para_table*)exmod_table_a;
-            para_table_size = EXMOD_TABLE_SIZE;
+		if(is_exmod){
+			#if MONITOR_MODULE_ENABLE
+			ptable = (para_table*)exmod_table_a;
+			para_table_size = EXMOD_TABLE_SIZE;
 
-            #else
-            ptable = NULL;
-            #endif
-        }else{
-            #if OTHER_MODULE_ENABLE
-            ptable = (para_table*)para_table_a;
-            para_table_size = M_PARA_TABLE_SIZE;
+			#else
+			ptable = NULL;
+			#endif
+		}else{
+			#if OTHER_MODULE_ENABLE
+			ptable = (para_table*)para_table_a;
+			para_table_size = M_PARA_TABLE_SIZE;
  
-            //RLDEBUG("one_para_adr_read_processing:match band para table\r\n");
-            #else
-            ptable = NULL;
-            #endif
-        }
+			//RLDEBUG("one_para_adr_read_processing:match band para table\r\n");
+			#else
+			ptable = NULL;
+			#endif
+		}
 	}
 
 	if (NULL == ptable) {
@@ -13433,11 +13692,11 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 
 	//RLDEBUG("one_para_adr_read_processing:adr index is:%d\r\n", adr_index);
 	memcpy(&table_para_adr, &ps->md_adr, sizeof(md_adr_info));
-    if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
-        ptable_para_dat = (void*)(ptable[adr_index].link_para_a.link_para_t.dat + ptable[adr_index].link_para_a.link_para_t.dat_size*mod_index);
-    }else{
-        ptable_para_dat = (void*)ptable[adr_index].link_para_a.link_para_t.dat;
-    }
+	if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
+		ptable_para_dat = (void*)(ptable[adr_index].link_para_a.link_para_t.dat + ptable[adr_index].link_para_a.link_para_t.dat_size*mod_index);
+	}else{
+		ptable_para_dat = (void*)ptable[adr_index].link_para_a.link_para_t.dat;
+	}
 
 
 	//RLDEBUG("one_para_adr_read_processing:adr mod index is:%d\r\n", mod_index);
@@ -13496,8 +13755,8 @@ s8 one_para_adr_read_processing(const u16 adr, para_stream *ps)
 			goto ONE_PARA_ADR_READ_ERR;
 		}
 	} else {
-        // printf("ptable_para_dat=%d\n", *((u8*)ptable_para_dat));
-        // RLDEBUG("ptable[adr_index].link_para_a.link_para_t.len=%d\n", ptable[adr_index].link_para_a.link_para_t.len);
+		// printf("ptable_para_dat=%d\n", *((u8*)ptable_para_dat));
+		// RLDEBUG("ptable[adr_index].link_para_a.link_para_t.len=%d\n", ptable[adr_index].link_para_a.link_para_t.len);
 		memcpy((ps->next), (ptable_para_dat), (ptable[adr_index].link_para_a.link_para_t.len));
 	}
 	ps->next = ps->next + (ptable[adr_index].link_para_a.link_para_t.len);
@@ -13518,50 +13777,56 @@ ONE_PARA_ADR_READ_ERR:
 
 void set_table_para_dat(void ** des, void * src, u32 offset, u16 adr)
 {
-    u16 i;
-    
-    for(i=0; i<sizeof(pcb_share_para_table); i++){
-        if(adr == pcb_share_para_table[i]) return;
-    }
+	u16 i;
+	
+	for(i=0; i<sizeof(pcb_share_para_table); i++){
+		if(adr == pcb_share_para_table[i]) return;
+	}
 
-    *des = src + offset;
+	*des = src + offset;
 }
 
 
 void set_write_data_file_flag(u8 mod_type, u8 mod_index, u16 adr)
 {
-    u16 i;
+	u16 i;
 
 #ifdef MONITOR_MODULE_ENABLE
-    if (MOD_TYPE_MONITOR == (mod_type)) {
-        data_update(DATA_TYPE_UNIT);
-    }
+	if (MOD_TYPE_MONITOR == (mod_type)) {
+		data_update(DATA_TYPE_UNIT);
+	}
+	for(i=0; i<sizeof(pcb_share_para_table); i++){
+		if(adr == pcb_share_para_table[i]){
+			data_update(DATA_TYPE_PCB);
+			return;
+		} 
+	}
 #endif
 #ifdef OTHER_MODULE_ENABLE
-    if(MOD_TYPE_MONITOR != (mod_type)){
-        for(i=0; i<sizeof(pcb_share_para_table); i++){
-            if(adr == pcb_share_para_table[i]){
-                data_update(DATA_TYPE_PCB);
-                return;
-            } 
-        }
-        
-        switch (mod_index)
-        {
-            case 0:
-                data_update(DATA_TYPE_MOD1);
-                break;
-            case 1:
-                data_update(DATA_TYPE_MOD2);
-                break;
-            case 2:
-                data_update(DATA_TYPE_MOD3);
-                break;
-            default:
-                break;
-        }
-        
-    }
+	if(MOD_TYPE_MONITOR != (mod_type)){
+/* 		for(i=0; i<sizeof(pcb_share_para_table); i++){
+			if(adr == pcb_share_para_table[i]){
+				data_update(DATA_TYPE_PCB);
+				return;
+			} 
+		} */
+		
+		switch (mod_index)
+		{
+			case 0:
+				data_update(DATA_TYPE_MOD1);
+				break;
+			case 1:
+				data_update(DATA_TYPE_MOD2);
+				break;
+			case 2:
+				data_update(DATA_TYPE_MOD3);
+				break;
+			default:
+				break;
+		}
+		
+	}
 #endif
 }
 
@@ -13579,20 +13844,20 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	para *_para = NULL;
 	paradeal parafun = NULL;
 	para_table *ptable = NULL;
-    u8 is_exmod = 0;
+	u8 is_exmod = 0;
 	u16 para_table_size = 0;
 	USR_AUTHORITY adr_permission = 0;
-    md_adr_info table_para_adr;
-    void *ptable_para_dat;
+	md_adr_info table_para_adr;
+	void *ptable_para_dat;
 
 	if ((NULL == ps) || (NULL == (ps->next)) || (NULL == src)) {
 		return -1;
 	}
 
 	_para = (para*)src;
-    RLDEBUG("one_para_adr_set_processing: find mod_index\r\n");
+	RLDEBUG("one_para_adr_set_processing: find mod_index\r\n");
 
-    if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type)) {
+	if (MOD_TYPE_MONITOR == (ps->md_adr.mod_type)) {
 		mod_index = 0;
 	} else {
 		mod_index = find_para_adr_mod( &(ps->md_adr), &is_exmod);
@@ -13614,22 +13879,22 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 		para_table_size = 0;
 #endif
 	} else {
-        if(is_exmod){
-            #if MONITOR_MODULE_ENABLE
-            ptable = (para_table*)exmod_table_a;
-            para_table_size = EXMOD_TABLE_SIZE;
-            #else
-            ptable = NULL;
-            #endif
-        }else{
-            #if OTHER_MODULE_ENABLE
-            ptable = (para_table*)para_table_a;
-            para_table_size = M_PARA_TABLE_SIZE;
-            //RLDEBUG("one_para_adr_read_processing:match band para table\r\n");
-            #else
-            ptable = NULL;
-            #endif
-        }
+		if(is_exmod){
+			#if MONITOR_MODULE_ENABLE
+			ptable = (para_table*)exmod_table_a;
+			para_table_size = EXMOD_TABLE_SIZE;
+			#else
+			ptable = NULL;
+			#endif
+		}else{
+			#if OTHER_MODULE_ENABLE
+			ptable = (para_table*)para_table_a;
+			para_table_size = M_PARA_TABLE_SIZE;
+			//RLDEBUG("one_para_adr_read_processing:match band para table\r\n");
+			#else
+			ptable = NULL;
+			#endif
+		}
 	}
 
 	if (NULL == ptable) {
@@ -13646,12 +13911,12 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	}
 
 
-    memcpy(&table_para_adr, &ps->md_adr, sizeof(md_adr_info));
-    if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
-        set_table_para_dat(&ptable_para_dat, ptable[adr_index].link_para_a.link_para_t.dat, sizeof(band_para)*mod_index, _para->para_adr);
-    }else{
-        ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat;
-    }
+	memcpy(&table_para_adr, &ps->md_adr, sizeof(md_adr_info));
+	if (MOD_TYPE_MONITOR != (ps->md_adr.mod_type)) {
+		set_table_para_dat(&ptable_para_dat, ptable[adr_index].link_para_a.link_para_t.dat, sizeof(band_para)*mod_index, _para->para_adr);
+	}else{
+		ptable_para_dat = ptable[adr_index].link_para_a.link_para_t.dat;
+	}
 
 	/*check permission*/
 #ifdef RL_PERMISSION_CHECK
@@ -13722,9 +13987,9 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 		}
 
 		parafun = (ptable[adr_index].link_para_a.link_para_t.paradeal);
-        //pthread_mutex_lock(&exmod_para_mutex);
+		//pthread_mutex_lock(&exmod_para_mutex);
 		para_num = parafun((void*)(ptable_para_dat), (void*)(src + sizeof(para)), &table_para_adr, (ptable[adr_index].dig_adr), PARA_RW);
-        //pthread_mutex_unlock(&exmod_para_mutex);
+		//pthread_mutex_unlock(&exmod_para_mutex);
 		if (para_num < 0) {
 			RLDEBUG("one_para_adr_set_processing:parafun() err\r\n");
 			SET_PARA_ERR_CODE(err, PARA_ADR_OTHER_ERR);
@@ -13739,26 +14004,26 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 			SET_PARA_TYPE(err, _para->para_type_t.dat);
 			goto ONE_PARA_ADR_SET_ERR;
 		}
-        //pthread_mutex_lock(&exmod_para_mutex);
+		//pthread_mutex_lock(&exmod_para_mutex);
 		/*复制参数*/
 		memcpy((void*)(ptable_para_dat), (void*)(src + sizeof(para)), (ptable[adr_index].link_para_a.link_para_t.len));
-        //pthread_mutex_unlock(&exmod_para_mutex);
+		//pthread_mutex_unlock(&exmod_para_mutex);
 	}
 
 	if (ptable[adr_index].dig_adr) {
 		set_adr_add(ptable[adr_index].dig_adr , &table_para_adr);
 	}
 
-    if(!is_exmod) {
-        set_write_data_file_flag(ps->md_adr.mod_type, mod_index, _para->para_adr);
-    }
-    
+	if(!is_exmod) {
+		set_write_data_file_flag(ps->md_adr.mod_type, mod_index, _para->para_adr);
+	}
+	
 	ps->next = ps->next + (ptable[adr_index].link_para_a.link_para_t.len);
 
 	return 0;
-    
+	
 ONE_PARA_ADR_SET_ERR:
-    //err return format:para adr,err + data type, data len
+	//err return format:para adr,err + data type, data len
 	RLDEBUG("one_para_adr_set_processing err,the err adr is:%x \r\n", _para->para_adr);
 	*(u16*)(ps->next) = _para->para_adr;	//para adr
 	ps->next = ps->next + 2;

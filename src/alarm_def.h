@@ -32,7 +32,7 @@ typedef struct {
 } md_alarm_c;
 
 /*告警统计多少次后上报*/
-#define ALARM_CENSUS_TIME		10
+#define ALARM_CENSUS_TIME		5
 #define MAX_ALARM_TIMES_ONEDAY	30
 /*****************************data struct define******************/
 extern unit_alarm_c u_alarm_t;

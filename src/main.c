@@ -68,14 +68,15 @@ int main(int argc, char const *argv[])
 
 	// pthread_mutex_init(&exmod_para_mutex, NULL);
 
-
+	#ifdef BROADBAND_DIGITAL_PROJECT
     pthread_attr_init(&digmod_attr);
     pthread_attr_setdetachstate(&digmod_attr, PTHREAD_CREATE_DETACHED);
 	// pthread_attr_setstacksize(&digmod_attr, STACKSIZE);
     err = pthread_create(&digmod_tid, &digmod_attr, digmod_thread, NULL);
     if (err < 0) {
         RLDEBUG("creat digmod thread false!\r\n");
-    }
+    } 
+	#endif
 
     pthread_attr_init(&monitor_attr);
     pthread_attr_setdetachstate(&monitor_attr, PTHREAD_CREATE_DETACHED);
@@ -92,7 +93,7 @@ int main(int argc, char const *argv[])
     if (err < 0) {
         RLDEBUG("creat pamod thread false!\r\n");
     }
-
+	#if 0
 	//creat local recv task
 	pthread_attr_init(&local_recv_ts_attr);
 	pthread_attr_setdetachstate(&local_recv_ts_attr, PTHREAD_CREATE_DETACHED);
@@ -102,7 +103,7 @@ int main(int argc, char const *argv[])
 		RLDEBUG("creat local recv task false!\r\n");
 	}
 
-	#if 1
+	
 	//creat protocol send task
 	pthread_attr_init(&frame_send_ts_attr);
 	pthread_attr_setdetachstate(&frame_send_ts_attr, PTHREAD_CREATE_DETACHED);
@@ -111,7 +112,7 @@ int main(int argc, char const *argv[])
 	if (err < 0) {
 		RLDEBUG("creat frame send task false!\r\n");
 	}
-	#endif
+	
 
 	//creat protocol processing task
 	pthread_attr_init(&protocol_ts_attr);
@@ -121,7 +122,7 @@ int main(int argc, char const *argv[])
 	if (err < 0) {
 		RLDEBUG("creat protocol task false!\r\n");
 	}
-
+	#endif
 	/********creat data update task*************/
 	pthread_attr_init(&data_ts_attr);
 	pthread_attr_setdetachstate(&data_ts_attr, PTHREAD_CREATE_DETACHED);
@@ -137,7 +138,7 @@ int main(int argc, char const *argv[])
 	pthread_attr_setstacksize(&alarm_ts_attr, STACKSIZE);
 	err = pthread_create(&alarm_ts_id, &alarm_ts_attr, alarm_task, &alarm_ts_attr);
 	if (err < 0) {
-		RLDEBUG("creat data task false!\r\n");
+		RLDEBUG("creat alarm task false!\r\n");
 	}
 
 	err = led_open();

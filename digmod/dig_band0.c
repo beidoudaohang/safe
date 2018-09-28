@@ -372,6 +372,8 @@ s32 dig_set_deal(void)
 					}
 				}
 			}
+
+			usleep(1000);
 		}
 	}
 
@@ -404,6 +406,8 @@ static void dig_transmit_deal(void)
 				memset((void*)(&dig_transmit_t.t_arry[cnt]), 0, sizeof(transmit_arry));
 				dig_transmit_t.total--;
 			}
+
+			usleep(1000);
 		}
 	}
 }
@@ -443,6 +447,8 @@ void dig_read_deal(void)
 				printf("total: %d, error rate: %0.2f\n", total, fail_cnt/total);
 			
 			dig_comm_feedback(&check);
+
+			usleep(1000);
 		}
 	}
 }

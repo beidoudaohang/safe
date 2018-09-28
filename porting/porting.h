@@ -31,6 +31,8 @@ s32 unit_file_write(unit_para *up);
 s32 band_file_init(void);
 s32 band_file_read(band_para *bp, u8 mod_index);
 s32 band_file_write(band_para *bp, u8 mod_index);
+s32 exmod_file_read(band_para *bp, u8 mod_index);
+s32 exmod_file_write(band_para *bp, u8 mod_index);
 s32 pcb_file_init(void);
 s32 pcb_file_read(pcb_share_para *pp);
 s32 pcb_file_write(pcb_share_para *pp);
@@ -57,7 +59,10 @@ s8 led_open();
 s8 led_run_control(int val);
 s8 led_alarm_control(int val);
 
-
+s8 read_network_para(char *ip, char *mask, char *gw);
+s8 local_network_config(void);
+s8 backup_data_para(void);
+s8 recover_data_para(void);
 
 s8 DevFpgaWrite(u8 code, u8 dat);
 #endif //PORTING_H_

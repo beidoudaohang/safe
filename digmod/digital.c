@@ -21,6 +21,7 @@ description:
 //#include "adi_api.h"
 //#include "handle_api.h"
 #include "fpgaloader_.h"
+#include "ad9370.h"
 /*****************************para define*************************/
 static volatile u8 relay_mode_flag[MOD_NUM_IN_ONE_PCB] = {0};
 
@@ -275,7 +276,17 @@ s32 dig_center_freq_update(md_adr_info *md_adr)
 		adi_adjust_once(md_adr);
 		dig_adi_adjust_update(md_adr); */
 
-		
+		band_dynamic_para_a[index].adi_regulator_cur_ul.freq_rx = band_para_a[index].md_sundry.dig_sundry.center_freq.ul * 1000;
+		band_dynamic_para_a[index].adi_regulator_cur_ul.freq_tx = band_para_a[index].md_sundry.dig_sundry.center_freq.ul * 1000;
+		band_dynamic_para_a[index].adi_regulator_cur_dl.freq_rx = band_para_a[index].md_sundry.dig_sundry.center_freq.dl * 1000;
+		band_dynamic_para_a[index].adi_regulator_cur_dl.freq_tx = band_para_a[index].md_sundry.dig_sundry.center_freq.dl * 1000;
+
+		adr = 0xe1;
+		for (cnt = 0xe1; cnt <= 0xe4; cnt++) {
+			set_adr_add(cnt, &(band_para_a[index].md_adr_t));
+		}
+
+		ad9370_cmd_add(AD9370_SET_CENTER_FREQ);
 	} else {
 		RLDEBUG("dig_center_freq_update: mod_type!=MOD_TYPE_BROADBAND \r\n");
 		return -1;
@@ -356,15 +367,15 @@ s32 dig_para_set_again(void)
 	s32 err = 0;
 	transmit_arry arry;
 
-	#if 0
+	#if 1
 	for (mod_index = 0; mod_index < MOD_NUM_IN_ONE_PCB; mod_index++) {
 		memset(&arry, 0, sizeof(arry));
 		//adi adjust
-		adi_adjust_once(&(band_para_a[mod_index].md_adr_t));
-		dig_adi_adjust_update(&(band_para_a[mod_index].md_adr_t));
+		//adi_adjust_once(&(band_para_a[mod_index].md_adr_t));
+		//dig_adi_adjust_update(&(band_para_a[mod_index].md_adr_t));
 
 		//adi center freq
-		dig_center_freq_update(&(band_para_a[mod_index].md_adr_t));
+		//dig_center_freq_update(&(band_para_a[mod_index].md_adr_t));
 
 		/*****************************ul para************************/
 		//ul workfreq
@@ -488,8 +499,8 @@ s32 dig_para_set_again(void)
 			err = -1;
 			break;
 		}
-		//ad80305
-		for (cnt = 0xd3; cnt <= 0xe4; cnt++) {
+		//ad9370
+		for (cnt = 0xe1; cnt <= 0xe4; cnt++) {
 			if (set_adr_add(cnt, &(band_para_a[mod_index].md_adr_t))) {
 				err = -1;
 				break;

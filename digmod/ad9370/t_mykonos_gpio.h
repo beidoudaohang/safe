@@ -1,8 +1,6 @@
-/*!
- * \file t_mykonos_gpio.h
- * \brief Mykonos GPIO error handling and type defines
- *
- * Mykonos API version: 1.3.0.3528
+/*
+ * \file t_mykonosGpio.h
+ * \brief Mykonos GPIO error handling and MYK_GPIO defines
  */
 
 #ifndef T_MYKONOSGPIO_H_
@@ -13,7 +11,27 @@ extern "C" {
 #endif
 
 
-#include "common_ad9370.h"
+// #include "common.h"
+
+#define MYK_GPIO0    0x1
+#define MYK_GPIO1    0x2
+#define MYK_GPIO2    0x4
+#define MYK_GPIO3    0x8
+#define MYK_GPIO4    0x10
+#define MYK_GPIO5    0x20
+#define MYK_GPIO6    0x40
+#define MYK_GPIO7    0x80
+#define MYK_GPIO8    0x100
+#define MYK_GPIO9    0x200
+#define MYK_GPIO10   0x400
+#define MYK_GPIO11   0x800
+#define MYK_GPIO12   0x1000
+#define MYK_GPIO13   0x2000
+#define MYK_GPIO14   0x4000
+#define MYK_GPIO15   0x8000
+#define MYK_GPIO16   0x10000
+#define MYK_GPIO17   0x20000
+#define MYK_GPIO18   0x40000
 
 /**
  *  \brief Enum of unique error codes from the Mykonos GPIO API functions.
@@ -104,16 +122,13 @@ typedef enum
 
     MYKONOS_ERR_GAINCOMP_NULL_STRUCT,
     MYKONOS_ERR_GAINCOMP_SET_NULL_STRUCT,
+    MYKONOS_ERR_GAINCOMP_INV_DELAY,
     MYKONOS_ERR_GAINCOMP_INV_RX1_OFFSET,
     MYKONOS_ERR_GAINCOMP_INV_RX2_OFFSET,
+    MYKONOS_ERR_GAINCOMP_INV_DURATION,
+    MYKONOS_ERR_GAINCOMP_INV_RAMP,
     MYKONOS_ERR_GAINCOMP_INV_STEP,
     MYKONOS_ERR_GAINCOMP_INV_EN,
-
-    MYKONOS_ERR_OBS_RX_GAINCOMP_SET_NULL_STRUCT,
-    MYKONOS_ERR_OBS_RX_GAINCOMP_INV_EN,
-    MYKONOS_ERR_OBS_RX_GAINCOMP_INV_OFFSET,
-    MYKONOS_ERR_OBS_RX_GAINCOMP_INV_STEP,
-    MYKONOS_ERR_OBS_RX_GAINCOMP_NULL_STRUCT,
 
     MYKONOS_ERR_SLICER_STEP_OUT_OF_RANGE,
     MYKONOS_ERR_SLICER_INV_RX1_SEL,
@@ -124,13 +139,6 @@ typedef enum
     MYKONOS_ERR_SLICER_RX2PIN_NULL_PARM,
     MYKONOS_ERR_SLICER_STEP_NULL_PARM,
     MYKONOS_ERR_SLICER_EN_NULL_PARM,
-
-    MYKONOS_ERR_SLICER_INV_OBS_RX_SEL,
-    MYKONOS_ERR_SLICER_OBS_RX_STEP_OUT_OF_RANGE,
-    MYKONOS_ERR_SLICER_OBS_RX_EN_INV,
-    MYKONOS_ERR_SLICER_OBS_RX_EN_NULL_PARM,
-    MYKONOS_ERR_SLICER_OBS_RX_STEP_NULL_PARM,
-    MYKONOS_ERR_SLICER_OBS_RXPIN_NULL_PARM,
 
     MYKONOS_ERR_FLOATFRMT_NULL_STRUCT,
     MYKONOS_ERR_FLOATFRMT_SET_NULL_STRUCT,
@@ -152,44 +160,7 @@ typedef enum
     MYKONOS_ERR_FLOATFRMT_INV_ORXATT,
     MYKONOS_ERR_FLOATFRMT_INV_ORXEN,
     MYKONOS_ERR_FLOATFRMT_NULL_ORXATT,
-    MYKONOS_ERR_FLOATFRMT_NULL_ORXENABLE,
-
-    MYKONOS_ERR_SETUPTEMPSENSOR_NULL_PARAM,
-    MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPDECIMATION,
-    MYKONOS_ERR_SETUPTEMPSENSOR_INV_OFFSET,
-    MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPWINDOW,
-    MYKONOS_ERR_GETTEMPSENSORCFG_NULL_PARAM,
-    MYKONOS_ERR_READTEMPSENSOR_NULL_PARAM,
-    MYKONOS_ERR_READTEMPSENSOR_NOT_LOCKED,
-
-    MYKONOS_ERR_GAIN_CONTROL_NOT_HYBRID,
-    MYKONOS_ERR_GPIO_HYBRID_RX1_PIN,
-    MYKONOS_ERR_GPIO_HYBRID_RX2_PIN,
-    MYKONOS_ERR_GPIO_HYBRID_RX1_PIN_NULL_PARM,
-    MYKONOS_ERR_GPIO_HYBRID_RX2_PIN_NULL_PARM,
-    MYKONOS_ERR_GPIO_HYBRID_RX1_PIN_READ,
-    MYKONOS_ERR_GPIO_HYBRID_RX2_PIN_READ,
-    MYKONOS_ERR_AGC_OBS_NOT_IN_HYBRID,
-    MYKONOS_ERR_GPIO_HYBRID_ORX_PIN,
-    MYKONOS_ERR_GPIO_HYBRID_ORX_PIN_NULL_PARM,
-
-    MYKONOS_ERR_GAIN_CONTROL_NOT_AGC,
-    MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN,
-    MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN,
-    MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN_NULL_PARM,
-    MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN_NULL_PARM,
-    MYKONOS_ERR_OBS_GAIN_CONTROL_NOT_AGC,
-    MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN,
-    MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN_NULL_PARM,
-
-    MYKONOS_ERR_GETGPIODRV_NULL_PARAM,
-    MYKONOS_ERR_GPIO_DRV_INV_PARAM,
-
-    MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM,
-    MYKONOS_ERR_GPIO_GETSLEW_NULL_PARAM,
-
-    MYKONOS_ERR_CMOS_DRV_INV_PARAM,
-    MYKONOS_ERR_CMOS_DRV_NULL_PARAM
+    MYKONOS_ERR_FLOATFRMT_NULL_ORXENABLE
 } mykonosGpioErr_t;
 
 /**
@@ -197,61 +168,20 @@ typedef enum
  */
 typedef enum
 {
-    GPIO_0_1_2      = 0,    /*!< GPIO combination for RX1        */
-    GPIO_5_6_7      = 1,    /*!< GPIO combination for RX1 or RX2 */
-    GPIO_8_9_10     = 2,    /*!< GPIO combination for RX1        */
-    GPIO_11_12_13   = 3     /*!< GPIO combination for RX2        */
+    GPIO_0_1_2 = 0, /*!< GPIO combination for RX1 */
+    GPIO_5_6_7 = 1, /*!< GPIO combination for RX1 or RX2 */
+    GPIO_8_9_10 = 2, /*!< GPIO combination for RX1 */
+    GPIO_11_12_13 = 3 /*!< GPIO combination for RX2 */
 } mykonosRxSlicer_t;
 
-/**
- *  \brief Enum of possible observation channel Slicer pin combinations
- */
-typedef enum
-{
-    GPIO_18_17_16      = 0,    /*!< GPIO combination for observation channel */
-    GPIO_16_15_14      = 1,    /*!< GPIO combination for observation channel */
-} mykonosObsRxSlicer_t;
 
 /**
- *  \brief Enum of possible GPIO slew rate settings
- */
-typedef enum
-{
-    MYK_SLEWRATE_NONE    = 0,    /*!< Lower slew rate for the GPIO  */
-    MYK_SLEWRATE_LOW     = 1,    /*!< Low slew rate for the GPIO    */
-    MYK_SLEWRATE_MEDIUM  = 2,    /*!< Medium slew rate for the GPIO */
-    MYK_SLEWRATE_HIGH    = 3     /*!< High slew rate for the GPIO   */
-} mykonosGpioSlewRate_t;
-
-/**
- * \brief Enumerated list of CMOS pads drive strength options
- */
-typedef enum
-{
-    MYK_CMOSPAD_DRV_1X  = 0x00,       /*!<  2.5pF  load @ 65MHz */
-    MYK_CMOSPAD_DRV_2X  = 0x01,       /*!<    5pF  load @ 65MHz */
-    MYK_CMOSPAD_DRV_3X  = 0x03,       /*!<  7.5pF  load @ 65MHz */
-    MYK_CMOSPAD_DRV_4X  = 0x07,       /*!<   10pF  load @ 65MHz */
-    MYK_CMOSPAD_DRV_5X  = 0x0F        /*!< 12.5pF  load @ 65MHz */
-} mykonosCmosPadDrvStr_t;
-
-
-/**
- * \brief Enumerated list for Aux ADCs
- */
-typedef enum
-{
-    MYK_AUXADC_0        = 0x00,       /*!< Aux ADC channel 0 */
-    MYK_AUXADC_1        = 0x01,       /*!< Aux ADC channel 1 */
-    MYK_AUXADC_2        = 0x02,       /*!< Aux ADC channel 2 */
-    MYK_AUXADC_3        = 0x03,       /*!< Aux ADC channel 3 */
-    MYK_AUXADC_0_DIV2   = 0x04,       /*!< Aux ADC channel 0 with the divider by 2 set */
-    MYK_TEMPSENSOR      = 0x10        /*!< Temperature sensor channel */
-} mykonosAuxAdcChannels_t;
-
-
-/**
- *  \brief Data structure to hold Gain compensation settings for the main receive channels
+ *  \brief Data structure to hold low voltage GPIO settings
+ *
+ * uint8_t delay, This parameter contains the delay (in clkRout cycles) from when the gain
+ * was changed in the front end to when the compensation is applied in the digital section.
+ * The value varies for different data-path configurations.
+ * It has a range of 0 to 0xFF.
  *
  * uint8_t rx1Offset, These parameter contains the Rx1 offset word used for the gain compensation
  * when the gain index is at its maximum setting.
@@ -261,6 +191,19 @@ typedef enum
  * when the gain index is at its maximum setting.
  * It has a range of 0 to 0x1F with a resolution is 0.5dB per LSB.
  *
+ * uint8_t compDuration, These bits configure the number of clock cycles (clkRout cycles/IQ sample rate)
+ * between consecutive steps in the ramp that is used to compensate for the gain in the digital section.
+ * It has a range of 0 to 0x3.
+ *
+ * uint8_t compRamp, These bits configure the number of total steps in the ramp
+ * that is generated by the gain compensation block according to the following settings.
+ * compRamp |  dB ramp
+ * ---------|------------
+ *     0    |    1dB
+ *     1    |    2dB
+ *     2    |    3dB
+ *     3    |    4dB
+ *
  * uint8_t compStep, These bits contains the value in dB that the total Rx gain changes
  * when there is an LSB change in the gain index according to the following settings:
  * compStep |  dB ramp
@@ -271,43 +214,20 @@ typedef enum
  *    3     |   2.0dB
  *    4     |   3.0dB
  *    5     |   4.0dB
- *    6     |   6.0dB
- *    7     |   Not valid defaulted to 0.25dB
+ *    6     |   5.0dB
+ *    7     |   6.0dB
  *
  **/
 typedef struct
 {
+    uint8_t delayCycles;
     uint8_t rx1Offset;
     uint8_t rx2Offset;
+    uint8_t compDuration;
+    uint8_t compRamp;
     uint8_t compStep;
 } mykonosGainComp_t;
 
-/**
- *  \brief Data structure to hold Gain compensation settings for the observation channel
- *
- * uint8_t obsRxOffset, These parameter contains the Rx1 offset word used for the gain compensation
- * when the gain index is at its maximum setting.
- * It has a range of 0 to 0x1F with a resolution is 0.5dB per LSB.
- *
- * uint8_t compStep, These bits contains the value in dB that the total Rx gain changes
- * when there is an LSB change in the gain index according to the following settings:
- * compStep |  dB ramp
- * ---------|------------
- *    0     |   0.25dB
- *    1     |   0.5dB
- *    2     |   1.0dB
- *    3     |   2.0dB
- *    4     |   3.0dB
- *    5     |   4.0dB
- *    6     |   6.0dB
- *    7     |   Not valid defaulted to 0.25dB
- *
- **/
-typedef struct
-{
-    uint8_t obsRxOffset;
-    uint8_t compStep;
-} mykonosObsRxGainComp_t;
 
 /**
  *  \brief Data structure to hold floating point formatter settings for the floating point
@@ -353,54 +273,6 @@ typedef struct
    uint8_t expBits;
    uint8_t leading;
 }mykonosFloatPntFrmt_t;
-
-/**
- *  \brief Data structure used to configure the on-die Temperature Sensor
- *
- *  uint8_t tempDecimation, 3-bit value that controls the AuxADC decimation factor
- *  when used for temp sensor calculations; AuxADC_decimation = 256 * 2^tempDecimation
- *
- *  uint8_t offset, 8-bit offset that gets added to temp sensor code internally
- *
- *  uint8_t overrideFusedOffset, this bit overrides the factory-calibrated fuse offset
- *  and uses the value stored in the offset member
- *
- *  uint8_t tempWindow, 4-bit code with a resolution of 1?C/LSB, each time a temperature measurement is performed,
- *  the device compares the current temperature against the previous value.
- *
- *
- */
-typedef struct
-{
-    uint8_t tempDecimation;
-    uint8_t offset;
-    uint8_t overrideFusedOffset;
-    uint8_t tempWindow;
-}mykonosTempSensorConfig_t;
-
-
-/**
- *  \brief Data structure used to store Temperature Sensor related values
- *
- *   int16_t tempCode, 16-bit signed temperature value (in deg C) that is read back
- *
- *   uint8_t windowExceeded, If the absolute value of the difference is greater than the value in temperature configuration
- *   tempWindow, the windowExceeded flag is set.
- *
- *   uint8_t windowHiLo, when windowExceeded member gets set,
- *   this bit is set to 1 if current value is greater than previous value,
- *   else reset
- *
- *   uint8_t tempValid, when the reading is complete and a valid temperature value stored in tempCode
- */
-typedef struct
-{
-    int16_t tempCode;
-    uint8_t windowExceeded;
-    uint8_t windowHiLo;
-    uint8_t tempValid;
-}mykonosTempSensorStatus_t;
-
 
 #ifdef __cplusplus
 }

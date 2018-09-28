@@ -1,8 +1,6 @@
 /*!
  * \file t_mykonos.h
  * \brief Contains type definitions for Mykonos API
- *
- * Mykonos API version: 1.3.0.3528
  */
 
 #ifndef _T_MYKONOS_LIB_H_
@@ -11,7 +9,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <stdint.h>
+
 #include "common_ad9370.h"
 
 
@@ -36,7 +34,6 @@ typedef enum
     MYKONOS_ERR_PU_TXPATH_INV_PARAM,
     MYKONOS_ERR_PU_OBSRXPATH_INV_PARAM,
     MYKONOS_ERR_INIT_INV_ORXCHAN,
-    MYKONOS_ERR_INIT_INV_RXSYNCB_ORXSYNCB_MODE,
     MYKONOS_ERR_INIT_INV_TXFIR_INTERPOLATION,
     MYKONOS_ERR_INIT_INV_TXHB2_INTERPOLATION,
     MYKONOS_ERR_INIT_INV_TXHB1_INTERPOLATION,
@@ -351,28 +348,16 @@ typedef enum
 	MYKONOS_ERR_GETARMVER_NULL_PARM,
 	MYKONOS_ERR_EN_CLGCTRACKING_ARMSTATE_ERROR,
 	MYKONOS_ERR_EN_DPDTRACKING_ARMSTATE_ERROR,
-	MYKONOS_ERR_RESTDPDMOD_WRONGBUFFERSIZE,
-	MYKONOS_ERR_RESTDPDMOD_ARMSTATE,
-	MYKONOS_ERR_RESTDPDMOD_INVALID_TXCHANNEL,
-	MYKONOS_ERR_RESTDPDMOD_ARMERRFLAG,
-	MYKONOS_ERR_SAVDPDMOD_WRONGBUFFERSIZE,
-	MYKONOS_ERR_SAVDPDMOD_ARMSTATE,
-	MYKONOS_ERR_SAVDPDMOD_INVALID_TXCHANNEL,
-	MYKONOS_ERR_SAVDPDMOD_ARMERRFLAG,
- 	MYKONOS_ERR_WRITEARMCFG_ARMERRFLAG,
+	MYKONOS_ERR_WRITEARMCFG_ARMERRFLAG,
 	MYKONOS_ERR_CFGDPD_TXORX_PROFILE_INV,
 	MYKONOS_ERR_CFGDPD_NULL_DPDCFGSTRUCT,
 	MYKONOS_ERR_CFGDPD_ARMSTATE_ERROR,
 	MYKONOS_ERR_CFGDPD_INV_DPDDAMPING,
 	MYKONOS_ERR_CFGDPD_INV_DPDSAMPLES,
 	MYKONOS_ERR_CFGDPD_INV_DPDOUTLIERTHRESH,
-	MYKONOS_ERR_CFGDPD_INV_DPDPRIORWEIGHT,
 	MYKONOS_ERR_CFGCLGC_INV_DESIREDGAIN,
 	MYKONOS_ERR_CFGCLGC_INV_TXATTENLIMIT,
 	MYKONOS_ERR_CFGCLGC_INV_CLGC_CTRLRATIO,
-	MYKONOS_ERR_SETCLGCGAIN_INV_DESIREDGAIN,
-	MYKONOS_ERR_SETCLGCGAIN_INV_TXCHANNEL,
-	MYKONOS_ERR_SETCLGCGAIN_TRACK_ARMERRFLAG,
 	MYKONOS_ERR_CFGDPD_INV_DPD_ADDDELAY,
 	MYKONOS_ERR_CFGDPD_INV_PNSEQLEVEL,
 	MYKONOS_ERR_READARMCFG_ARMERRFLAG,
@@ -404,96 +389,13 @@ typedef enum
 	MYKONOS_ERR_GETINITCALSTATUS_ARMERROR,
 	MYKONOS_ERR_CFGDPD_INV_NUMWEIGHTS,
 	MYKONOS_ERR_CFGDPD_INV_MODELVERSION,
-	MYKONOS_ERR_SETDPDACT_INV_TXCHANNEL,
-	MYKONOS_ERR_SETDPDACT_INV_STATE,
-	MYKONOS_ERR_SETDPDACT_ARMERRFLAG,
 	MYKONOS_ERR_CFGCLGC_TXORX_PROFILE_INV,
 	MYKONOS_ERR_CFGCLGC_NULL_CLGCCFGSTRUCT,
 	MYKONOS_ERR_CFGCLGC_ARMSTATE_ERROR,
 	MYKONOS_ERR_GETCLGCCFG_TXORX_PROFILE_INV,
 	MYKONOS_ERR_GETCLGCCFG_NULL_CFGSTRUCT,
 	MYKONOS_ERR_CALCDIGCLK_NULLDEV_PARAM,
-	MYKONOS_ERR_CALCDIGCLK_NULL_CLKSTRUCT,
-	MYKONOS_ERR_CFGCLGC_INV_CLGC_ADDDELAY,
-	MYKONOS_ERR_CFGCLGC_INV_PNSEQLEVEL,
-	MYKONOS_ERR_CFGVSWR_TXORX_PROFILE_INV,
-	MYKONOS_ERR_CFGVSWR_ARMSTATE_ERROR,
-	MYKONOS_ERR_CFGVSWR_INV_3P3GPIOPIN,
-	MYKONOS_ERR_CFGVSWR_INV_PNSEQLEVEL,
-	MYKONOS_ERR_CFGVSWR_INV_VSWR_ADDDELAY,
-	MYKONOS_ERR_CFGVSWR_NULL_VSWRCFGSTRUCT,
-	MYKONOS_ERR_GETVSWRCFG_NULL_CFGSTRUCT,
-	MYKONOS_ERR_GETVSWRCFG_TXORX_PROFILE_INV,
-	MYKONOS_ERR_GETVSWRSTATUS_ARMERRFLAG,
-	MYKONOS_ERR_GETVSWRSTATUS_INV_CH,
-	MYKONOS_ERR_GETVSWRSTATUS_NULLPARAM,
-	MYKONOS_ERR_SET_RX_MAX_GAIN_INDEX,
-	MYKONOS_ERR_SET_RX_MIN_GAIN_INDEX,
-	MYKONOS_ERR_AGC_MIN_MAX_RX_CHANNEL,
-	MYKONOS_ERR_SET_ORX_MAX_GAIN_INDEX_CHANNEL,
-	MYKONOS_ERR_SET_ORX_MAX_GAIN_INDEX,
-	MYKONOS_ERR_SET_ORX_MIN_GAIN_INDEX,
-	MYKONOS_ERR_AGC_MIN_MAX_ORX_CHANNEL,
-	MYKONOS_ERR_RX1_TEMP_GAIN_COMP_RANGE,
-	MYKONOS_ERR_RX2_TEMP_GAIN_COMP_RANGE,
-	MYKONOS_ERR_OBS_RX_TEMP_GAIN_COMP_RANGE,
-	MYKONOS_ERR_RX1_TEMP_GAIN_COMP_STEP,
-	MYKONOS_ERR_RX2_TEMP_GAIN_COMP_STEP,
-	MYKONOS_ERR_OBS_RX_TEMP_GAIN_COMP_STEP,
-	MYKONOS_ERR_RX1_TEMP_GAIN_COMP_NULL,
-	MYKONOS_ERR_RX2_TEMP_GAIN_COMP_NULL,
-	MYKONOS_ERR_OBS_RX_TEMP_GAIN_COMP_NULL,
-	MYKONOS_ERR_GETTXLOLSTATUS_NULLPARAM,
-	MYKONOS_ERR_GETTXLOLSTATUS_INV_CH,
-	MYKONOS_ERR_GETTXLOLSTATUS_ARMERRFLAG,
-	MYKONOS_ERR_GETTXQECSTATUS_NULLPARAM,
-	MYKONOS_ERR_GETTXQECSTATUS_INV_CH,
-	MYKONOS_ERR_GETTXQECSTATUS_ARMERRFLAG,
-    MYKONOS_ERR_GETRXQECSTATUS_NULLPARAM,
-    MYKONOS_ERR_GETRXQECSTATUS_INV_CH,
-    MYKONOS_ERR_GETRXQECSTATUS_ARMERRFLAG,
-    MYKONOS_ERR_GETORXQECSTATUS_NULLPARAM,
-    MYKONOS_ERR_GETORXQECSTATUS_INV_CH,
-    MYKONOS_ERR_GETORXQECSTATUS_ARMERRFLAG,
-    MYKONOS_ERR_RESCHEDULE_TRACK_CAL_INV,
-    MYKONOS_ERR_RESCHEDULE_TRACK_ARMERRFLAG,
-
-    MYKONOS_ERR_SETSTATEALL_TRACK_CAL_INV,
-    MYKONOS_ERR_SETSTATEALL_TRACK_ARMERRFLAG,
-
-    MYKONOS_ERR_GETSTATEALL_TRACK_NULL_PARAM,
-    MYKONOS_ERR_GETSTATEALL_TRACK_ARMERRFLAG,
-    MYKONOS_ERR_GETSTATEALL_TRACK_ARMERROR,
-
-    MYKONOS_ERR_SETSTATE_TRACK_CAL_INV,
-    MYKONOS_ERR_SETSTATE_TRACK_ARMERRFLAG,
-
-    MYKONOS_ERR_GETSTATE_TRACK_NULL_PARAM,
-    MYKONOS_ERR_GETSTATE_TRACK_ARMERRFLAG,
-    MYKONOS_ERR_GETSTATE_TRACK_ARMERROR,
-
-    MYKONOS_ERR_ARMSTATE_PROFILE_ERROR,
-    MYKONOS_ERR_ARMSTATE_CAL_ERROR,
-    MYKONOS_ERR_ARMSTATE_EXCEPTION,
-    MYKONOS_ERR_WAITARMCSTATE_TIMEOUT,
-
-    MYKONOS_ERR_GETPRODUCTID_NULL_PARAM,
-    MYKONOS_ERR_GET_API_VERSION_NULL_PARAM,
-
-    MYKONOS_ERR_PROFILES_HSDIGCLK,
-    MYKONOS_ERR_RXPROFILE_RXCHANNEL,
-    MYKONOS_ERR_RXPROFILE_IQRATE,
-    MYKONOS_ERR_RXPROFILE_RFBW,
-    MYKONOS_ERR_RXPROFILE_FILTER_DECIMATION,
-    MYKONOS_ERR_RXPROFILE_FIR_COEFS,
-    MYKONOS_ERR_RXPROFILE_ADCDIV,
-    MYKONOS_ERR_TXPROFILE_IQRATE,
-    MYKONOS_ERR_TXPROFILE_RFBW,
-    MYKONOS_ERR_TXPROFILE_FILTER_INTERPOLATION,
-    MYKONOS_ERR_TXPROFILE_FIR_COEFS,
-    MYKONOS_ERR_TXPROFILE_DACDIV,
-    MYKONOS_ERR_RESET_TXLOL_INV_PARAM,
-    MYKONOS_ERR_RESET_TXLOL_ARMERROR
+	MYKONOS_ERR_CALCDIGCLK_NULL_CLKSTRUCT
 } mykonosErr_t;
 
 /**
@@ -501,26 +403,25 @@ typedef enum
  */
 typedef enum
 {
-    MYKGPIONAN  = 0x00,
-    MYKGPIO0    = 0x1,
-    MYKGPIO1    = 0x2,
-    MYKGPIO2    = 0x4,
-    MYKGPIO3    = 0x8,
-    MYKGPIO4    = 0x10,
-    MYKGPIO5    = 0x20,
-    MYKGPIO6    = 0x40,
-    MYKGPIO7    = 0x80,
-    MYKGPIO8    = 0x100,
-    MYKGPIO9    = 0x200,
-    MYKGPIO10   = 0x400,
-    MYKGPIO11   = 0x800,
-    MYKGPIO12   = 0x1000,
-    MYKGPIO13   = 0x2000,
-    MYKGPIO14   = 0x4000,
-    MYKGPIO15   = 0x8000,
-    MYKGPIO16   = 0x10000,
-    MYKGPIO17   = 0x20000,
-    MYKGPIO18   = 0x40000
+    MYKGPIO0   = 0x1,
+    MYKGPIO1   = 0x2,
+    MYKGPIO2   = 0x4,
+    MYKGPIO3   = 0x8,
+    MYKGPIO4   = 0x10,
+    MYKGPIO5   = 0x20,
+    MYKGPIO6   = 0x40,
+    MYKGPIO7   = 0x80,
+    MYKGPIO8   = 0x100,
+    MYKGPIO9   = 0x200,
+    MYKGPIO10  = 0x400,
+    MYKGPIO11  = 0x800,
+    MYKGPIO12  = 0x1000,
+    MYKGPIO13  = 0x2000,
+    MYKGPIO14  = 0x4000,
+    MYKGPIO15  = 0x8000,
+    MYKGPIO16  = 0x10000,
+    MYKGPIO17  = 0x20000,
+    MYKGPIO18  = 0x40000
 } mykonosGpioSelect_t;
 
 
@@ -529,14 +430,14 @@ typedef enum
  */
 typedef enum
 {
-    WAIT        = 0,    /*!< Mykonos ENSM state upon which a power up in the WAIT/SLEEP state occurs */
-    INIT        = 1,    /*!< Mykonos ENSM state upon which a power up delay state ocurrs to allow clocks to stabilize */
-    WAITCALS    = 2,    /*!< Mykonos ENSM state upon which calibrations are initializing */
-    ALERTCALS   = 3,    /*!< Mykonos ENSM state upon which calibrations are occurring */
-    ALERTLDS    = 4,    /*!< Mykonos ENSM state upon which a delay state is occurring when moving from WAIT to ALERT to allow internal circuits to power up */
-    ALERT       = 5,    /*!< Mykonos ENSM state upon which the internal RF synth is powered up, and TX and RX data paths are still powered down */
-    TX_RX       = 6,    /*!< Mykonos ENSM state upon which the ability to power up data paths depending on the TxEnable/RxEnable pins or SPI bits */
-    FLUSH       = 7     /*!< Mykonos ENSM state upon which the data paths are cleared when exiting the TX_RX state */
+    WAIT      = 0, /*!< Mykonos ENSM state upon which a power up in the WAIT/SLEEP state occurs */
+    INIT      = 1, /*!< Mykonos ENSM state upon which a power up delay state ocurrs to allow clocks to stabilize */
+    WAITCALS  = 2, /*!< Mykonos ENSM state upon which calibrations are initializing */
+    ALERTCALS = 3, /*!< Mykonos ENSM state upon which calibrations are occurring */
+    ALERTLDS  = 4, /*!< Mykonos ENSM state upon which a delay state is occurring when moving from WAIT to ALERT to allow internal circuits to power up */
+    ALERT     = 5, /*!< Mykonos ENSM state upon which the internal RF synth is powered up, and TX and RX data paths are still powered down */
+    TX_RX     = 6, /*!< Mykonos ENSM state upon which the ability to power up data paths depending on the TxEnable/RxEnable pins or SPI bits */
+    FLUSH     = 7  /*!< Mykonos ENSM state upon which the data paths are cleared when exiting the TX_RX state */
 } mykonosEnsmState_t;
 
 
@@ -545,10 +446,10 @@ typedef enum
  */
 typedef enum
 {
-    TXOFF   = 0,
-    TX1     = 1,
-    TX2     = 2,
-    TX1_TX2 = 3
+    TXOFF=0,
+    TX1=1,
+    TX2=2,
+    TX1_TX2=3
 } mykonosTxChannels_t;
 
 /**
@@ -556,10 +457,10 @@ typedef enum
  */
 typedef enum
 {
-    RXOFF   = 0,
-    RX1     = 1,
-    RX2     = 2,
-    RX1_RX2 = 3
+    RXOFF=0,
+    RX1=1,
+    RX2=2,
+    RX1_RX2=3
 } mykonosRxChannels_t;
 
 /**
@@ -574,9 +475,9 @@ typedef enum
     OBS_SNIFFER         = 4,
     OBS_RX1_SNIFFERLO   = 5,
     OBS_RX2_SNIFFERLO   = 6,
-    OBS_SNIFFER_A       = 0x14,
-    OBS_SNIFFER_B       = 0x24,
-    OBS_SNIFFER_C       = 0x34
+    OBS_SNIFFER_A        = 0x14,
+    OBS_SNIFFER_B        = 0x24,
+    OBS_SNIFFER_C        = 0x34
 } mykonosObsRxChannels_t;
 
 /**
@@ -584,9 +485,7 @@ typedef enum
  */
 typedef enum
 {
-    SNIFFER_A   = 1,
-    SNIFFER_B   = 2,
-    SNIFFER_C   = 3
+    SNIFFER_A = 1, SNIFFER_B = 2, SNIFFER_C = 3
 } mykonosSnifferChannel_t;
 
 /**
@@ -612,9 +511,7 @@ typedef enum
  */
 typedef enum
 {
-    DACDIV_2,
-    DACDIV_2p5,
-    DACDIV_4
+    DACDIV_2, DACDIV_2p5, DACDIV_4
 } mykonosDacDiv_t;
 
 /**
@@ -622,10 +519,7 @@ typedef enum
  */
 typedef enum
 {
-    VCODIV_1    = 0,
-    VCODIV_1p5  = 1,
-    VCODIV_2    = 2,
-    VCODIV_3    = 3
+    VCODIV_1 = 0, VCODIV_1p5 = 1, VCODIV_2 = 2, VCODIV_3 = 3
 } mykonosVcoDiv_t;
 
 /**
@@ -633,9 +527,7 @@ typedef enum
  */
 typedef enum
 {
-    MYK_PRBS7   = 0,
-    MYK_PRBS15  = 1,
-    MYK_PRBS31  = 2
+    MYK_PRBS7 = 0, MYK_PRBS15 = 1, MYK_PRBS31 = 2
 } mykonosPrbsOrder_t;
 
 /**
@@ -643,29 +535,15 @@ typedef enum
  */
 typedef enum
 {
-    CLK_PLL,
-    RX_PLL,
-    TX_PLL,
-    SNIFFER_PLL
+    CLK_PLL, RX_PLL, TX_PLL, SNIFFER_PLL
 } mykonosRfPllName_t;
-
-/**
- *  \brief Enum of Rx profile types
- */
-typedef enum
-{
-    MYK_RX_PROFILE,
-    MYK_OBS_PROFILE,
-    MYK_SNIFFER_PROFILE
-} mykonosRxProfType_t;
 
 /**
  * \brief Enum of ORx PLL names
  */
 typedef enum
 {
-    OBSLO_TX_PLL,
-    OBSLO_SNIFFER_PLL
+    OBSLO_TX_PLL, OBSLO_SNIFFER_PLL
 } mykonosObsRxLoSource_t;
 
 /**
@@ -673,25 +551,11 @@ typedef enum
  */
 typedef enum
 {
-    CALPLL_LOCK,
-    CLKPLLCP,
-    CLKPLL_LOCK,
-    RF_RXPLLCP,
-    RF_RXPLL_LOCK,
-    RF_TXPLLCP,
-    RF_TXPLL_LOCK,
-    RF_SNIFFERPLLCP,
-    RF_SNIFFERPLL_LOCK,
-    RXBBF_CALDONE,
-    TXBBF_CALDONE,
-    RX_RFDC_CALDONE,
-    RX_ADCTUNER_CALDONE,
-    RX1_ADCPROFILE,
-    RX2_ADCPROFILE,
-    ORX_ADCPROFILE,
-    RCAL_CALDONE,
-    ARMBUSY,
-    INITARM_DONE
+    CALPLL_LOCK, CLKPLLCP, CLKPLL_LOCK,	RF_RXPLLCP, RF_RXPLL_LOCK, RF_TXPLLCP,
+    RF_TXPLL_LOCK, RF_SNIFFERPLLCP, RF_SNIFFERPLL_LOCK, RXBBF_CALDONE,
+    TXBBF_CALDONE, RX_RFDC_CALDONE,	RX_ADCTUNER_CALDONE, RX1_ADCPROFILE,
+    RX2_ADCPROFILE, ORX_ADCPROFILE, RCAL_CALDONE, ARMBUSY, INITARM_DONE
+
 } waitEvent_t;
 
 /**
@@ -699,12 +563,12 @@ typedef enum
  */
 typedef enum
 {
-    TX1_FIR     = 1,
-    TX2_FIR     = 2,
-    TX1TX2_FIR  = 3,
-    RX1_FIR     = 4,
-    RX2_FIR     = 8,
-    RX1RX2_FIR  = 12,
+    TX1_FIR = 1,
+    TX2_FIR = 2,
+    TX1TX2_FIR = 3,
+    RX1_FIR = 4,
+    RX2_FIR = 8,
+    RX1RX2_FIR = 12,
     OBSRX_A_FIR = 16,
     OBSRX_B_FIR = 32
 } mykonosfirName_t;
@@ -714,7 +578,7 @@ typedef enum
  */
 typedef enum
 {
-	RX1_GT  = 1,
+	RX1_GT = 1,
 	RX2_GT,
 	RX1_RX2_GT,
 	ORX_GT,
@@ -727,9 +591,9 @@ typedef enum
  */
 typedef enum
 {
-    MGC     = 0,    /*!< Manual Gain Control */
-    AGC     = 2,   	/*!< Automatic Gain Control (AGC) */
-    HYBRID  = 3     /*!< Hybrid AGC Gain Control */
+    MGC = 0,    /*!< Manual Gain Control */
+    AGC = 2,   	/*!< Automatic Gain Control (AGC) */
+    HYBRID  	/*!< Hybrid AGC Gain Control */
 
 } mykonosGainMode_t;
 
@@ -738,10 +602,10 @@ typedef enum
  */
 typedef enum
 {
-    TXATTEN_0P05_DB = 0,    /*!< Tx attenuation 0.05dB step size */
-    TXATTEN_0P1_DB  = 1,    /*!< Tx attenuation 0.1dB step size */
-    TXATTEN_0P2_DB  = 2,    /*!< Tx attenuation 0.2dB step size */
-    TXATTEN_0P4_DB  = 3     /*!< Tx attenuation 0.4dB step size */
+    TXATTEN_0P05_DB = 0, /*!< Tx attenuation 0.05dB step size */
+    TXATTEN_0P1_DB = 1,  /*!< Tx attenuation 0.1dB step size */
+    TXATTEN_0P2_DB = 2,  /*!< Tx attenuation 0.2dB step size */
+    TXATTEN_0P4_DB = 3   /*!< Tx attenuation 0.4dB step size */
 } mykonosTxAttenStepSize_t;
 
 /**
@@ -749,24 +613,23 @@ typedef enum
  */
 typedef enum
 {
-    TX_BB_FILTER            = 0x0001,
-    ADC_TUNER               = 0x0002,
-    TIA_3DB_CORNER          = 0x0004,
-    DC_OFFSET               = 0x0008,
-    TX_ATTENUATION_DELAY    = 0x0010,
-    RX_GAIN_DELAY           = 0x0020,
-    FLASH_CAL               = 0x0040,
-    PATH_DELAY              = 0x0080,
-    TX_LO_LEAKAGE_INTERNAL  = 0x0100,
-    TX_LO_LEAKAGE_EXTERNAL  = 0x0200,
-    TX_QEC_INIT             = 0x0400,
-    LOOPBACK_RX_LO_DELAY    = 0x0800,
-    LOOPBACK_RX_RX_QEC_INIT = 0x1000,
-    RX_LO_DELAY             = 0x2000,
-    RX_QEC_INIT             = 0x4000,
-    DPD_INIT                = 0x8000,
-    CLGC_INIT               = 0x10000,
-    VSWR_INIT               = 0x20000
+    TX_BB_FILTER           = 0x0001,
+    ADC_TUNER              = 0x0002,
+    TIA_3DB_CORNER         = 0x0004,
+    DC_OFFSET              = 0x0008,
+    TX_ATTENUATION_DELAY   = 0x0010,
+    RX_GAIN_DELAY          = 0x0020,
+    FLASH_CAL              = 0x0040,
+    PATH_DELAY             = 0x0080,
+    TX_LO_LEAKAGE_INTERNAL = 0x0100,
+    TX_LO_LEAKAGE_EXTERNAL = 0x0200,
+    TX_QEC_INIT            = 0x0400,
+    LOOPBACK_RX_LO_DELAY   = 0x0800,
+    LOOPBACK_RX_RX_QEC_INIT= 0x1000,
+    RX_LO_DELAY            = 0x2000,
+    RX_QEC_INIT            = 0x4000,
+    DPD_INIT               = 0x8000,
+    CLGC_INIT              = 0x10000
 } mykonosInitCalibrations_t;
 
 /**
@@ -774,34 +637,28 @@ typedef enum
  */
 typedef enum
 {
-    TRACK_RX1_QEC       = 0x00001,
-    TRACK_RX2_QEC       = 0x00002,
-    TRACK_ORX1_QEC      = 0x00004,
-    TRACK_ORX2_QEC      = 0x00008,
-    TRACK_TX1_LOL       = 0x00010,
-    TRACK_TX2_LOL       = 0x00020,
-    TRACK_TX1_QEC       = 0x00040,
-    TRACK_TX2_QEC       = 0x00080,
-    TRACK_TX1_DPD       = 0x00100,
-    TRACK_TX2_DPD       = 0x00200,
-    TRACK_TX1_CLGC      = 0x00400,
-    TRACK_TX2_CLGC      = 0x00800,
-    TRACK_TX1_VSWR      = 0x01000,
-    TRACK_TX2_VSWR      = 0x02000,
-    TRACK_ORX1_QEC_SNLO = 0x10000,
-    TRACK_ORX2_QEC_SNLO = 0x20000,
-    TRACK_SRX_QEC       = 0x40000
+    TRACK_RX1_QEC          = 0x0001,
+    TRACK_RX2_QEC          = 0x0002,
+    TRACK_ORX1_QEC         = 0x0004,
+    TRACK_ORX2_QEC         = 0x0008,
+    TRACK_TX1_LOL          = 0x0010,
+    TRACK_TX2_LOL          = 0x0020,
+    TRACK_TX1_QEC          = 0x0040,
+    TRACK_TX2_QEC          = 0x0080,
+    TRACK_TX1_DPD          = 0x0100,
+    TRACK_TX2_DPD          = 0x0200,
+    TRACK_TX1_CLGC         = 0x0400,
+    TRACK_TX2_CLGC         = 0x0800
 } mykonosTrackingCalibrations_t;
-
 /**
  *  \brief Enum to set the GPIO3v3 mode
  */
 typedef enum
 {
-    GPIO3V3_LEVELTRANSLATE_MODE     = 1,    /*!< Level translate mode, signal level on low voltage GPIO output on GPIO3v3 pins */
-    GPIO3V3_INVLEVELTRANSLATE_MODE  = 2,    /*!< Inverted Level translate mode, inverse of signal level on low voltage GPIO output on GPIO3v3 pins */
-    GPIO3V3_BITBANG_MODE            = 3,    /*!< Manual mode, API function sets output pin levels and reads input pin levels */
-    GPIO3V3_EXTATTEN_LUT_MODE       = 4,    /*!< GPIO3v3 output level follows Rx1/Rx2 gain table external control 6bit field. */
+    GPIO3V3_LEVELTRANSLATE_MODE = 1, /*!< Level translate mode, signal level on low voltage GPIO output on GPIO3v3 pins */
+    GPIO3V3_INVLEVELTRANSLATE_MODE = 2, /*!< Inverted Level translate mode, inverse of signal level on low voltage GPIO output on GPIO3v3 pins */
+    GPIO3V3_BITBANG_MODE = 3, /*!< Manual mode, API function sets output pin levels and reads input pin levels */
+    GPIO3V3_EXTATTEN_LUT_MODE = 4, /*!< GPIO3v3 output level follows Rx1/Rx2 gain table external control 6bit field. */
 } mykonosGpio3v3Mode_t;
 
 /**
@@ -809,25 +666,12 @@ typedef enum
  */
 typedef enum
 {
-    GPIO_MONITOR_MODE       = 0,    /*!< Allows a choice of debug signals to output from Mykonos to monitor the state of the device */
-    GPIO_BITBANG_MODE       = 3,    /*!< Manual mode, API function sets output pin levels and reads input pin levels */
-    GPIO_ARM_OUT_MODE       = 9,    /*!< Allows internal ARM processor to output on GPIO pins */
-    GPIO_SLICER_OUT_MODE    = 10    /*!< Allows Slicer active configuration to the GPIO output  pins */
+    GPIO_MONITOR_MODE = 0, /*!< Allows a choice of debug signals to output from Mykonos to monitor the state of the device */
+    GPIO_BITBANG_MODE = 3, /*!< Manual mode, API function sets output pin levels and reads input pin levels */
+    GPIO_ARM_OUT_MODE = 9,  /*!< Allows internal ARM processor to output on GPIO pins */
+    GPIO_SLICER_OUT_MODE = 10  /*!< Allows Slicer active configuration to the GPIO output  pins */
 } mykonosGpioMode_t;
 
-/**
- *  \brief Enum for ARM states
- */
-typedef enum
-{
-    MYK_ARM_POWERUP         = 0x00,    /*!< ARM is powered up and ready to be programmed */
-    MYK_ARM_READY           = 0x01,    /*!< ARM enter this state once the boot up sequence is completed */
-    MYK_ARM_IDLE            = 0x02,    /*!< ARM enter this state after initial calibrations are completed */
-    MYK_ARM_RADIO_ON        = 0x03,    /*!< ARM has moved from MYKONOS_ARM_IDLE state into MYKONOS_ARM_RADIO_ON after the proper command, an abort command will move back to MYKONOS_ARM_IDLE state */
-    MYK_ARM_PROFILE_ERROR   = 0x04,    /*!< ARM has detected an illegal profile */
-    MYK_ARM_CAL_ERROR       = 0x40,    /*!< ARM has detected an error in the tracking calibrations */
-    MYK_ARM_EXCEPTION       = 0x80     /*!< ARM system problem has been detected */
-} mykonosArmState_t;
 
 /**
  *  \brief Data structure to hold 3.3 VDC GPIO settings
@@ -871,17 +715,15 @@ typedef struct{
  */
 typedef struct
 {
-    uint8_t damping;                /*!< 1/2^(damping + 8) fraction of previous model 'forgotten' per adaptation (default: 5 = '1/8192' , valid 0 to 15), 0 = infinite damping */
-    uint8_t numWeights;             /*!< number of weights to use for int8_cpx weights weights member of this structure (default = 1) */
-    uint8_t modelVersion;           /*!< DPD model version: one of four different generalized polynomial models: 0 = same as R0 silicon, 1-3 are new and the best one depends on the PA (default: 2) */
-    uint8_t highPowerModelUpdate;   /*!< 1 = Update saved model whenever peak Tx digital RMS is within 1dB of historical peak Tx RMS */
-    uint8_t modelPriorWeight;       /*!< Determines how much weight the loaded prior model has on DPD modeling (Valid 0 - 32, default 20) */
-    uint8_t robustModeling;         /*!< Default off = 0, 1=enables automatic outlier removal during DPD modeling */
-    uint16_t samples;               /*!< number of samples to capture (default: 512, valid 64 - 32768) */
-    uint16_t outlierThreshold;      /*!< threshold for sample in AM-AM plot outside of 1:1 line to be thrown out. (default: 50% = 8192/2, valid 8192 to 1) */
+    uint8_t damping; /*!< 1/2^(damping + 8) fraction of power 'forgotten' per adaptation (default: 5 = `1/8192' = , valid 0 to 15), 0 = infinite damping */
+    uint8_t numWeights; /*!< number of weights to use of weights member of this structure (default = 1) */
+    uint8_t modelVersion; /*!< DPD model version: one of four different generalized polynomial models: 0 = same as R0 silicon, 1-3 are new and the best one depends on the PA (default: 2) */
+    uint8_t highSampleHistory; /*!< 1= store the higher-amplitude samples for improving dynamic performance */
+    uint16_t samples; /*!< number of samples to capture (default: 512, valid 64 - 32768) */
+    uint16_t outlierThreshold; /*!< threshold for sample in AM-AM plot outside of 1:1 line to be thrown out. (default: 20% = 8192/5, valid 8192 to 1) */
     int16_t  additionalDelayOffset; /*!< 16th of an ORx sample (16=1sample), (default 0, valid -64 to 64) */
-    uint16_t pathDelayPnSeqLevel;   /*!< Default 255 (-30dBFs=(20Log10(value/8192)), (valid range  1 to 8191) */
-    int8_cpx weights[3];            /*!< DPD model error weighting (real/imag valid from -128 to 127) */
+    uint16_t pathDelayPnSeqLevel; /*!< Default 255 (-30dBFs=(20Log10(value/8192)), (valid range  1 to 8191) */
+    int8_cpx weights[3];    /*!< DPD model frequency weighting (real/imag valid from -128 to 127) */
 } mykonosDpdConfig_t;
 
 /**
@@ -894,66 +736,15 @@ typedef struct
  */
 typedef struct
 {
-    int16_t tx1DesiredGain;         /*!< (value = 100 * dB (valid range -32768 to 32767) - total gain and attenuation from Mykonos Tx1 output to ORx1 input in (dB * 100) */
-    int16_t tx2DesiredGain;         /*!< (value = 100 * dB (valid range -32768 to 32767) - total gain and attenuation from Mykonos Tx2 output to ORx2 input in (dB * 100) */
-    uint16_t tx1AttenLimit;         /*!< (valid range 0 - 40dB), no default, depends on PA, Protects PA by making sure Tx1Atten is not reduced below the limit */
-    uint16_t tx2AttenLimit;         /*!< (valid range 0 - 40dB), no default, depends on PA, Protects PA by making sure Tx2Atten is not reduced below the limit */
-    uint16_t tx1ControlRatio;       /*!< valid range 1-100, default 45 */
-    uint16_t tx2ControlRatio;       /*!< valid range 1-100, default 45 */
-    uint8_t allowTx1AttenUpdates;   /*!< 0= allow CLGC to run, but Tx1Atten will not be updated. User can still read back power measurements.  1=CLGC runs, and Tx1Atten automatically updated */
-    uint8_t allowTx2AttenUpdates;   /*!< 0= allow CLGC to run, but Tx2Atten will not be updated. User can still read back power measurements.  1=CLGC runs, and Tx2Atten automatically updated */
-
-    int16_t  additionalDelayOffset; /*!< 16th of an ORx sample (16=1sample), (default 0, valid -64 to 64) */
-    uint16_t pathDelayPnSeqLevel;   /*!< Default 255 (-30dBFs=(20Log10(value/8192)), (valid range  1 to 8191) */
+    int16_t tx1DesiredGain; /*!< (value = 100 * dB (valid range -32768 to 32767) - total gain and attenuation from Mykonos Tx1 output to ORx1 input in (dB * 100) */
+    int16_t tx2DesiredGain; /*!< (value = 100 * dB (valid range -32768 to 32767) - total gain and attenuation from Mykonos Tx2 output to ORx2 input in (dB * 100) */
+    uint16_t tx1AttenLimit; /*!< (valid range 0 - 40dB), no default, depends on PA, Protects PA by making sure Tx1Atten is not reduced below the limit */
+    uint16_t tx2AttenLimit; /*!< (valid range 0 - 40dB), no default, depends on PA, Protects PA by making sure Tx2Atten is not reduced below the limit */
+    uint16_t tx1ControlRatio; /*!< valid range 1-100, default 45 */
+    uint16_t tx2ControlRatio; /*!< valid range 1-100, default 45 */
+    uint8_t allowTx1AttenUpdates; /*!< 0= allow CLGC to run, but Tx1Atten will not be updated. User can still read back power measurements.  1=CLGC runs, and Tx1Atten automatically updated */
+    uint8_t allowTx2AttenUpdates; /*!< 0= allow CLGC to run, but Tx2Atten will not be updated. User can still read back power measurements.  1=CLGC runs, and Tx2Atten automatically updated */
 } mykonosClgcConfig_t;
-
-typedef struct
-{
-    /* VSWR init cal parameters */
-    int16_t  additionalDelayOffset;     /*!< 16th of an ORx sample (16=1sample), (default 0, valid -64 to 64) */
-    uint16_t pathDelayPnSeqLevel;       /*!< Default 255 (-30dBFs=(20Log10(value/8192)), (valid range  1 to 8191) */
-
-    /* VSWR tracking cal parameters */
-    uint8_t tx1VswrSwitchGpio3p3Pin;    /*!< 3p3V GPIO pin to use to control VSWR switch for Tx1 (valid 0-11) (output from Mykonos) */
-    uint8_t tx2VswrSwitchGpio3p3Pin;    /*!< 3p3V GPIO pin to use to control VSWR switch for Tx2 (valid 0-11) (output from Mykonos) */
-    uint8_t tx1VswrSwitchPolarity;      /*!< 3p3v GPIO pin polarity for forward path of Tx1, opposite used for reflection path (1 = high level, 0 = low level) */
-    uint8_t tx2VswrSwitchPolarity;      /*!< 3p3v GPIO pin polarity for forward path of Tx2, opposite used for reflection path (1 = high level, 0 = low level) */
-    uint8_t tx1VswrSwitchDelay_ms;      /*!< Delay for Tx1 after flipping the VSWR switch until measurement is made. In ms resolution */
-    uint8_t tx2VswrSwitchDelay_ms;      /*!< Delay for Tx2 after flipping the VSWR switch until measurement is made. In ms resolution */
-} mykonosVswrConfig_t;
-
-typedef struct
-{
-    /**
-     * errorStatus(decimal) | Description
-     * ---------------------|-----------------------
-     *                  0   | NO ERROR (Tracking success)
-     *                  1   | Tx data path not enabled
-     *                  2   | ORX data path is not enabled
-     *                  3   | Loopback switch closed
-     *                  4   | VSWR init cal was not run
-     *                  5   | Path delay not setup
-     *                  6   | Data measurement was aborted
-     *                  7   | VSWR disabled
-     *                  8   | If set, entered cal but not finished
-     *                  9   | No GPIO configured in single ORx configuration
-     *                 10   | Tx is not observable with any of the ORx Channels
-     *                 11   | ORX_TRACKING_DISABLED  ORx tracking must be enabled
-     *
-     */
-    uint32_t errorStatus;
-    uint32_t trackCount;                /*!< Number of times VSWR tracking has run since last reset */
-    int32_t forwardGainRms_dB;          /*!< Forward RMS gain measured from Tx to ORx path (1 = 0.01 dB Gain) */
-    int32_t forwardGainReal;            /*!< Real part of the forward path complex gain (1 = 0.01 linear Gain) */
-    int32_t forwardGainImag;            /*!< Imaginary part of the forward path complex gain (1 = 0.01 linear Gain) */
-    int32_t reflectedGainRms_dB;        /*!< Measured reflection path gain in RMS (1 = 0.01 dB Gain) */
-    int32_t reflectedGainReal;          /*!< Real part of the reflection path complex gain (1 = 0.01 linear Gain) */
-    int32_t reflectedGainImag;          /*!< Imaginary part of the reflection path complex gain (1 = 0.01 linear Gain) */
-    int32_t vswr_forward_tx_rms;        /*!< Forward RMS measured from Tx path (1 = 0.01 dBFS) */
-    int32_t vswr_forward_orx_rms;       /*!< Forward RMS measured from ORx path (1 = 0.01 dBFS) */
-    int32_t vswr_reflection_tx_rms;     /*!< Reflected RMS measured from Tx path (1 = 0.01 dBFS) */
-    int32_t vswr_reflection_orx_rms;    /*!< Reflected RMS measured from ORx path (1 = 0.01 dBFS) */
-} mykonosVswrStatus_t;
 
 /**
  *  \brief Data structure to hold Mykonos FIR filter settings
@@ -986,7 +777,6 @@ typedef struct
     uint8_t newSysrefOnRelink; 			/*!< Flag for determining if SYSREF on relink should be set. Where, if > 0 = set, 0 = not set */
     uint8_t enableAutoChanXbar; 		/*!< Flag for determining if auto channel select for the xbar should be set. Where, if > 0 = set, '0' = not set */
     uint8_t obsRxSyncbSelect; 			/*!< Selects SYNCb input source. Where, 0 = use RXSYNCB for this framer, 1 = use OBSRX_SYNCB for this framer */
-    uint8_t rxSyncbMode;                /*!< Flag for determining if CMOS mode for RX Sync signal is used. Where, if > 0 = CMOS, '0' = LVDS */
     uint8_t overSample;                 /*!< Selects framer bit repeat or oversampling mode for lane rate matching. Where, 0 = bitRepeat mode (changes effective lanerate), 1 = overSample (maintains same lane rate between ObsRx framer and Rx framer and oversamples the ADC samples) */
 } mykonosJesd204bFramerConfig_t;
 
@@ -1039,7 +829,6 @@ typedef struct
     uint8_t lmfcOffset;					/*!< LMFC offset value to adjust deterministic latency. Range is 0..31 */
     uint8_t newSysrefOnRelink;			/*!< Flag for determining if SYSREF on relink should be set. Where, if > 0 = set, '0' = not set */
     uint8_t enableAutoChanXbar;			/*!< Flag for determining if auto channel select for the xbar should be set. Where, if > 0 = set, '0' = not set */
-    uint8_t txSyncbMode;                /*!< Flag for determining if CMOS mode for TX Sync signal is used. Where, if > 0 = CMOS, '0' = LVDS */
 } mykonosJesd204bDeframerConfig_t;
 
 /**
@@ -1064,18 +853,18 @@ typedef struct
  */
 typedef struct
 {
-    mykonosDacDiv_t dacDiv;             /*!< The divider used to generate the DAC clock (ENUM Values)*/
-    mykonosFir_t *txFir;                /*!< Pointer to Tx FIR filter structure */
-    uint8_t  txFirInterpolation;        /*!< The TX digital FIR filter interpolation (1,2,4) */
-    uint8_t  thb1Interpolation;         /*!< Tx Halfband1 (HB1) filter interpolation (1,2) */
-    uint8_t  thb2Interpolation;         /*!< Tx Halfband2 (HB2) filter interpolation (1,2) */
-    uint8_t txInputHbInterpolation;     /*!< Interpolation of half band filter before the programmable FIR (valid 1,2,4) */
-    uint32_t iqRate_kHz;                /*!< Tx IQ data rate in kHz */
-    uint32_t primarySigBandwidth_Hz;    /*!< Tx primary signal BW */
-    uint32_t rfBandwidth_Hz;            /*!< Tx RF passband bandwidth for the profile */
-    uint32_t txDac3dBCorner_kHz;        /*!< DAC filter 3dB corner in kHz */
-    uint32_t txBbf3dBCorner_kHz;        /*!< Tx BBF 3dB corner in kHz */
-    uint8_t enableDpdDataPath;          /*!< Enable Tx Dynamic pre distortion - only valid for AD9373 device */
+    mykonosDacDiv_t dacDiv;         /*!< The divider used to generate the DAC clock (ENUM Values)*/
+    mykonosFir_t *txFir;            /*!< Pointer to Tx FIR filter structure */
+    uint8_t  txFirInterpolation;    /*!< The TX digital FIR filter interpolation (1,2,4) */
+    uint8_t  thb1Interpolation;     /*!< Tx Halfband1 (HB1) filter interpolation (1,2) */
+    uint8_t  thb2Interpolation;     /*!< Tx Halfband2 (HB2) filter interpolation (1,2) */
+    uint8_t txInputHbInterpolation; /*!< Interpolation of half band filter before the programmable FIR (valid 1,2,4) */
+    uint32_t iqRate_kHz;            /*!< Tx IQ data rate in kHz */
+    uint32_t primarySigBandwidth_Hz;/*!< Tx primary signal BW */
+    uint32_t rfBandwidth_Hz;        /*!< Tx RF passband bandwidth for the profile */
+    uint32_t txDac3dBCorner_kHz;    /*!< DAC filter 3dB corner in kHz */
+    uint32_t txBbf3dBCorner_kHz;    /*!< Tx BBF 3dB corner in kHz */
+    uint8_t enableDpdDataPath;              /*!< Enable Tx Dynamic pre distortion - only valid for AD9373 device */
 } mykonosTxProfile_t;
 
 /**
@@ -1213,13 +1002,12 @@ typedef struct
     mykonosJesd204bDeframerConfig_t *deframer;  /*!< Mykonos JESD204b deframer config for the Tx data path */
     mykonosTxChannels_t txChannels;             /*!< The desired Tx channels to enable during initialization */
     uint8_t txPllUseExternalLo;                 /*!< Internal LO=0, external LO*2 if =1 */
-    uint64_t txPllLoFrequency_Hz;               /*!< Tx PLL LO frequency (internal or external LO) */
+    u64 txPllLoFrequency_Hz;               /*!< Tx PLL LO frequency (internal or external LO) */
     mykonosTxAttenStepSize_t txAttenStepSize;   /*!< Tx Attenuation step size */
     uint16_t tx1Atten_mdB;                      /*!< Initial and current Tx1 Attenuation */
     uint16_t tx2Atten_mdB;                      /*!< Initial and current Tx2 Attenuation */
     mykonosDpdConfig_t *dpdConfig;              /*!< DPD settings. Only valid for AD9373 device, set pointer to NULL otherwise */
     mykonosClgcConfig_t *clgcConfig;            /*!< CLGC settings. Only valid for AD9373 device, set pointer to NULL otherwise */
-    mykonosVswrConfig_t *vswrConfig;            /*!< VSWR settings. Only valid for AD9373 device, set pointer to NULL otherwise */
 } mykonosTxSettings_t;
 
 /**
@@ -1233,7 +1021,7 @@ typedef struct
     mykonosAgcCfg_t *rxAgcCtrl;				/*!< Rx AGC control settings structure */
     mykonosRxChannels_t rxChannels;         /*!< The desired Rx Channels to enable during initialization */
     uint8_t rxPllUseExternalLo;             /*!< Internal LO = 0, external LO*2 = 1 */
-    uint64_t rxPllLoFrequency_Hz;           /*!< Rx PLL LO Frequency (internal or external LO) */
+    u64 rxPllLoFrequency_Hz;           /*!< Rx PLL LO Frequency (internal or external LO) */
     uint8_t realIfData; 			        /*!< Flag to choose if complex baseband or real IF data are selected for Rx and ObsRx paths. Where, if > 0 = real IF data, '0' = zero IF (IQ) data*/
 } mykonosRxSettings_t;
 
@@ -1250,7 +1038,7 @@ typedef struct
     mykonosJesd204bFramerConfig_t *framer;  	    /*!< ObsRx JESD204b framer configuration structure */
     mykonosObsRxChannelsEn_t obsRxChannelsEnable;   /*!< The desired ObsRx channels to configure/calibrate during initialization */
     mykonosObsRxLoSource_t obsRxLoSource;   	    /*!< The sniffer/ORx mixers can use the TX_PLL or SNIFFER_PLL */
-    uint64_t snifferPllLoFrequency_Hz;              /*!< SnRx PLL LO frequency in Hz */
+    u64 snifferPllLoFrequency_Hz;              /*!< SnRx PLL LO frequency in Hz */
     uint8_t realIfData; 						    /*!< Flag to choose if complex baseband or real IF data are selected for Rx and ObsRx paths. Where if > 0 = real IF data, '0' = complex data */
     uint16_t *customLoopbackAdcProfile;             /*!< Custom Loopback ADC profile to set the bandwidth of the ADC response */
     mykonosObsRxChannels_t defaultObsRxChannel;     /*!< Default ObsRx channel to enter when radioOn called */
@@ -1345,8 +1133,8 @@ typedef struct
      *                       9   | MODEL_ERROR_HIGH
      *                      10   | AM_AM_OUTLIERS
      *                      11   | INVALID_TX_PROFILE
-     *                      12   | ORX_TRACKING_DISABLED ORx tracking must be enabled
-     *                      13   | Cal suspended
+     *                      12   | ORX QEC tracking cal is disabled
+     *                      13   | Reserved
      *                      14   | Reserved
      *                      15   | Reserved
      *                      16   | Reserved
@@ -1369,81 +1157,32 @@ typedef struct
      * -------------------------|-----------------------
      *                      0   | NO ERROR
      *                      1   | TX Disabled
-     *                      2   | ORx is disabled
-     *                      3   | Loopback switch is clo
-     *                      4   | Data measurement aborted during capture
-     *                      5   | No initial calibration was done
-     *                      6   | Path delay not setup
-     *                      7   | No apply control is possible
-     *                      8   | Control value is out of range
-     *                      9   | CLGC feature is disabled
-     *                     10   | TX attenuation is capped
-     *                     11   | Gain measurement
-     *                     12   | No GPIO configured in single ORx configuration
-     *                     13   | Tx is not observable with any of the ORx Channels
-     *                     14   | ORX_TRACKING_DISABLED  ORx tracking must be enabled
-     *                     15   | Cal suspended
+     *                      2   | No initial calibration was run
+     *                      3   | Path delay not setup
+     *                      4   | Bad ORx feedback
+     *                      5   | Correlation is too small
+     *                      6   | No Apply control is possible
+     *                      7   | Control value is out of range
+     *                      8   | CLGC feature is disabled
+     *                      9   | TX Attenuation is capped
+     *                     10   | Data measurement is aborted
+     *                     11   | RESERVED
+     *                     12   | RESERVED
+     *                     13   | RESERVED
+     *                     14   | RESERVED
+     *                     15   | RESERVED
      *                     16   | RESERVED
      *                     17   | RESERVED
      *                     18   | RESERVED
      *                     19   | RESERVED
      */
     uint32_t errorStatus;
-    uint32_t trackCount;      /*!< Number of times CLGC tracking has run since last reset */
     int32_t desiredGain;      /*!< Desired gain/attenuation from Tx output to ORx input of Mykonos device. 0.01 dB resolution */
     int32_t currentGain;      /*!< Current measured gain in 0.01 dB resolution. */
     uint32_t txGain;          /*!< Current TxAttenuation setting, same as MYKONOS_getTx1/2Attenuation(), in 0.05dB resolution */
     int32_t txRms;            /*!< Tx digital sample power measured at DPD block input (0.01 dB resolution) */
     int32_t orxRms;           /*!< ORx digital sample power measured at ORx port (0.01 dB resolution) */
 } mykonosClgcStatus_t;
-
-/**
- * \brief Data structure to hold Tx LOL Status
- */
-typedef struct
-{
-    uint32_t errorCode;         /*!< error code from Tx LOL */
-    uint32_t percentComplete;   /*!< percent of required data collected for the current cal. Range 0 to 100 */
-    uint32_t performanceMetric; /*!< Variance of the corrections, and gives an indication in dB on how much LO leakage is corrected on an average tracking pass.  */
-    uint32_t iterCount;         /*!< running counter that increments each time the cal runs to completion */
-    uint32_t updateCount;       /*!< running counter that increments each time the cal updates the correction/actuator hardware */
-} mykonosTxLolStatus_t;
-
-/**
- * \brief Data structure to hold Tx QEC Status
- */
-typedef struct
-{
-    uint32_t errorCode;         /*!< error code from Tx QEC */
-    uint32_t percentComplete;   /*!< percent of required data collected for the current cal. Range 0 to 100 */
-    uint32_t performanceMetric; /*!< Number of codes adjusted which is the number of codes of correction made last time which can be converted to an IRR power metric as with Rx QEC, if desired. */
-    uint32_t iterCount;         /*!< running counter that increments each time the cal runs to completion */
-    uint32_t updateCount;       /*!< running counter that increments each time the cal updates the correction/actuator hardware */
-} mykonosTxQecStatus_t;
-
-/**
- * \brief Data structure to hold Rx QEC Status
- */
-typedef struct
-{
-    uint32_t errorCode;         /*!< error code from Rx QEC */
-    uint32_t percentComplete;   /*!< percent of required data collected for the current cal. Range 0 to 100 */
-    uint32_t selfcheckIrrDb;    /*!< selfCheckIrrdDb - Power-weighted average Image Rejection Ratio (IRR) in dBc. */
-    uint32_t iterCount;         /*!< running counter that increments each time the cal runs to completion */
-    uint32_t updateCount;       /*!< running counter that increments each time the cal updates the correction/actuator hardware */
-} mykonosRxQecStatus_t;
-
-/**
- * \brief Data structure to hold Orx QEC Status
- */
-typedef struct
-{
-    uint32_t errorCode;         /*!< error code from Orx QEC */
-    uint32_t percentComplete;   /*!< percent of required data collected for the current cal. Range 0 to 100 */
-    uint32_t selfcheckIrrDb;    /*!< selfCheckIrrdDb - Power-weighted average Image Rejection Ratio (IRR) in dBc. */
-    uint32_t iterCount;         /*!< running counter that increments each time the cal runs to completion */
-    uint32_t updateCount;       /*!< running counter that increments each time the cal updates the correction/actuator hardware */
-} mykonosOrxQecStatus_t;
 
 /**
  * \brief Data structure to hold Mykonos device settings

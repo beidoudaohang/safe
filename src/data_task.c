@@ -181,6 +181,35 @@ return:
 // 	return 0;
 // }
 
+s32 exmod_data_file_save(void)
+{
+	u16 cnt;
+	s32 err = 0;
+
+	for (cnt = 0; cnt < MONITOR_MOD_NUM; cnt++) {
+		if ((0 < (exmod_para_a[cnt].md_adr_t.mod_type)) && \
+		    (0 < (exmod_para_a[cnt].md_adr_t.mod_band)) ) {
+				err |= exmod_file_write(&exmod_para_a[cnt], cnt);
+		}
+	}
+
+	return err;
+}
+
+s32 exmod_data_file_read(void)
+{
+	u16 cnt;
+	s32 err = 0;
+
+	for (cnt = 0; cnt < MONITOR_MOD_NUM; cnt++) {
+		if ((0 < (exmod_para_a[cnt].md_adr_t.mod_type)) && \
+		    (0 < (exmod_para_a[cnt].md_adr_t.mod_band)) ) {
+				err |= exmod_file_read(&exmod_para_a[cnt], cnt);
+		}
+	}
+
+	return err;
+}
 
 void *data_task(void* arg)
 {
@@ -218,3 +247,6 @@ void *data_task(void* arg)
 		}
 	}
 }
+
+
+

@@ -13,7 +13,9 @@
         "usr_def.h": "c",
         "module_adr_def.h": "c",
         "termios.h": "c",
-        "termbits.h": "c"
+        "termbits.h": "c",
+        "mykonos_user.h": "c",
+        "t_mykonos.h": "c"
     },
     "editor.formatOnPaste": false,
     "C_Cpp.errorSquiggles": "Disabled",

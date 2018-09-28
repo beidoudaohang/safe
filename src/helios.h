@@ -8,7 +8,7 @@ typedef unsigned short int u16;
 typedef signed short int s16;
 typedef unsigned int u32;
 typedef signed int s32;
-typedef unsigned long  int u64;
+typedef unsigned long  long u64;
 typedef signed long int s64;
 typedef float f32;
 typedef double f64;
@@ -88,5 +88,7 @@ typedef signed   int   			int32_t;                   /* Signed   32 bit quantity
 //#define PROTOCOL_ENCRYPT_LZO        1
 
 //#define TEST_DATA
-#define TEST_WEB_DATA
+
+//#define BROADBAND_DIGITAL_PROJECT   0
+
 #endif //__HELIOS_H__

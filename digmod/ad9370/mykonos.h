@@ -1,8 +1,6 @@
 /*!
  * \file mykonos.h
  * \brief Contains macro definitions and function prototypes for mykonos.c
- *
- * Mykonos API version: 1.3.0.3528
  */
 
 #ifndef _MYKONOS_LIB_H_
@@ -11,10 +9,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <stdint.h>
-#include "helios.h"
+
 #include "t_mykonos.h"
-#include "mykonos_version.h"
 
 #define TX_PROFILE_VALID    0x01
 #define RX_PROFILE_VALID    0x02
@@ -28,23 +24,19 @@ extern "C" {
  */
 mykonosErr_t MYKONOS_resetDevice(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_getDeviceRev(mykonosDevice_t *device, uint8_t *revision);
-mykonosErr_t MYKONOS_getProductId(mykonosDevice_t *device, uint8_t *productId);
 mykonosErr_t MYKONOS_setSpiSettings(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_verifyDeviceDataStructure(mykonosDevice_t *device);
-mykonosErr_t MYKONOS_verifyProfiles(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_initialize(mykonosDevice_t *device); 
 mykonosErr_t MYKONOS_waitForEvent(mykonosDevice_t *device, waitEvent_t waitEvent, uint32_t timeout_us);
 mykonosErr_t MYKONOS_readEventStatus(mykonosDevice_t *device, waitEvent_t waitEvent, uint8_t *eventDone);
-mykonosErr_t MYKONOS_getApiVersion (mykonosDevice_t *device, uint32_t *siVer, uint32_t *majorVer, uint32_t *minorVer, uint32_t *buildVer);
-
 /*
  *****************************************************************************
  * PLL / Synthesizer functions
  *****************************************************************************
  */
 mykonosErr_t MYKONOS_initDigitalClocks(mykonosDevice_t *device);
-mykonosErr_t MYKONOS_setRfPllFrequency(mykonosDevice_t *device, mykonosRfPllName_t pllName, uint64_t rfPllLoFrequency_Hz);
-mykonosErr_t MYKONOS_getRfPllFrequency(mykonosDevice_t *device, mykonosRfPllName_t pllName, uint64_t *rfPllLoFrequency_Hz);
+mykonosErr_t MYKONOS_setRfPllFrequency(mykonosDevice_t *device, mykonosRfPllName_t pllName, u64 rfPllLoFrequency_Hz);
+mykonosErr_t MYKONOS_getRfPllFrequency(mykonosDevice_t *device, mykonosRfPllName_t pllName, u64 *rfPllLoFrequency_Hz);
 mykonosErr_t MYKONOS_checkPllsLockStatus(mykonosDevice_t *device, uint8_t *pllLockStatus);
 
 /*
@@ -55,48 +47,27 @@ mykonosErr_t MYKONOS_checkPllsLockStatus(mykonosDevice_t *device, uint8_t *pllLo
 mykonosErr_t MYKONOS_initArm(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_loadArmFromBinary(mykonosDevice_t *device, uint8_t *binary, uint32_t count);
 mykonosErr_t MYKONOS_verifyArmChecksum(mykonosDevice_t *device);
-mykonosErr_t MYKONOS_checkArmState(mykonosDevice_t *device, mykonosArmState_t armStateCheck);
 mykonosErr_t MYKONOS_getArmVersion(mykonosDevice_t *device, uint8_t *majorVer, uint8_t *minorVer, uint8_t *rcVer);
 
 mykonosErr_t MYKONOS_configDpd(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_getDpdConfig(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_getDpdStatus(mykonosDevice_t *device, mykonosTxChannels_t txChannel, mykonosDpdStatus_t *dpdStatus);
-mykonosErr_t MYKONOS_restoreDpdModel(mykonosDevice_t *device, mykonosTxChannels_t txChannel, uint8_t *modelDataBuffer, uint32_t modelNumberBytes);
-mykonosErr_t MYKONOS_saveDpdModel(mykonosDevice_t *device, mykonosTxChannels_t txChannel, uint8_t *modelDataBuffer, uint32_t modelNumberBytes);
-mykonosErr_t MYKONOS_setDpdActState(mykonosDevice_t *device, mykonosTxChannels_t txChannel, uint8_t actState);
 
 mykonosErr_t MYKONOS_configClgc(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_getClgcConfig(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_getClgcStatus(mykonosDevice_t *device, mykonosTxChannels_t txChannel, mykonosClgcStatus_t *clgcStatus);
-mykonosErr_t MYKONOS_setClgcGain(mykonosDevice_t *device, mykonosTxChannels_t txChannel, int16_t gain);
-
-mykonosErr_t MYKONOS_configVswr(mykonosDevice_t *device);
-mykonosErr_t MYKONOS_getVswrConfig(mykonosDevice_t *device);
-mykonosErr_t MYKONOS_getVswrStatus(mykonosDevice_t *device, mykonosTxChannels_t txChannel, mykonosVswrStatus_t *vswrStatus);
 
 mykonosErr_t MYKONOS_runInitCals(mykonosDevice_t *device, uint32_t calMask);
 mykonosErr_t MYKONOS_waitInitCals(mykonosDevice_t *device, uint32_t timeoutMs, uint8_t *errorFlag, uint8_t *errorCode);
 mykonosErr_t MYKONOS_abortInitCals(mykonosDevice_t *device, uint32_t *calsCompleted);
 mykonosErr_t MYKONOS_getInitCalStatus(mykonosDevice_t *device, mykonosInitCalStatus_t *initCalStatus);
 
-mykonosErr_t MYKONOS_resetExtTxLolChannel(mykonosDevice_t *device, mykonosTxChannels_t channelSel);
-
 mykonosErr_t MYKONOS_radioOn(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_radioOff(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_getRadioState(mykonosDevice_t *device, uint32_t *radioStatus);
 mykonosErr_t MYKONOS_enableTrackingCals(mykonosDevice_t *device, uint32_t enableMask);
-mykonosErr_t MYKONOS_rescheduleTrackingCal(mykonosDevice_t *device, mykonosTrackingCalibrations_t trackingCal);
-mykonosErr_t MYKONOS_setAllTrackCalState(mykonosDevice_t *device, uint32_t trackingCalMask);
-mykonosErr_t MYKONOS_getAllTrackCalState(mykonosDevice_t *device, uint32_t *trackCals);
-mykonosErr_t MYKONOS_setTrackingCalState(mykonosDevice_t *device, mykonosTrackingCalibrations_t trackingCal, uint8_t trackCalState);
-mykonosErr_t MYKONOS_getTrackingCalState(mykonosDevice_t *device, mykonosTrackingCalibrations_t trackingCal, uint8_t *trackCalState);
 mykonosErr_t MYKONOS_getEnabledTrackingCals(mykonosDevice_t *device, uint32_t *enableMask);
 mykonosErr_t MYKONOS_getPendingTrackingCals(mykonosDevice_t *device, uint32_t *pendingCalMask);
-mykonosErr_t MYKONOS_getTxLolStatus(mykonosDevice_t *device, mykonosTxChannels_t txChannel, mykonosTxLolStatus_t *txLolStatus);
-mykonosErr_t MYKONOS_getTxQecStatus(mykonosDevice_t *device, mykonosTxChannels_t txChannel, mykonosTxQecStatus_t *txQecStatus);
-
-mykonosErr_t MYKONOS_getRxQecStatus(mykonosDevice_t *device, mykonosRxChannels_t rxChannel, mykonosRxQecStatus_t *rxQecStatus);
-mykonosErr_t MYKONOS_getOrxQecStatus(mykonosDevice_t *device, mykonosObsRxChannels_t orxChannel, mykonosOrxQecStatus_t *orxQecStatus);
 
 mykonosErr_t MYKONOS_setSnifferChannel(mykonosDevice_t *device, mykonosSnifferChannel_t snifferChannel);
 
@@ -172,15 +143,6 @@ mykonosErr_t MYKONOS_setRx2ManualGain(mykonosDevice_t *device, uint8_t gainIndex
 mykonosErr_t MYKONOS_getRx1Gain(mykonosDevice_t *device, uint8_t *rx1GainIndex);
 mykonosErr_t MYKONOS_getRx2Gain(mykonosDevice_t *device, uint8_t *rx2GainIndex);
 mykonosErr_t MYKONOS_setupRxAgc(mykonosDevice_t *device);
-mykonosErr_t MYKONOS_resetRxAgc(mykonosDevice_t *device);
-mykonosErr_t MYKONOS_setRxAgcMinMaxGainIndex(mykonosDevice_t *device, mykonosRxChannels_t rxChannelSelect, uint8_t maxGainIndex, uint8_t minGainIndex);
-mykonosErr_t MYKONOS_setObsRxAgcMinMaxGainIndex(mykonosDevice_t *device, mykonosObsRxChannels_t obsRxChannelSelect, uint8_t maxGainIndex, uint8_t minGainIndex);
-mykonosErr_t MYKONOS_setRx1TempGainComp(mykonosDevice_t *device, int16_t rx1TempCompGain_mdB);
-mykonosErr_t MYKONOS_getRx1TempGainComp(mykonosDevice_t *device, int16_t *rx1TempCompGain_mdB);
-mykonosErr_t MYKONOS_setRx2TempGainComp(mykonosDevice_t *device, int16_t rx2TempCompGain_mdB);
-mykonosErr_t MYKONOS_getRx2TempGainComp(mykonosDevice_t *device, int16_t *rx2TempCompGain_mdB);
-mykonosErr_t MYKONOS_setObsRxTempGainComp(mykonosDevice_t *device, int16_t obsRxTempCompGain_mdB);
-mykonosErr_t MYKONOS_getObsRxTempGainComp(mykonosDevice_t *device, int16_t *obsRxTempCompGain_mdB);
 mykonosErr_t MYKONOS_enableRxGainCtrSyncPulse(mykonosDevice_t *device, uint8_t enable);
 mykonosErr_t MYKONOS_setRxGainControlMode(mykonosDevice_t *device, mykonosGainMode_t mode);
 mykonosErr_t MYKONOS_getRx1DecPower(mykonosDevice_t *device, uint16_t *rx1DecPower_mdBFS);
@@ -230,10 +192,11 @@ mykonosErr_t MYKONOS_clearPaErrorFlag(mykonosDevice_t *device);
  *****************************************************************************
  */
 const char* getMykonosErrorMessage(mykonosErr_t errorCode);
-
 mykonosErr_t MYKONOS_initSubRegisterTables(mykonosDevice_t *device);
 mykonosErr_t MYKONOS_setTxPfirSyncClk(mykonosDevice_t *device); /* Helper function */
 mykonosErr_t MYKONOS_setRxPfirSyncClk(mykonosDevice_t *device); /* Helper function */
+
+mykonosErr_t MYKONOS_getRegValue(mykonosDevice_t *device,uint16_t addr, uint8_t *RegValue);
 
 #ifdef __cplusplus
 }

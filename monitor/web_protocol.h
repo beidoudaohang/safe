@@ -13,17 +13,17 @@
 typedef struct 
 {
 	u8 cmd;
-    md_adr_info md_adr;
-    u8 authority;
+	md_adr_info md_adr;
+	u8 authority;
 	u8 ack;
-    u16 len;
-    u8 para[PARA_BUF_SIZE];
+	u16 len;
+	u8 para[PARA_BUF_SIZE];
 }web_protocol_t;
 
 typedef struct 
 {
-    long type;
-    web_protocol_t data;
+	long type;
+	web_protocol_t data;
 }web_msg_t;
 #pragma pack()
 

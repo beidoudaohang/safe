@@ -6,28 +6,28 @@ ver:1.0
 description:
 	module parameter dat struct
 */
-#ifndef DATA_TASK_H_
-#define DATA_TASK_H_
+#ifndef DATA_TASK_DEF_H_
+#define DATA_TASK_DEF_H_
 
 /*****************************include files***********************/
 #include "helios.h"
 #include <unistd.h>
 #include <pthread.h>
-#include <semaphore.h>
 #include <arpa/inet.h>
-#include "data_task_def.h"
 /*****************************para define*************************/
-
+typedef enum
+{
+	DATA_TYPE_MOD1,
+	DATA_TYPE_MOD2,
+	DATA_TYPE_MOD3,
+	DATA_TYPE_UNIT,
+	DATA_TYPE_PCB,
+	DATA_TYPE_EXMOD
+} DATA_TYPE;
 
 
 /*****************************data struct define******************/
-extern pthread_t data_ts_id;
-extern pthread_attr_t data_ts_attr;
-extern sem_t data_write_sem;
-/*****************************funs********************************/
-s32 data_init(void);
-void data_update(DATA_TYPE type);
-void *data_task(void* arg);
-s32 data_update_check(void);
 
-#endif //DATA_TASK_H_
+/*****************************funs********************************/
+
+#endif //DATA_TASK_DEF_H_

@@ -2,22 +2,20 @@
  *\file mykonos_gpio.c
  *
  *\brief Contains Mykonos APIs for transceiver GPIO configuration and control.
- *
- * Mykonos API version: 1.3.0.3528
  */
 
 
 /**
  * \page Disclaimer Legal Disclaimer
  * WARRANTY DISCLAIMER: THE SOFTWARE AND ANY RELATED INFORMATION AND/OR ADVICE IS PROVIDED ON AN
- * �AS IS� BASIS, WITHOUT REPRESENTATIONS, GUARANTEES OR WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED,
+ * “AS IS” BASIS, WITHOUT REPRESENTATIONS, GUARANTEES OR WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED,
  * ORAL OR WRITTEN, INCLUDING WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
  * PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT.
  */
 
-// #include <stdint.h>
+#include <stdint.h>
 #include <stddef.h>
-#include "common_api.h"
+#include "common_ad9370.h"
 #include "mykonos.h"
 #include "mykonos_gpio.h"
 #include "mykonos_macros.h"
@@ -273,17 +271,26 @@ const char* getGpioMykonosErrorMessage(mykonosGpioErr_t errorCode)
         case MYKONOS_ERR_GAINCOMP_SET_NULL_STRUCT:
             return "gain compensation structure gainComp is not initialised in MYKONOS_setRxGainCompensation()\n";
 
+        case MYKONOS_ERR_GAINCOMP_INV_DELAY:
+            return "gain compensation structure gainComp->delay is invalid in MYKONOS_setRxGainCompensation()\n";
+
         case MYKONOS_ERR_GAINCOMP_INV_RX1_OFFSET:
             return "gain compensation structure gainComp->rx1Offset is invalid in MYKONOS_setRxGainCompensation()\n";
 
         case MYKONOS_ERR_GAINCOMP_INV_RX2_OFFSET:
             return "gain compensation structure gainComp->rx2Offset is invalid in MYKONOS_setRxGainCompensation()\n";
 
+        case MYKONOS_ERR_GAINCOMP_INV_DURATION:
+            return "gain compensation structure gainComp->compDuration is invalid in MYKONOS_setRxGainCompensation()\n";
+
+        case MYKONOS_ERR_GAINCOMP_INV_RAMP:
+            return "gain compensation structure gainComp->compRamp is invalid in MYKONOS_setRxGainCompensation()\n";
+
         case MYKONOS_ERR_GAINCOMP_INV_STEP:
             return "gain compensation structure gainComp->compStep is invalid in MYKONOS_setRxGainCompensation()\n";
 
         case MYKONOS_ERR_GAINCOMP_INV_EN:
-            return "enable is not valid in MYKONOS_setRxGainCompensation()\n";
+              return "enable is not valid in MYKONOS_setRxGainCompensation()\n";
 
         case MYKONOS_ERR_FLOATFRMT_NULL_STRUCT:
             return "floating point formatter structure floatFrmt not initialised in MYKONOS_getFloatPointFrmt()\n";
@@ -330,126 +337,6 @@ const char* getGpioMykonosErrorMessage(mykonosGpioErr_t errorCode)
         case MYKONOS_ERR_FLOATFRMT_NULL_ENABLE:
             return "null pointer passed for enable in MYKONOS_setRxEnFloatPntFrmt()\n";
 
-        case MYKONOS_ERR_SETUPTEMPSENSOR_NULL_PARAM:
-            return "MYKONOS_setupTempSensor() has NULL function parameter\n";
-
-        case MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPDECIMATION:
-            return "tempDecimation value out of range in MYKONOS_setupTempSensor()\n";
-
-        case MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPWINDOW:
-            return "tempWindow value out of range in MYKONOS_setupTempSensor()\n";
-
-        case MYKONOS_ERR_SETUPTEMPSENSOR_INV_OFFSET:
-            return "offset value out of range in MYKONOS_setupTempSensor()\n";
-
-        case MYKONOS_ERR_GETTEMPSENSORCFG_NULL_PARAM:
-            return "MYKONOS_getTempSensorConfig() has NULL function parameter\n";
-
-        case MYKONOS_ERR_READTEMPSENSOR_NULL_PARAM:
-            return "MYKONOS_readTempSensor() has NULL function parameter\n";
-
-        case MYKONOS_ERR_READTEMPSENSOR_NOT_LOCKED:
-            return "MYKONOS_readTempSensor() temperature sensor reading is not locked\n";
-
-        case MYKONOS_ERR_GPIO_HYBRID_RX1_PIN:
-            return "MYKONOS_setRxHybridGainChangePin() not valid pin has been passed for RX1 hybrid gain control.\n";
-
-        case MYKONOS_ERR_GPIO_HYBRID_RX2_PIN:
-            return "MYKONOS_setRxHybridGainChangePin() not valid pin has been passed for RX2 hybrid gain control.\n";
-
-        case MYKONOS_ERR_GPIO_HYBRID_ORX_PIN:
-            return "MYKONOS_setObsRxHybridGainChangePin() if invalid pin has been passed for ORX hybrid gain control.\n";
-
-        case MYKONOS_ERR_AGC_OBS_NOT_IN_HYBRID:
-            return "MYKONOS_setObsRxHybridGainChangePin() if the observation gain mode is not set to Hybrid.\n";
-
-        case MYKONOS_ERR_GPIO_HYBRID_RX1_PIN_NULL_PARM:
-            return "MYKONOS_getRxHybridGainChangePin() null value has been passed to rx1GainChangePin.\n";
-
-        case MYKONOS_ERR_GPIO_HYBRID_RX2_PIN_NULL_PARM:
-            return "MYKONOS_getRxHybridGainChangePin() null value has been passed to rx1GainChangePin.\n";
-
-        case  MYKONOS_ERR_GAIN_CONTROL_NOT_HYBRID:
-            return "MYKONOS_setRxHybridGainChangePin() if gain control is not hybrid.\n";
-
-        case MYKONOS_ERR_GAIN_CONTROL_NOT_AGC :
-            return "MYKONOS_setRxAgcEnSyncPin() or MYKONOS_getObsRxAgcEnSyncPin() if the observation gain control mode is not set to AGC.\n";
-
-        case MYKONOS_ERR_OBS_GAIN_CONTROL_NOT_AGC:
-            return "MYKONOS_getObsRxAgcEnSyncPin() if the observation gain control mode is not set to AGC.\n";
-
-        case MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN:
-            return "MYKONOS_setRxAgcEnSyncPin() if invalid pin has been passed for RX1 AGC sync gain control.\n";
-
-        case MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN:
-            return "MYKONOS_setRxAgcEnSyncPin() if invalid pin has been passed for RX2 AGC sync gain control.\n";
-
-        case MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN_NULL_PARM:
-            return "MYKONOS_getRxAgcEnSyncPin()  if a null value has been passed to rx1AgcSyncPin.\n";
-
-        case MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN_NULL_PARM:
-            return "MYKONOS_getRxAgcEnSyncPin()  if a null value has been passed to rx2AgcSyncPin.\n";
-
-        case MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN:
-           return "MYKONOS_setObsRxAgcEnSyncPin() if invalid pin has been passed for ORX AGC sync gain control.\n";
-
-        case MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN_NULL_PARM:
-            return "MYKONOS_getObsRxAgcEnSyncPin() if a null value has been passed to obsRxAgcSyncPin.\n";
-
-        case MYKONOS_ERR_SLICER_INV_OBS_RX_SEL:
-            return "Invalid observation channel GPIO pin selection for Slicer control passed to MYKONOS_setObsRxSlicerCtrl().\n";
-
-        case MYKONOS_ERR_SLICER_OBS_RX_STEP_OUT_OF_RANGE:
-            return "Slicer step is out of range passed to MYKONOS_setObsRxSlicerCtrl().\n";
-
-        case MYKONOS_ERR_SLICER_OBS_RX_EN_INV:
-            return "Invalid enable passed to MYKONOS_setObsRxSlicerCtrl().\n";
-
-        case MYKONOS_ERR_SLICER_OBS_RXPIN_NULL_PARM:
-            return "ObsRxPins is null pointer for the passed parameter passed to MYKONOS_getObsRxSlicerCtrl().\n";
-
-        case MYKONOS_ERR_SLICER_OBS_RX_STEP_NULL_PARM:
-            return "SlicerStep is null pointer for the passed parameter passed to MYKONOS_getObsRxSlicerCtrl().\n";
-
-        case MYKONOS_ERR_SLICER_OBS_RX_EN_NULL_PARM:
-            return "Enable is null pointer for the passed parameter passed to MYKONOS_getObsRxSlicerCtrl().\n";
-
-        case MYKONOS_ERR_OBS_RX_GAINCOMP_SET_NULL_STRUCT:
-            return "Gain compensation structure gainComp is not initialised in MYKONOS_setObsRxGainCompensation().\n";
-
-        case MYKONOS_ERR_OBS_RX_GAINCOMP_INV_OFFSET:
-            return "Gain compensation structure gainComp->obsRxOffset is invalid in MYKONOS_setObsRxGainCompensation().\n";
-
-        case MYKONOS_ERR_OBS_RX_GAINCOMP_INV_STEP:
-            return "Gain compensation structure gainComp->compStep is invalid in MYKONOS_setObsRxGainCompensation().\n";
-
-        case MYKONOS_ERR_OBS_RX_GAINCOMP_INV_EN:
-            return "Enable is not valid in MYKONOS_setObsRxGainCompensation().\n";
-
-        case MYKONOS_ERR_OBS_RX_GAINCOMP_NULL_STRUCT:
-            return "Observation channel gain compensation structure gainComp is not initialised in MYKONOS_getObsRxGainCompensation().\n";
-
-        case MYKONOS_ERR_GETGPIODRV_NULL_PARAM:
-            return "Null parameter passed to the function MYKONOS_getGpioDrv().\n";
-
-        case MYKONOS_ERR_GPIO_DRV_INV_PARAM:
-            return "GPIO out of range passed to function MYKONOS_setGpioDrv(), valid GPIOs are in the range 0x00000 to 0x7FFFF.\n";
-
-        case MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM:
-            return "GPIO out of range -valid GPIOs are in the range 0x00000 to 0x7FFFF.\n";
-
-        case MYKONOS_ERR_GPIO_GETSLEW_NULL_PARAM:
-            return "Null parameter passed to the function MYKONOS_getGpioSlewRate().\n";
-
-        case MYKONOS_ERR_CMOS_DRV_NULL_PARAM:
-            return "Null parameter passed to the function.\n";
-
-        case MYKONOS_ERR_CMOS_DRV_INV_PARAM:
-            return "Incorrect drive strength, valid settings are given by mykonosCmosPadDrvStr_t.\n";
-
-        case MYKONOS_ERR_SPI2_INV_GPIO:
-            return "if an invalid GPIO pin configuration is passed to MYKONOS_spi2GpioSetup().\n";
-
         default:
             return "";
     }
@@ -481,11 +368,12 @@ const char* getGpioMykonosErrorMessage(mykonosGpioErr_t errorCode)
  * \param monitorIndex which will be the index at which the outputs are going to be set. see table in documentation
  *
  * \param monitorMask which GPIO outputs are going to active, the available GPIO
- * bit 0 will represent MYKGPIO0 and bit 7 will represent MYKGPIO7.
+ * bit 0 will represent MYK_GPIO_0 and bit 7 will represent MYK_GPIO_7.
  *
  * \retval MYKONOS_ERR_MONITOR_OUT_INDEX_RANGE if GPIO Monitor output index is not in table
  * \retval MYKONOS_ERR_EN_MONITOR_OUT_NOT_ENABLED if GPIO source control not set for Monitor output
  * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
+ *
  */
 mykonosGpioErr_t MYKONOS_setGpioMonitorOut(mykonosDevice_t *device, uint8_t monitorIndex, uint8_t monitorMask)
 {
@@ -494,7 +382,7 @@ mykonosGpioErr_t MYKONOS_setGpioMonitorOut(mykonosDevice_t *device, uint8_t moni
     const uint8_t INDEX_MASK = 0x42;
 
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setGpioMonitorOut()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_monitorOut()\n");
 #endif
 
     /* Error checking for correct index. */
@@ -541,7 +429,7 @@ mykonosGpioErr_t MYKONOS_getGpioMonitorOut(mykonosDevice_t *device, uint8_t *mon
     uint8_t monMaskRd = 0;
 
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getGpioMonitorOut()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_monitorOut()\n");
 #endif
 
     /* Checking for null passed parameters */
@@ -578,7 +466,7 @@ mykonosGpioErr_t MYKONOS_getGpioMonitorOut(mykonosDevice_t *device, uint8_t *mon
 /**
  * \brief This API function configures the GPIO inputs for controlling RX gain
  *
- * This API function configures the GPIO input pin and step size to allow the BBP to control gain changes in Rx1 signal chain.
+ * This allows to control the gain index in MGC mode, there is
  * A high pulse on the 'rx1GainIncPin' in pin control mode will increment the gain by the value set in incStep'.
  * A high pulse on the 'rx1GainDecPin' in pin control mode will decrement the gain by the value set in 'decStep'.
  * <B>Dependencies</B>
@@ -587,20 +475,17 @@ mykonosGpioErr_t MYKONOS_getGpioMonitorOut(mykonosDevice_t *device, uint8_t *mon
 
  *
  * \param device is structure pointer to the Mykonos data structure containing settings
- *
  * \param incStep This sets the change (increase) in gain index that is applied when the
  * increment gain pin  (in MGC pin control mode) is pulsed.
- *
  * \param decStep This configures the decrement in gain index that should be applied
  * when the decrement gain pin (in MGC pin control mode) is pulsed.
- *
  * \param rx1GainIncPin mykonosGpioSelect_t These bits select the GPIO used as the enable for
  * the Rx1 Manual Increment gain input according to the following:
- * MYKGPIO0 or MYKGPIO10
+ * MYK_GPIO_0 or MYK_GPIO_10
  *
  * \param rx1GainDecPin mykonosGpioSelect_t These bits select the GPIO used as the enable for
  * the Rx1 Manual Decrement gain input according to the following:
- * MYKGPIO1 or MYKGPIO11
+ * MYK_GPIO_1 or MYK_GPIO_11
  *
  * \param enable 0 = Disable the gain pin control for Rx1
  *               1 = enable the gain pin control for Rx1
@@ -622,7 +507,7 @@ mykonosGpioErr_t MYKONOS_setRx1GainCtrlPin(mykonosDevice_t *device, uint8_t incS
     const uint8_t MAX_STEP = 0x07;
 
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setRx1GainCtrlPin()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_monitorOut()\n");
 #endif
 
     /* If enable then check for the next otherwise go directly to disable */
@@ -645,7 +530,6 @@ mykonosGpioErr_t MYKONOS_setRx1GainCtrlPin(mykonosDevice_t *device, uint8_t incS
             case MYKGPIO10:
                 wrtPin |= 0x04;
                 break;
-
             default:
                 return MYKONOS_ERR_MGCRX1_GPIO_INCPIN_INV_PARAM;
         }
@@ -658,7 +542,6 @@ mykonosGpioErr_t MYKONOS_setRx1GainCtrlPin(mykonosDevice_t *device, uint8_t incS
             case MYKGPIO11:
                 wrtPin |= 0x01;
                 break;
-
             default:
                 return MYKONOS_ERR_MGCRX1_GPIO_DECPIN_INV_PARAM;
         }
@@ -702,13 +585,13 @@ mykonosGpioErr_t MYKONOS_getRx1GainCtrlPin(mykonosDevice_t *device, uint8_t *inc
 {
     uint8_t readVal = 0x00;
 
-    const uint8_t MASK_GPIO_CH1 = 0x0F;
+    const uint8_t MASK_GPIO_CH1 = 0x03;
     const uint8_t MASK_EN_CH1 = 0x01;
     const uint8_t MASK_STEP_INC = 0xE0;
     const uint8_t MASK_STEP_DEC = 0x1C;
 
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getRx1GainCtrlPin()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_monitorOut()\n");
 #endif
 
     /* Checking for null passed parameters */
@@ -774,9 +657,9 @@ mykonosGpioErr_t MYKONOS_getRx1GainCtrlPin(mykonosDevice_t *device, uint8_t *inc
 
     *enable = readVal & MASK_EN_CH1;
 
-    *incStep = (readVal & MASK_STEP_INC) >> 5;
+    *incStep = readVal & MASK_STEP_INC;
 
-    *decStep = (readVal & MASK_STEP_DEC) >> 2;
+    *decStep = readVal & MASK_STEP_DEC;
 
     return MYKONOS_ERR_GPIO_OK;
 }
@@ -784,30 +667,26 @@ mykonosGpioErr_t MYKONOS_getRx1GainCtrlPin(mykonosDevice_t *device, uint8_t *inc
 /**
  * \brief This API function configures the GPIO inputs for controlling RX gain
  *
- * This API function configures the GPIO input pin and step size to allow the BBP to control gain changes in Rx2 signal chain.
+ * This allows to control the gain index in MGC mode, there is
  * A high pulse on the 'rx2GainIncPin' in pin control mode will increment the gain by the value set in incStep'.
  * A high pulse on the 'rx2GainDecPin' in pin control mode will decrement the gain by the value set in 'decStep'.
- *
  * <B>Dependencies</B>
  * - device->spiSettings
  * - device->spiSettings->chipSelectIndex
 
  *
  * \param device is structure pointer to the Mykonos data structure containing settings
- *
  * \param incStep This sets the change (increase) in gain index that is applied when the
- * increment gain pin (in MGC pin control mode) is pulsed.
- *
+ * increment gain pin  (in MGC pin control mode) is pulsed.
  * \param decStep This configures the decrement in gain index that should be applied
  * when the decrement gain pin (in MGC pin control mode) is pulsed.
- *
  * \param rx2GainIncPin mykonosGpioSelect_t These bits select the GPIO used as the enable for
  * the Rx2 Manual Increment gain input according to the following:
- * MYKGPIO3 or MYKGPIO13
+ * MYK_GPIO_3 or MYK_GPIO_13
  *
  * \param rx2GainDecPin mykonosGpioSelect_t These bits select the GPIO used as the enable for
  * the Rx2 Manual Decrement gain input according to the following:
- * MYKGPIO4 or MYKGPIO14
+ * MYK_GPIO_4 or MYK_GPIO_14
  *
  * \param enable 0 = Disable the gain pin control for Rx2
  *               1 = enable the gain pin control for Rx2
@@ -830,7 +709,7 @@ mykonosGpioErr_t MYKONOS_setRx2GainCtrlPin(mykonosDevice_t *device, uint8_t incS
     const uint8_t MAX_STEP = 0x07;
 
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setRx2GainCtrlPin()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_monitorOut()\n");
 #endif
 
     /* If enable then check for the next otherwise go directly to disable */
@@ -853,7 +732,6 @@ mykonosGpioErr_t MYKONOS_setRx2GainCtrlPin(mykonosDevice_t *device, uint8_t incS
             case MYKGPIO13:
                 wrtPin |= 0x40;
                 break;
-
             default:
                 return MYKONOS_ERR_MGCRX2_GPIO_INCPIN_INV_PARAM;
         }
@@ -866,7 +744,6 @@ mykonosGpioErr_t MYKONOS_setRx2GainCtrlPin(mykonosDevice_t *device, uint8_t incS
             case MYKGPIO14:
                 wrtPin |= 0x10;
                 break;
-
             default:
                 return MYKONOS_ERR_MGCRX2_GPIO_DECPIN_INV_PARAM;
         }
@@ -910,13 +787,13 @@ mykonosGpioErr_t MYKONOS_getRx2GainCtrlPin(mykonosDevice_t *device, uint8_t *inc
 {
     uint8_t readVal = 0x00;
 
-    const uint8_t MASK_GPIO_CH2 = 0xF0;
+    const uint8_t MASK_GPIO_CH2 = 0xC0;
     const uint8_t MASK_EN_CH2 = 0x02;
     const uint8_t MASK_STEP_INC = 0xE0;
     const uint8_t MASK_STEP_DEC = 0x1C;
 
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getRx2GainCtrlPin()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_monitorOut()\n");
 #endif
 
     /* Checking for null passed parameters */
@@ -980,661 +857,11 @@ mykonosGpioErr_t MYKONOS_getRx2GainCtrlPin(mykonosDevice_t *device, uint8_t *inc
     /* Getting Pin configuration assignment*/
     CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_AGC_MANUAL_GAIN_CFG, &readVal);
 
-    *enable = (readVal & MASK_EN_CH2) >> 1;
+    *enable = readVal & MASK_EN_CH2;
 
-    *incStep = (readVal & MASK_STEP_INC) >> 5;
+    *incStep = readVal & MASK_STEP_INC;
 
-    *decStep = (readVal & MASK_STEP_DEC) >> 2;
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief This API function set the pins for hybrid gain control
- *
- * In order to call this function the gain mode should be set to Hybrid.
- * The AGC gain change will be controlled with the selected GPIO pin:
- * A pulse on the 'rx1GainChangePin' in hybrid pin control will enable the AGC gain change for RX1
- * A pulse on the 'rx2GainChangePin' in hybrid pin control will enable the AGC gain change for RX2
- *
- * <B>Dependencies</B>
- * - device->spiSettings
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is structure pointer to the Mykonos data structure containing settings
- * \param rx1GainChangePin GPIO pin that will be used for hybrid gain change control, the available pins for RX1 channel
- * hybrid control are:
- * MYKGPIO1
- * MYKGPIO10
- * MYKGPIO11
- * MYKGPIONAN for no GPIO selected
- *
- * \param rx2GainChangePin GPIO pin that will be used for hybrid gain change control, the available pins for RX2 channel
- * hybrid control are:
- * MYKGPIO4
- * MYKGPIO10
- * MYKGPIO13
- * MYKGPIONAN for no GPIO selected
- *
- * \retval MYKONOS_ERR_GAIN_CONTROL_NOT_HYBRID if gain control is not hybrid
- * \retval MYKONOS_ERR_GPIO_HYBRID_RX1_PIN if invalid pin has been passed for RX1 hybrid gain control.
- * \retval MYKONOS_ERR_GPIO_HYBRID_RX2_PIN if invalid pin has been passed for RX2 hybrid gain control.
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setRxHybridGainChangePin(mykonosDevice_t *device, mykonosGpioSelect_t rx1GainChangePin, mykonosGpioSelect_t rx2GainChangePin)
-{
-    uint8_t hybridPinWrite = 0x00;
-    uint8_t pinRx1 = 0x00;
-    uint8_t pinRx2 = 0x00;
-
-    const uint8_t HYBRID_RX_PIN_MASK = 0x0F;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setRxHybridGainChangePin()\n");
-#endif
-
-    /* Check if in Hybrid Mode */
-    if (device->rx->rxGainCtrl->gainMode != HYBRID)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GAIN_CONTROL_NOT_HYBRID,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GAIN_CONTROL_NOT_HYBRID));
-        return MYKONOS_ERR_GAIN_CONTROL_NOT_HYBRID;
-    }
-
-    /* Pin configuration assignment for RX1 and RX2 */
-    switch (rx1GainChangePin)
-    {
-        case MYKGPIO1:
-            pinRx1 |= 0x00;
-            break;
-        case MYKGPIO10:
-            pinRx1 |= 0x01;
-            break;
-        case MYKGPIO11:
-            pinRx1 |= 0x02;
-            break;
-        case MYKGPIONAN:
-            pinRx1 |= 0x03;
-            break;
-        default:
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_HYBRID_RX1_PIN,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_HYBRID_RX1_PIN));
-            return MYKONOS_ERR_GPIO_HYBRID_RX1_PIN;
-    }
-
-    switch (rx2GainChangePin)
-    {
-        case MYKGPIO4:
-            pinRx2 |= 0x00;
-            break;
-        case MYKGPIO10:
-            pinRx2 |= 0x04;
-            break;
-        case MYKGPIO13:
-            pinRx2 |= 0x08;
-            break;
-        case MYKGPIONAN:
-            pinRx2 |= 0x0C;
-            break;
-        default:
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_HYBRID_RX2_PIN,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_HYBRID_RX2_PIN));
-            return MYKONOS_ERR_GPIO_HYBRID_RX2_PIN;
-    }
-
-    /* Setting GPIO control for RX1 and RX2 */
-    hybridPinWrite = (pinRx1 | pinRx2);
-
-    /* Writing GPIO pin configuration for hybrid mode. */
-    CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_AGC_GAIN_CHANGE_GPIO_SEL, hybridPinWrite, HYBRID_RX_PIN_MASK, 0);
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-
-
-/**
- * \brief This API function gets the pin configuration for hybrid gain control of RX1 and RX2
- *
- * <B>Dependencies</B>
- * - device->spiSettings
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is structure pointer to the Mykonos data structure containing settings
- * \param rx1GainChangePin Will return the GPIO pin used for Rx1 in hybrid gain control.
- * \param rx2GainChangePin Will return the GPIO pin used for Rx2 in hybrid gain control.
- *
- * \retval MYKONOS_ERR_GPIO_HYBRID_RX1_PIN_NULL_PARM if a null value has been passed to rx1GainChangePin
- * \retval MYKONOS_ERR_GPIO_HYBRID_RX2_PIN_NULL_PARM if a null value has been passed to rx2GainChangePin
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_getRxHybridGainChangePin(mykonosDevice_t *device, mykonosGpioSelect_t *rx1GainChangePin, mykonosGpioSelect_t *rx2GainChangePin)
-{
-    uint8_t hybridPinRead = 0x00;
-    uint8_t pinRx1 = 0x00;
-    uint8_t pinRx2 = 0x00;
-    mykonosGpioSelect_t rx1Pin = MYKGPIONAN;
-    mykonosGpioSelect_t rx2Pin = MYKGPIONAN;
-
-    const uint8_t MASK_RX1_PIN = 0x03;
-    const uint8_t MASK_RX2_PIN = 0x0C;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getRxHybridGainChangePin()\n");
-#endif
-
-    /* Checking for null passed parameters */
-    if (rx1GainChangePin == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_HYBRID_RX1_PIN_NULL_PARM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_HYBRID_RX1_PIN_NULL_PARM));
-        return MYKONOS_ERR_GPIO_HYBRID_RX1_PIN_NULL_PARM;
-    }
-
-    if (rx2GainChangePin == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_HYBRID_RX2_PIN_NULL_PARM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_HYBRID_RX2_PIN_NULL_PARM));
-        return MYKONOS_ERR_GPIO_HYBRID_RX2_PIN_NULL_PARM;
-    }
-
-    /* Getting Pin configuration assignment */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_AGC_GAIN_CHANGE_GPIO_SEL, &hybridPinRead);
-    pinRx1 = hybridPinRead & MASK_RX1_PIN;
-    pinRx2 = hybridPinRead & MASK_RX2_PIN;
-
-    /* Pin configuration mapping assignment for RX1 and RX2 */
-    switch (pinRx1)
-    {
-        case 0x00:
-            rx1Pin = MYKGPIO1;
-            break;
-        case 0x01:
-            rx1Pin = MYKGPIO10;
-            break;
-        case 0x02:
-            rx1Pin = MYKGPIO11;
-            break;
-        default:
-            rx1Pin = MYKGPIONAN;
-            break;
-    }
-
-    switch (pinRx2)
-    {
-        case 0x00:
-            rx2Pin = MYKGPIO4;
-            break;
-        case 0x04:
-            rx2Pin = MYKGPIO10;
-            break;
-        case 0x08:
-            rx2Pin = MYKGPIO13;
-            break;
-        default:
-            rx2Pin = MYKGPIONAN;
-            break;
-    }
-
-    /* Setting pins to passed pointers */
-    *rx1GainChangePin = rx1Pin;
-    *rx2GainChangePin = rx2Pin;
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-
-/**
- * \brief This API function set the pins for hybrid gain control
- *
- * In order to call this function the gain mode should be set to Hybrid.
- * The AGC gain change will be controlled with the selected GPIO pin:
- * A pulse on the 'obsRxGainChangePin' in hybrid pin control will enable the AGC gain change for observation channel
- *
- * <B>Dependencies</B>
- * - device->spiSettings
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is structure pointer to the Mykonos data structure containing settings
- * \param obsRxGainChangePin GPIO pin that will be used for hybrid gain change control, the available pins for observation channel
- * hybrid control are:
- * MYKGPIO6
- * MYKGPIO10
- * MYKGPIO17
- * MYKGPIONAN for none selected
- *
- * \retval MYKONOS_ERR_AGC_OBS_NOT_IN_HYBRID if the observation gain mode is not set to Hybrid
- * \retval MYKONOS_ERR_GPIO_HYBRID_ORX_PIN if invalid pin has been passed for ORX hybrid gain control.
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setObsRxHybridGainChangePin(mykonosDevice_t *device, mykonosGpioSelect_t obsRxGainChangePin)
-{
-    uint8_t hybridPinWrite = 0x00;
-    uint8_t pinOrx = 0x00;
-
-    const uint8_t HYBRID_ORX_PIN_MASK = 0x30;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setObsRxHybridGainChangePin()\n");
-#endif
-
-    /* Check if in Hybrid Mode */
-    if (device->obsRx->orxGainCtrl->gainMode != HYBRID)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_AGC_OBS_NOT_IN_HYBRID,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_AGC_OBS_NOT_IN_HYBRID));
-        return MYKONOS_ERR_AGC_OBS_NOT_IN_HYBRID;
-    }
-
-    /* Pin configuration assignment for RX1 and RX2 */
-    switch (obsRxGainChangePin)
-    {
-        case MYKGPIO6:
-            pinOrx |= 0x00;
-            break;
-        case MYKGPIO10:
-            pinOrx |= 0x10;
-            break;
-        case MYKGPIO17:
-            pinOrx |= 0x20;
-            break;
-        case MYKGPIONAN:
-            pinOrx |= 0x30;
-            break;
-        default:
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_HYBRID_ORX_PIN,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_HYBRID_ORX_PIN));
-            return MYKONOS_ERR_GPIO_HYBRID_ORX_PIN;
-    }
-
-    /* Setting GPIO control for observation channel */
-    hybridPinWrite = pinOrx;
-
-    /* Writing GPIO pin configuration for hybrid mode. */
-    CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_AGC_ORX_SNRX_GPIO_SEL, hybridPinWrite, HYBRID_ORX_PIN_MASK, 0);
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief This API function gets the pin configuration for hybrid gain control of observation channel
- *
- * <B>Dependencies</B>
- * - device->spiSettings
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is structure pointer to the Mykonos data structure containing settings
- * \param obsRxGainChangePin Will return the GPIO pin used for observation channel in hybrid gain control.
- *
- * \retval MYKONOS_ERR_GPIO_HYBRID_ORX_PIN_NULL_PARM if a null value has been passed to obsRxGainChangePin
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_getObsRxHybridGainChangePin(mykonosDevice_t *device, mykonosGpioSelect_t *obsRxGainChangePin)
-{
-    uint8_t hybridPinRead = 0x00;
-    uint8_t pinOrx = 0x00;
-    mykonosGpioSelect_t orxPin = MYKGPIONAN;
-
-    const uint8_t MASK_ORX_PIN = 0x30;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getObsRxHybridGainChangePin()\n");
-#endif
-
-    /* Checking for null passed parameters */
-    if (obsRxGainChangePin == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_HYBRID_ORX_PIN_NULL_PARM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_HYBRID_ORX_PIN_NULL_PARM));
-        return MYKONOS_ERR_GPIO_HYBRID_ORX_PIN_NULL_PARM;
-    }
-
-    /* Getting Pin configuration assignment */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_AGC_ORX_SNRX_GPIO_SEL, &hybridPinRead);
-    pinOrx = hybridPinRead & MASK_ORX_PIN;
-
-    /* Pin configuration mapping assignment for RX1 and RX2 */
-    switch (pinOrx)
-    {
-        case 0x00:
-            orxPin = MYKGPIO6;
-            break;
-        case 0x10:
-            orxPin = MYKGPIO10;
-            break;
-        case 0x20:
-            orxPin = MYKGPIO17;
-            break;
-        default:
-            orxPin = MYKGPIONAN;
-            break;
-    }
-
-    /* Setting pins to passed pointer */
-    *obsRxGainChangePin = orxPin;
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief This API function set the pins for sync AGC gain control
- *
- * In order to call this function the RX gain control should be set to AGC mode.
- * The AGC gain sync will be controlled with the selected GPIO pin:
- * A pulse on the 'rx1AgcSyncPin' in hybrid pin control will enable the AGC gain sync for RX1
- * A pulse on the 'rx2AgcSyncPin' in hybrid pin control will enable the AGC gain sync for RX2
- *
- * <B>Dependencies</B>
- * - device->spiSettings
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is structure pointer to the Mykonos data structure containing settings
- * \param rx1AgcSyncPin GPIO pin that will be used for AGC sync gain control, the available pins for RX1 channel are:
- * MYKGPIO1
- * MYKGPIO10
- * MYKGPIO11
- * MYKGPIONAN for no GPIO selected
- *
- * \param rx2AgcSyncPin GPIO pin that will be used for AGC sync gain control, the available pins for RX2 channel are:
- * MYKGPIO4
- * MYKGPIO10
- * MYKGPIO13
- * MYKGPIONAN for no GPIO selected
- *
- * \retval MYKONOS_ERR_GAIN_CONTROL_NOT_AGC if the RX gain control mode is not set to AGC.
- * \retval MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN if invalid pin has been passed for RX1 AGC sync gain control.
- * \retval MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN if invalid pin has been passed for RX2 AGC sync gain control.
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setRxAgcEnSyncPin(mykonosDevice_t *device, mykonosGpioSelect_t rx1AgcSyncPin, mykonosGpioSelect_t rx2AgcSyncPin)
-{
-    uint8_t agcSyncPinWrite = 0x00;
-    uint8_t pinRx1 = 0x00;
-    uint8_t pinRx2 = 0x00;
-
-    const uint8_t SYNC_RX_PIN_MASK = 0x0F;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setRxAgcEnSyncPin()\n");
-#endif
-
-    /* Check if in Hybrid Mode */
-    if (device->rx->rxGainCtrl->gainMode != AGC)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GAIN_CONTROL_NOT_AGC,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GAIN_CONTROL_NOT_AGC));
-        return MYKONOS_ERR_GAIN_CONTROL_NOT_AGC;
-    }
-
-    /* Pin configuration assignment for RX1 and RX2 */
-    switch (rx1AgcSyncPin)
-    {
-        case MYKGPIO1:
-            pinRx1 |= 0x00;
-            break;
-        case MYKGPIO10:
-            pinRx1 |= 0x01;
-            break;
-        case MYKGPIO11:
-            pinRx1 |= 0x02;
-            break;
-        case MYKGPIONAN:
-            pinRx1 |= 0x03;
-            break;
-        default:
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN));
-            return MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN;
-    }
-
-    switch (rx2AgcSyncPin)
-    {
-        case MYKGPIO4:
-            pinRx2 |= 0x00;
-            break;
-        case MYKGPIO10:
-            pinRx2 |= 0x04;
-            break;
-        case MYKGPIO13:
-            pinRx2 |= 0x08;
-            break;
-        case MYKGPIONAN:
-            pinRx2 |= 0x0C;
-            break;
-        default:
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN));
-            return MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN;
-    }
-
-    /* Setting GPIO control for RX1 and RX2 */
-    agcSyncPinWrite = (pinRx1 | pinRx2);
-
-    /* Writing GPIO pin configuration for Sync AGC. */
-    CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_AGC_GAIN_CHANGE_GPIO_SEL, agcSyncPinWrite, SYNC_RX_PIN_MASK, 0);
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief This API function gets the GPIO pin configuration for AGC gain sync control of RX1 and RX2
- *
- * <B>Dependencies</B>
- * - device->spiSettings
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is structure pointer to the Mykonos data structure containing settings
- * \param rx1AgcSyncPin Will return the GPIO pin used for RX1 channel AGC gain sync control,
- *
- * \param rx2AgcSyncPin Will return the GPIO pin used for RX2 channel AGC gain sync control,
- *
- * \retval MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN_NULL_PARM if a null value has been passed to rx1AgcSyncPin
- * \retval MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN_NULL_PARM if a null value has been passed to rx2AgcSyncPin
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_getRxAgcEnSyncPin(mykonosDevice_t *device, mykonosGpioSelect_t *rx1AgcSyncPin, mykonosGpioSelect_t *rx2AgcSyncPin)
-{
-    uint8_t agcSyncPinRead = 0x00;
-    uint8_t pinRx1 = 0x00;
-    uint8_t pinRx2 = 0x00;
-    mykonosGpioSelect_t rx1Pin = MYKGPIONAN;
-    mykonosGpioSelect_t rx2Pin = MYKGPIONAN;
-
-    const uint8_t MASK_RX1_PIN = 0x03;
-    const uint8_t MASK_RX2_PIN = 0x0C;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getRxHybridGainChangePin()\n");
-#endif
-
-    /* Checking for null passed parameters */
-    if (rx1AgcSyncPin == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN_NULL_PARM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN_NULL_PARM));
-        return MYKONOS_ERR_GPIO_AGC_SYNC_RX1_PIN_NULL_PARM;
-    }
-
-    if (rx2AgcSyncPin == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN_NULL_PARM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN_NULL_PARM));
-        return MYKONOS_ERR_GPIO_AGC_SYNC_RX2_PIN_NULL_PARM;
-    }
-
-    /* Getting Pin configuration assignment */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_AGC_GAIN_CHANGE_GPIO_SEL, &agcSyncPinRead);
-    pinRx1 = agcSyncPinRead & MASK_RX1_PIN;
-    pinRx2 = agcSyncPinRead & MASK_RX2_PIN;
-
-    /* Pin configuration mapping assignment for RX1 and RX2 */
-    switch (pinRx1)
-    {
-        case 0x00:
-            rx1Pin = MYKGPIO1;
-            break;
-        case 0x01:
-            rx1Pin = MYKGPIO10;
-            break;
-        case 0x02:
-            rx1Pin = MYKGPIO11;
-            break;
-        default:
-            rx1Pin = MYKGPIONAN;
-            break;
-    }
-
-    switch (pinRx2)
-    {
-        case 0x00:
-            rx2Pin = MYKGPIO4;
-            break;
-        case 0x04:
-            rx2Pin = MYKGPIO10;
-            break;
-        case 0x08:
-            rx2Pin = MYKGPIO13;
-            break;
-        default:
-            rx2Pin = MYKGPIONAN;
-            break;
-    }
-
-    /* Setting pins to passed pointers */
-    *rx1AgcSyncPin = rx1Pin;
-    *rx2AgcSyncPin = rx2Pin;
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-
-/**
- * \brief This API function set the pins for AGC gain Sync control
- *
- * In order to call this function the gain mode should be set to AGC mode.
- * The AGC gain sync will be controlled with the selected GPIO pin:
- * A pulse on the 'obsRxGainChangePin' in hybrid pin control will enable the AGC gain change for observation channel
- *
- * <B>Dependencies</B>
- * - device->spiSettings
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is structure pointer to the Mykonos data structure containing settings
- * \param obsRxAgcSyncPin GPIO pin that will be used for AGC sync gain control, the available pins for observation channel are:
- * MYKGPIO6
- * MYKGPIO10
- * MYKGPIO17
- * MYKGPIONAN for none selected
- *
- * \retval MYKONOS_ERR_OBS_GAIN_CONTROL_NOT_AGC if the observation gain control mode is not set to AGC
- * \retval MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN  if invalid pin has been passed for ORX AGC sync gain control.
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setObsRxAgcEnSyncPin(mykonosDevice_t *device, mykonosGpioSelect_t obsRxAgcSyncPin)
-{
-    uint8_t agcSyncPinWrite = 0x00;
-    uint8_t pinOrx = 0x00;
-
-    const uint8_t SYNC_ORX_PIN_MASK = 0x30;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setObsRxAgcEnSyncPin()\n");
-#endif
-
-    /* Check if in Hybrid Mode */
-    if (device->obsRx->orxGainCtrl->gainMode != AGC)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_OBS_GAIN_CONTROL_NOT_AGC,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_OBS_GAIN_CONTROL_NOT_AGC));
-        return MYKONOS_ERR_OBS_GAIN_CONTROL_NOT_AGC;
-    }
-
-    /* Pin configuration assignment for observation channel */
-    switch (obsRxAgcSyncPin)
-    {
-        case MYKGPIO6:
-            pinOrx |= 0x00;
-            break;
-        case MYKGPIO10:
-            pinOrx |= 0x10;
-            break;
-        case MYKGPIO17:
-            pinOrx |= 0x20;
-            break;
-        case MYKGPIONAN:
-            pinOrx |= 0x30;
-            break;
-        default:
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN));
-            return MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN;
-    }
-
-    /* Setting GPIO control for observation channel */
-    agcSyncPinWrite = pinOrx;
-
-    /* Writing GPIO pin configuration for Sync AGC mode. */
-    CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_AGC_ORX_SNRX_GPIO_SEL, agcSyncPinWrite, SYNC_ORX_PIN_MASK, 0);
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief This API function gets the pin configuration for AGC Sync gain control of observation channel
- *
- * <B>Dependencies</B>
- * - device->spiSettings
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is structure pointer to the Mykonos data structure containing settings
- * \param obsRxAgcSyncPin Will return the GPIO pin used for observation channel AGC gain sync control,
- *
- * \retval MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN_NULL_PARM if a null value has been passed to obsRxAgcSyncPin
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_getObsRxAgcEnSyncPin(mykonosDevice_t *device, mykonosGpioSelect_t *obsRxAgcSyncPin)
-{
-    uint8_t agcSyncPinRead = 0x00;
-    uint8_t pinOrx = 0x00;
-    mykonosGpioSelect_t orxPin = MYKGPIONAN;
-
-    const uint8_t MASK_ORX_PIN = 0x30;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getObsRxAgcEnSyncPin()\n");
-#endif
-
-    /* Checking for null passed parameters */
-    if (obsRxAgcSyncPin == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN_NULL_PARM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN_NULL_PARM));
-        return MYKONOS_ERR_GPIO_AGC_SYNC_ORX_PIN_NULL_PARM;
-    }
-
-    /* Getting Pin configuration assignment */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_AGC_ORX_SNRX_GPIO_SEL, &agcSyncPinRead);
-    pinOrx = agcSyncPinRead & MASK_ORX_PIN;
-
-    /* Pin configuration mapping assignment for observation channel */
-    switch (pinOrx)
-    {
-        case 0x00:
-            orxPin = MYKGPIO6;
-            break;
-        case 0x10:
-            orxPin = MYKGPIO10;
-            break;
-        case 0x20:
-            orxPin = MYKGPIO17;
-            break;
-        default:
-            orxPin = MYKGPIONAN;
-            break;
-    }
-
-    /* Setting pins to passed pointer */
-    *obsRxAgcSyncPin = orxPin;
+    *decStep = readVal & MASK_STEP_DEC;
 
     return MYKONOS_ERR_GPIO_OK;
 }
@@ -1643,9 +870,9 @@ mykonosGpioErr_t MYKONOS_getObsRxAgcEnSyncPin(mykonosDevice_t *device, mykonosGp
 /**
  * \brief This API function configures the GPIO inputs for controlling Tx attenuation settings
  *
- * This allows to control the TX attenuation using GPIO inputs. When a low to high transition is
+ * This allows to control the TX attenuation using GPIO inputs. when a low to high transition is
  * applied to the configure GPIO input the attenuation will change by the desire step.
- * The stepSize parameter will set the attenuation change applied.
+ * The Step parameter will set the attenuation change applied.
  *
  *
  * <B>Dependencies</B>
@@ -1654,17 +881,16 @@ mykonosGpioErr_t MYKONOS_getObsRxAgcEnSyncPin(mykonosDevice_t *device, mykonosGp
  *
  * \param device is structure pointer to the Mykonos data structure containing settings
  *
- * \param stepSize the step that will increase or decrease the Tx1 channel attenuation.
- * This parameter sets the change in Tx attenuation for each increment or decrement signal received in incr/decr mode.
- * Step of 1 changes attenuation by 0.05dB.
+ * \param stepSize the step in 0.05 dBs that will increase or decrease the Tx1 channel attenuation
+ * This parameter sets the change in Tx attenuation for each increment or decrement signal received
+ * in incr/decr mode. The resolution is 0.05 dB.
  *
  * \param tx1AttenIncPin This parameter is the GPIO pin configuration that will be controlling the increment
- * of Tx attenuation. Available pins are:
- * Tx1 increment: MYKGPIO4 or MYKGPIO12
- *
+ * of Tx attenuation available pins are:
+ * Tx1 increment: MYK_GPIO_4 or MYK_GPIO_12
  * \param tx1AttenDecPin This parameter is the GPIO pin configuration that will be controlling the decrement
- * of Tx attenuation. Available pins are:
- * Tx1 decrement: MYKGPIO5 or MYKGPIO13
+ * of Tx attenuation available pins are:
+ * Tx1 decrement: MYK_GPIO_5 or MYK_GPIO_13
  *
  * \param enable 0 = Disable the attenuation pin control for Tx1
  *               1 = enable the attenuation pin control for Tx1
@@ -1710,7 +936,6 @@ mykonosGpioErr_t MYKONOS_setTx1AttenCtrlPin(mykonosDevice_t *device, uint8_t ste
             case MYKGPIO12:
                 wrtPin |= 0x01;
                 break;
-
             default:
                 return MYKONOS_ERR_TPCTX1_GPIO_INCPIN_INV_PARAM;
         }
@@ -1724,7 +949,6 @@ mykonosGpioErr_t MYKONOS_setTx1AttenCtrlPin(mykonosDevice_t *device, uint8_t ste
             case MYKGPIO13:
                 wrtPin |= 0x04;
                 break;
-
             default:
                 return MYKONOS_ERR_TPCTX1_GPIO_DECPIN_INV_PARAM;
         }
@@ -1797,7 +1021,7 @@ mykonosGpioErr_t MYKONOS_getTx1AttenCtrlPin(mykonosDevice_t *device, uint8_t *st
     const uint8_t MASK_TPC_GPIO_CH1 = 0x0F;
 
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getTx1AttenCtrlPin()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_monitorOut()\n");
 #endif
 
     /* Checking for null passed parameters */
@@ -1879,7 +1103,7 @@ mykonosGpioErr_t MYKONOS_getTx1AttenCtrlPin(mykonosDevice_t *device, uint8_t *st
  *
  * This allows to control the TX attenuation using GPIO inputs. when a low to high transition is
  * applied to the configure GPIO input the attenuation will change by the desire step.
- * The stepSize parameter will set the attenuation change applied.
+ * The Step parameter will set the attenuation change applied.
  *
  *
  * <B>Dependencies</B>
@@ -1887,18 +1111,17 @@ mykonosGpioErr_t MYKONOS_getTx1AttenCtrlPin(mykonosDevice_t *device, uint8_t *st
  * - device->spiSettings->chipSelectIndex
  *
  * \param device is structure pointer to the Mykonos data structure containing settings
- *
- * \param stepSize the step that will increase or decrease the Tx2 channel attenuation.
- * This parameter sets the change in Tx attenuation for each increment or decrement signal received in incr/decr mode.
- * Step of 1 changes attenuation by 0.05dB.
+ * \param stepSize the step in 0.05 dBs that will increase or decrease the Tx1 channel attenuation
+ * This parameter sets the change in Tx attenuation for each increment or decrement signal received
+ * in incr/decr mode. The resolution is 0.05 dB.
  *
  * \param tx2AttenIncPin This parameter is the GPIO pin configuration that will be controlling the increment
- * of Tx attenuation. Available pins are:
- * Tx2 increment: MYKGPIO6 or MYKGPIO14
+ * of Tx attenuation available pins are:
+ * Tx2 increment: MYK_GPIO_6 or MYK_GPIO_14
  *
  * \param tx2AttenDecPin This parameter is the GPIO pin configuration that will be controlling the decrement
- * of Tx attenuation. Available pins are:
- * Tx2 decrement: MYKGPIO7 or MYKGPIO15
+ * of Tx attenuation available pins are:
+ * Tx2 decrement: MYK_GPIO_7 or MYK_GPIO_15
  *
  * \param enable 0 = Disable the attenuation pin control for Tx2
  *               1 = enable the attenuation pin control for Tx2
@@ -1920,7 +1143,7 @@ mykonosGpioErr_t MYKONOS_setTx2AttenCtrlPin(mykonosDevice_t *device, uint8_t ste
     const uint8_t TX2_WRTPIN = 0xf0;
 
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setTx2AttenCtrlPin()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setTx1AttenCtrlPin()\n");
 #endif
 
     /* If enable then check for the next otherwise go directly to disable */
@@ -1943,7 +1166,6 @@ mykonosGpioErr_t MYKONOS_setTx2AttenCtrlPin(mykonosDevice_t *device, uint8_t ste
             case MYKGPIO14:
                 wrtPin |= 0x10;
                 break;
-
             default:
                 return MYKONOS_ERR_TPCTX2_GPIO_INCPIN_INV_PARAM;
         }
@@ -1957,7 +1179,6 @@ mykonosGpioErr_t MYKONOS_setTx2AttenCtrlPin(mykonosDevice_t *device, uint8_t ste
             case MYKGPIO15:
                 wrtPin |= 0x40;
                 break;
-
             default:
                 return MYKONOS_ERR_TPCTX2_GPIO_DECPIN_INV_PARAM;
         }
@@ -2018,7 +1239,7 @@ mykonosGpioErr_t MYKONOS_getTx2AttenCtrlPin(mykonosDevice_t *device, uint8_t *st
     const uint8_t MASK_TPC_GPIO_CH2 = 0xF0;
 
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getTx2AttenCtrlPin()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_monitorOut()\n");
 #endif
 
     /* Checking for null passed parameters */
@@ -2247,14 +1468,14 @@ mykonosGpioErr_t MYKONOS_getGpioSetLevel(mykonosDevice_t *device, uint32_t *gpio
  */
 mykonosGpioErr_t MYKONOS_configGpInterrupt(mykonosDevice_t *device, uint16_t gpMask)
 {
-    const uint16_t GP_INT_VALID_MASK = 0x1FF;
+    const uint16_t gpIntValidMaskBits = 0x1FF;
 
 #if MYKONOS_VERBOSE == 1
     CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_configGpInterrupt()\n");
 #endif
 
     /* checking for valid mask setting */
-    if (gpMask & ~GP_INT_VALID_MASK)
+    if (gpMask & ~gpIntValidMaskBits)
     {
         CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_INV_GP_INT_MASK_PARM,
                 getGpioMykonosErrorMessage(MYKONOS_ERR_INV_GP_INT_MASK_PARM));
@@ -2308,9 +1529,6 @@ mykonosGpioErr_t MYKONOS_readGpInterruptStatus(mykonosDevice_t *device, uint16_t
     uint8_t readStatus1 = 0;
     uint8_t readStatus0 = 0;
 
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_readGpInterruptStatus()\n");
-#endif
     /* checking for null pointer */
     if (status == NULL)
     {
@@ -2350,6 +1568,7 @@ mykonosGpioErr_t MYKONOS_readGpInterruptStatus(mykonosDevice_t *device, uint16_t
  */
 mykonosGpioErr_t MYKONOS_setArmGpioPins(mykonosDevice_t *device)
 {
+    const uint8_t GPIO_CTRL_OBJECTID = 0x60;
     uint8_t i = 0;
     uint8_t gpioConfig[3] = {0};
     uint8_t signalId[12] = {ORX_TRIGGER_SIGNALID, ORX_MODE_0_SIGNALID, ORX_MODE_1_SIGNALID, ORX_MODE_2_SIGNALID, RX1_ENABLE_ACK_SIGNALID,
@@ -2360,8 +1579,6 @@ mykonosGpioErr_t MYKONOS_setArmGpioPins(mykonosDevice_t *device)
     uint32_t gpioOe = 0;
     uint32_t gpioUsedMask = 0;
     mykonosGpioErr_t retval = MYKONOS_ERR_GPIO_OK;
-
-    const uint8_t GPIO_CTRL_OBJECTID = 0x60;
 
 #if MYKONOS_VERBOSE == 1
     CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setArmGpioPins()\n");
@@ -2422,6 +1639,7 @@ mykonosGpioErr_t MYKONOS_setArmGpioPins(mykonosDevice_t *device)
         {
             gpioUsedMask |= (1 << (gpioConfig[2] & 0x1F));
         }
+
 
         retval = MYKONOS_sendArmCommand(device, MYKONOS_ARM_SET_OPCODE, &gpioConfig[0], sizeof(gpioConfig));
         if (retval != MYKONOS_ERR_GPIO_OK)
@@ -2495,6 +1713,7 @@ mykonosGpioErr_t MYKONOS_setArmGpioPins(mykonosDevice_t *device)
  *
  * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
  * \retval MYKONOS_ERR_SET_RADIOCTRL_PINS_ARMERROR ARM returned an error and did not accept the command.
+ *
  */
 mykonosGpioErr_t MYKONOS_setRadioControlPinMode(mykonosDevice_t *device)
 {
@@ -2589,8 +1808,7 @@ mykonosGpioErr_t MYKONOS_setupAuxAdcs(mykonosDevice_t *device, uint8_t adcDecima
     uint32_t auxAdcClk_kHz = 40000;
     uint32_t vcoDiv = device->clocks->clkPllVcoDiv;
     uint8_t vcoDivTimes10 = 10;
-
-    const uint8_t AUXADC_POWER_BIT_MASK = 0x80;
+    const uint8_t auxAdcPwrUpBitMask = 0x80;
 
 #if MYKONOS_VERBOSE == 1
     CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setupAuxAdcs()\n");
@@ -2608,22 +1826,31 @@ mykonosGpioErr_t MYKONOS_setupAuxAdcs(mykonosDevice_t *device, uint8_t adcDecima
         switch(vcoDiv)
         {
             case VCODIV_1:
+            {
                 vcoDivTimes10 = 10;
                 break;
+            }
             case VCODIV_1p5:
+            {
                 vcoDivTimes10 = 15;
                 break;
+            }
             case VCODIV_2:
+            {
                 vcoDivTimes10 = 20;
                 break;
+            }
             case VCODIV_3:
+            {
                 vcoDivTimes10 = 30;
                 break;
-
+            }
             default:
+            {
                 CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SETUPAUXADC_INV_VCODIV,
                         getGpioMykonosErrorMessage(MYKONOS_ERR_SETUPAUXADC_INV_VCODIV));
                 return MYKONOS_ERR_SETUPAUXADC_INV_VCODIV;
+            }
         }
 
         hsDigClk_kHz = (device->clocks->clkPllVcoFreq_kHz / vcoDivTimes10 / device->clocks->clkPllHsDiv) * 10;
@@ -2644,7 +1871,7 @@ mykonosGpioErr_t MYKONOS_setupAuxAdcs(mykonosDevice_t *device, uint8_t adcDecima
         CMB_SPIWriteByte (device->spiSettings, MYKONOS_ADR_AUX_ADC_CLOCK_DIVIDE, (uint8_t)(auxAdcDiv));
         CMB_SPIWriteByte (device->spiSettings, MYKONOS_ADDR_AUX_ADC_CFG, (uint8_t)((adcDecimation << 1)));
         CMB_SPIWriteByte (device->spiSettings, MYKONOS_ADDR_AUX_ADC_SEL, 0x00); /* Set AuxADC select to AuxADC0 */
-        CMB_SPIWriteField (device->spiSettings, MYKONOS_ADDR_AUX_ADC_BUFFER_CONFIG_0, 0, AUXADC_POWER_BIT_MASK, 7);
+        CMB_SPIWriteField (device->spiSettings, MYKONOS_ADDR_AUX_ADC_BUFFER_CONFIG_0, 0, auxAdcPwrUpBitMask, 7);
 
         /* Set Clock enable bit to latch divider */
         CMB_SPIWriteByte (device->spiSettings, MYKONOS_ADR_AUX_ADC_CLOCK_DIVIDE, (uint8_t)(auxAdcDiv | 0x80));
@@ -2662,48 +1889,26 @@ mykonosGpioErr_t MYKONOS_setupAuxAdcs(mykonosDevice_t *device, uint8_t adcDecima
  * - device->spiSettings->chipSelectIndex
  *
  * \param device is a pointer to the device settings structure
- * \param auxAdcChannel desired Aux ADC input(0-4 and 16 = temperature sensor)
+ * \param auxAdcChannel desired Aux ADC input(0-3 and 15 = temperature sensor)
  *
  * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- * \retval MYKONOS_ERR_INV_AUX_ADC_CHAN_PARM Invalid AuxADC channel (valid 0-4 and 16)
+ * \retval MYKONOS_ERR_INV_AUX_ADC_CHAN_PARM Invalid AuxADC channel (valid 0-3 and 15)
  */
-mykonosGpioErr_t MYKONOS_setAuxAdcChannel(mykonosDevice_t *device, mykonosAuxAdcChannels_t auxAdcChannel)
+mykonosGpioErr_t MYKONOS_setAuxAdcChannel(mykonosDevice_t *device, uint8_t auxAdcChannel)
 {
-    uint8_t currentAuxAdcChan = 0x00;
-
-    const uint8_t CHANNEL_MASK = 0x17;
-    const uint8_t POWER_UP_AUXADC = 0x00;
-    const uint8_t POWER_DOWN_AUXADC = 0x01;
 
 #if MYKONOS_VERBOSE == 1
     CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setAuxAdcChannel()\n");
 #endif
 
-    if ((auxAdcChannel & ~CHANNEL_MASK) > 0)
+    if (auxAdcChannel > 3 && auxAdcChannel != 15)
     {
         CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_INV_AUX_ADC_CHAN_PARM,
                 getGpioMykonosErrorMessage(MYKONOS_ERR_INV_AUX_ADC_CHAN_PARM));
         return MYKONOS_ERR_INV_AUX_ADC_CHAN_PARM;
     }
 
-    /* Read current selected channel, if different power down AUXADC and change AUXADC */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_AUX_ADC_SEL, &currentAuxAdcChan);
-    if (currentAuxAdcChan != auxAdcChannel)
-    {
-        CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_AUX_ADC_CFG, POWER_DOWN_AUXADC, 0x01, 0);
-        CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_AUX_ADC_SEL, auxAdcChannel);
-        CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_AUX_ADC_CFG, POWER_UP_AUXADC, 0x01, 0);
-    }
-
-    /* Invalid AuxADC channel, the only valid channel for external ref is channel 0 */
-    if (auxAdcChannel == MYK_AUXADC_0_DIV2)
-    {
-        CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_AUX_ADC_BUFFER_CONFIG_1, 0x01, 0x04, 2);
-    }
-    else if (auxAdcChannel == MYK_AUXADC_0)
-    {
-        CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_AUX_ADC_BUFFER_CONFIG_1, 0x00, 0x04, 2);
-    }
+    CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_AUX_ADC_SEL, auxAdcChannel);
 
     return MYKONOS_ERR_GPIO_OK;
 }
@@ -2728,7 +1933,7 @@ mykonosGpioErr_t MYKONOS_readAuxAdc(mykonosDevice_t *device, uint16_t *adcCode)
 {
     uint8_t adcNibble = 0;
 
-    const uint8_t AUXADC_LOCK_BIT_MASK = 0x80;
+    const uint8_t auxAdcLockBitMask = 0x80;
 
 #if MYKONOS_VERBOSE == 1
     CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_readAuxAdcs()\n");
@@ -2741,7 +1946,7 @@ mykonosGpioErr_t MYKONOS_readAuxAdc(mykonosDevice_t *device, uint16_t *adcCode)
         return MYKONOS_ERR_READAUXADC_NULL_PARAM;
     }
 
-    CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_AUX_ADC_CFG, 1, AUXADC_LOCK_BIT_MASK, 7);
+    CMB_SPIWriteField (device->spiSettings, MYKONOS_ADDR_AUX_ADC_CFG, 1, auxAdcLockBitMask, 7);
     CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_AUX_ADC_READ_MSB, &adcNibble);
     *adcCode = adcNibble << 4;
     CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_AUX_ADC_READ_LSB, &adcNibble);
@@ -2778,10 +1983,6 @@ mykonosGpioErr_t MYKONOS_setupAuxDacs(mykonosDevice_t *device)
     uint8_t i = 0; /* for loop index */
     uint8_t auxDacConfig = 0 ;
     mykonosGpioErr_t error = MYKONOS_ERR_GPIO_OK;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setupAuxDacs()\n");
-#endif
 
     if (device->auxIo == NULL)
     {
@@ -2985,7 +2186,6 @@ mykonosGpioErr_t MYKONOS_setupGpio(mykonosDevice_t *device)
 mykonosGpioErr_t MYKONOS_setGpioOe(mykonosDevice_t *device, uint32_t gpioOutEn, uint32_t gpioUsedMask)
 {
     uint32_t error = MYKONOS_ERR_GPIO_OK;
-
     const uint32_t GPIO_OE_MASK = 0x7FFFF;
 
 #if MYKONOS_VERBOSE == 1
@@ -3106,7 +2306,7 @@ mykonosGpioErr_t MYKONOS_setGpioSourceCtrl(mykonosDevice_t *device, uint32_t gpi
     /* writing GPIO configuration registers */
     CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_SOURCE_CONTROL_LOWER_BYTE, (gpioSrcCtrl & 0xFF));
     CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_SOURCE_CONTROL_UPPER_BYTE, ((gpioSrcCtrl >> 8) & 0xFF));
-    CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_SOURCE_CONTROL_EXTRA_BITS, ((gpioSrcCtrl >> 16) & 0x0F));
+    CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_SOURCE_CONTROL_EXTRA_BITS, ((gpioSrcCtrl >> 16) & 0x07));
 
     /* Updating gpioConfig->gpioSetup source control */
     device->auxIo->gpio->gpioSrcCtrl3_0 = gpioSrcCtrl & 0x0F;
@@ -3146,7 +2346,7 @@ mykonosGpioErr_t MYKONOS_getGpioSourceCtrl(mykonosDevice_t *device, uint32_t *gp
     CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_SOURCE_CONTROL_EXTRA_BITS, &readBytes[2]);
 
     /* Updating gpioConfig->gpioSetup->gpioOe output enable */
-    *gpioSrcCtrl = ((uint32_t)(readBytes[2] & 0x0F) << 16) | ((uint32_t)(readBytes[1]) << 8) | (uint32_t)(readBytes[0]);
+    *gpioSrcCtrl = ((uint32_t)(readBytes[2] & 0x07) << 16) | ((uint32_t)(readBytes[1]) << 8) | (uint32_t)(readBytes[0]);
 
     /* Return */
     return MYKONOS_ERR_GPIO_OK;
@@ -3474,6 +2674,7 @@ mykonosGpioErr_t MYKONOS_getGpio3v3SourceCtrl(mykonosDevice_t *device, uint16_t 
 }
 
 
+
 /**
  * \brief Gain compensation enable and setup function.
  *
@@ -3490,19 +2691,27 @@ mykonosGpioErr_t MYKONOS_getGpio3v3SourceCtrl(mykonosDevice_t *device, uint16_t 
  *
  * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
  * \retval MYKONOS_ERR_GAINCOMP_SET_NULL_STRUCT gain compensation structure gainComp is not initialised
+ * \retval MYKONOS_ERR_GAINCOMP_INV_DELAY gain compensation structure gainComp->delay is invalid
  * \retval MYKONOS_ERR_GAINCOMP_INV_RX1_OFFSET gain compensation structure gainComp->rx1Offset is invalid
  * \retval MYKONOS_ERR_GAINCOMP_INV_RX2_OFFSET gain compensation structure gainComp->rx2Offset is invalid
+ * \retval MYKONOS_ERR_GAINCOMP_INV_DURATION gain compensation structure gainComp->compDuration is invalid
+ * \retval MYKONOS_ERR_GAINCOMP_INV_RAMP gain compensation structure gainComp->compRamp is invalid
  * \retval MYKONOS_ERR_GAINCOMP_INV_STEP gain compensation structure gainComp->compStep is invalid
  * \retval MYKONOS_ERR_GAINCOMP_INV_EN enable is not valid
  */
 mykonosGpioErr_t MYKONOS_setRxGainCompensation (mykonosDevice_t *device, mykonosGainComp_t *gainComp, uint8_t enable)
 {
+    uint8_t regWr1 = 0x00;
     uint8_t regWr2 = 0x00;
     uint8_t regWr3 = 0x00;
     uint8_t regWr4 = 0x00;
 
-    /* Max parameter values for error checking */
     const uint8_t RXOFFSET_RANGE = 0x1F;
+    //const uint8_t DELAY_RANGE = 0xFF;
+    const uint8_t DURATION_SHIFT = 0x05;
+    const uint8_t DURATION_RANGE = 0x03;
+    const uint8_t RAMP_SHIFT = 0x03;
+    const uint8_t RAMP_RANGE = 0x03;
     const uint8_t STEP_RANGE = 0x07;
 
 #if MYKONOS_VERBOSE == 1
@@ -3526,6 +2735,15 @@ mykonosGpioErr_t MYKONOS_setRxGainCompensation (mykonosDevice_t *device, mykonos
     }
     else if (enable == 1)
     {
+        /* Check for gain compensation delay range */
+		/*
+        if (gainComp->delayCycles > DELAY_RANGE)
+        {
+            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GAINCOMP_INV_DELAY,
+                    getGpioMykonosErrorMessage(MYKONOS_ERR_GAINCOMP_INV_DELAY));
+            return MYKONOS_ERR_GAINCOMP_INV_DELAY;
+        }
+		*/
         /* Check for gain compensation Rx1 offset range */
         if (gainComp->rx1Offset > RXOFFSET_RANGE)
         {
@@ -3542,6 +2760,22 @@ mykonosGpioErr_t MYKONOS_setRxGainCompensation (mykonosDevice_t *device, mykonos
             return MYKONOS_ERR_GAINCOMP_INV_RX2_OFFSET;
         }
 
+        /* Check for gain compensation delay range */
+        if (gainComp->compDuration > DURATION_RANGE)
+        {
+            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GAINCOMP_INV_DURATION,
+                    getGpioMykonosErrorMessage(MYKONOS_ERR_GAINCOMP_INV_DURATION));
+            return MYKONOS_ERR_GAINCOMP_INV_DURATION;
+        }
+
+        /* Check for gain compensation delay range */
+        if (gainComp->compRamp > RAMP_RANGE)
+        {
+            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GAINCOMP_INV_RAMP,
+                    getGpioMykonosErrorMessage(MYKONOS_ERR_GAINCOMP_INV_RAMP));
+            return MYKONOS_ERR_GAINCOMP_INV_RAMP;
+        }
+
         /* Check for gain compensation step range */
         if (gainComp->compStep > STEP_RANGE)
         {
@@ -3551,12 +2785,17 @@ mykonosGpioErr_t MYKONOS_setRxGainCompensation (mykonosDevice_t *device, mykonos
         }
 
         /* Enabling gain compensation block */
-        regWr4 = 0x88 | gainComp->compStep;
+        regWr4 = 0x80;
+        regWr4 |= gainComp->compDuration << DURATION_SHIFT;
+        regWr4 |= gainComp->compRamp << RAMP_SHIFT;
+        regWr4 |= gainComp->compStep;
         regWr3 = gainComp->rx2Offset;
         regWr2 = gainComp->rx1Offset;
+        regWr1 = gainComp->delayCycles;
     }
 
     /* Write gain compensation setup to device */
+    CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_RX_GAIN_COMP_DELAY, regWr1);
     CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_RX1_GAIN_COMP_OFFSET, regWr2);
     CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_RX2_GAIN_COMP_OFFSET, regWr3);
     CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_RX_GAIN_COMP_CFG, regWr4);
@@ -3585,16 +2824,18 @@ mykonosGpioErr_t MYKONOS_setRxGainCompensation (mykonosDevice_t *device, mykonos
  */
 mykonosGpioErr_t MYKONOS_getRxGainCompensation (mykonosDevice_t *device, mykonosGainComp_t *gainComp, uint8_t *enabled)
 {
+    uint8_t regWr1 = 0x00;
     uint8_t regWr2 = 0x00;
     uint8_t regWr3 = 0x00;
     uint8_t regWr4 = 0x00;
 
-    /* Mask parameter values populating mykonosGainComp_t structure */
     const uint8_t ENABLED_MASK = 0x80;
-    const uint8_t STEP_MASK = 0x07;
-
-    /* Shift values for writing gain values */
     const uint8_t ENABLED_SHIFT = 0x07;
+    const uint8_t DURATION_MASK = 0x60;
+    const uint8_t DURATION_SHIFT = 0x05;
+    const uint8_t RAMP_MASK = 0x18;
+    const uint8_t RAMP_SHIFT = 0x03;
+    const uint8_t STEP_MASK = 0x07;
 
 #if MYKONOS_VERBOSE == 1
     CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getRxGainCompensation()\n");
@@ -3609,6 +2850,7 @@ mykonosGpioErr_t MYKONOS_getRxGainCompensation (mykonosDevice_t *device, mykonos
     }
 
     /* Read gain compensation setup from device */
+    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_RX_GAIN_COMP_DELAY, &regWr1);
     CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_RX1_GAIN_COMP_OFFSET, &regWr2);
     CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_RX2_GAIN_COMP_OFFSET, &regWr3);
     CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_RX_GAIN_COMP_CFG, &regWr4);
@@ -3616,148 +2858,12 @@ mykonosGpioErr_t MYKONOS_getRxGainCompensation (mykonosDevice_t *device, mykonos
 
     /* Parsing read data to passed by reference parameters */
     *enabled = (regWr4 & ENABLED_MASK) >> ENABLED_SHIFT;
+    gainComp->compDuration = (regWr4 & DURATION_MASK) >> DURATION_SHIFT;
     gainComp->compStep = (regWr4 & STEP_MASK);
+    gainComp->compRamp = (regWr4 & RAMP_MASK) >> RAMP_SHIFT;
     gainComp->rx2Offset = regWr3;
     gainComp->rx1Offset = regWr2;
-
-    /* Return */
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-
-/**
- * \brief Gain compensation enable and setup function for the observation channel.
- *
- * The gain compensation block is a function that compensates for the attenuation in the internal attenuator for the observation channels.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param gainComp is a pointer to the mykonosObsRxGainComp_t structure.
- * \param enable enables or disables the gain compensation block.
- * enable = 1
- * disable = 0
- *
- * \retval MYKONOS_ERR_OBS_RX_GAINCOMP_SET_NULL_STRUCT gain compensation structure gainComp is not initialised
- * \retval MYKONOS_ERR_OBS_RX_GAINCOMP_INV_OFFSET gain compensation structure gainComp->obsRxOffset is invalid
- * \retval MYKONOS_ERR_OBS_RX_GAINCOMP_INV_STEP gain compensation structure gainComp->compStep is invalid
- * \retval MYKONOS_ERR_OBS_RX_GAINCOMP_INV_EN enable is not valid
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setObsRxGainCompensation (mykonosDevice_t *device, mykonosObsRxGainComp_t *gainComp, uint8_t enable)
-{
-    uint8_t regWr2 = 0x00;
-    uint8_t regWr3 = 0x00;
-
-    /* Max parameter values for error checking */
-    const uint8_t RXOFFSET_RANGE = 0x1F;
-
-    /* Shift values for writing gain values */
-    const uint8_t STEP_RANGE = 0x07;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setObsRxGainCompensation()\n");
-#endif
-
-    /* Check for gainComp initialised */
-    if (gainComp == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_OBS_RX_GAINCOMP_SET_NULL_STRUCT,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_OBS_RX_GAINCOMP_SET_NULL_STRUCT));
-        return MYKONOS_ERR_OBS_RX_GAINCOMP_SET_NULL_STRUCT;
-    }
-
-    /* Check for enable */
-    if (enable > 1)
-    {
-      CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_OBS_RX_GAINCOMP_INV_EN,
-                         getGpioMykonosErrorMessage(MYKONOS_ERR_OBS_RX_GAINCOMP_INV_EN));
-      return MYKONOS_ERR_OBS_RX_GAINCOMP_INV_EN;
-    }
-    else if (enable == 1)
-    {
-        /* Check for gain compensation offset range */
-        if (gainComp->obsRxOffset > RXOFFSET_RANGE)
-        {
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_OBS_RX_GAINCOMP_INV_OFFSET,
-                               getGpioMykonosErrorMessage(MYKONOS_ERR_OBS_RX_GAINCOMP_INV_OFFSET));
-                return MYKONOS_ERR_OBS_RX_GAINCOMP_INV_OFFSET;
-        }
-
-        /* Check for gain compensation step range */
-        if (gainComp->compStep > STEP_RANGE)
-        {
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_OBS_RX_GAINCOMP_INV_STEP,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_OBS_RX_GAINCOMP_INV_STEP));
-            return MYKONOS_ERR_OBS_RX_GAINCOMP_INV_STEP;
-        }
-
-        /* Enabling gain compensation block */
-        regWr3 = 0x88 | gainComp->compStep;
-        regWr2 = ((gainComp->obsRxOffset & 0x1E) >> 1) | ((gainComp->obsRxOffset & 0x01) << 4);
-    }
-
-    /* Write gain compensation setup to device */
-    CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_DPD_SNF_RX_GAIN_COMP_OFFSET, regWr2);
-    CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_DPD_SNF_RX_GAIN_COMP_CFG, regWr3);
-
-    /* Return */
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief Get gain compensation setup and enabled function for the observation channel.
- *
- * The gain compensation block is a function that compensates for the attenuation in the internal attenuator for the observation
- * channels.
- * This function will get the current setup and the enable state of the block.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param gainComp pointer to a mykonosObsRxGainComp_t structure, will held the current device gain compensation settings.
- * \param enabled pointer this parameter will contain the enable state of the gain compensation block.
- * enabled = 1
- * disabled = 0
- *
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- * \retval MYKONOS_ERR_OBS_RX_GAINCOMP_NULL_STRUCT observation channel gain compensation structure gainComp is not initialised
- */
-mykonosGpioErr_t MYKONOS_getObsRxGainCompensation (mykonosDevice_t *device, mykonosObsRxGainComp_t *gainComp, uint8_t *enabled)
-{
-    uint8_t regRd2 = 0x00;
-    uint8_t regRd3 = 0x00;
-
-    /* Masks values for populating mykonosObsRxGainComp_t structure */
-    const uint8_t ENABLED_MASK = 0x80;
-    const uint8_t STEP_MASK = 0x07;
-
-    /* Shift values for populating mykonosObsRxGainComp_t structure */
-    const uint8_t ENABLED_SHIFT = 0x07;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getObsRxGainCompensation()\n");
-#endif
-
-    /* Check for gainComp for Null */
-    if (gainComp == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_OBS_RX_GAINCOMP_NULL_STRUCT,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_OBS_RX_GAINCOMP_NULL_STRUCT));
-        return MYKONOS_ERR_OBS_RX_GAINCOMP_NULL_STRUCT;
-    }
-
-    /* Read gain compensation setup from device */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_DPD_SNF_RX_GAIN_COMP_OFFSET, &regRd2);
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_DPD_SNF_RX_GAIN_COMP_CFG, &regRd3);
-
-
-    /* Parsing read data to passed by reference parameters */
-    *enabled = (regRd3 & ENABLED_MASK) >> ENABLED_SHIFT;
-    gainComp->compStep = (regRd3 & STEP_MASK);
-    gainComp->obsRxOffset = ((regRd2 & 0x0F) << 1) | ((regRd2 & 0x10) >> 4);
+    gainComp->delayCycles = regWr1;
 
     /* Return */
     return MYKONOS_ERR_GPIO_OK;
@@ -3827,13 +2933,13 @@ mykonosGpioErr_t MYKONOS_setRxSlicerCtrl(mykonosDevice_t *device, uint8_t slicer
         /* Check for Rx1 Slicer input control */
         switch (rx1Pins)
         {
-            case GPIO_0_1_2:
+            case(GPIO_0_1_2):
                 regWr |= 0x00;
                 break;
-            case GPIO_5_6_7:
+            case(GPIO_5_6_7):
                 regWr |= 0x01;
                 break;
-            case GPIO_8_9_10:
+            case(GPIO_8_9_10):
                 regWr |= 0x02;
                 break;
             default:
@@ -3845,10 +2951,10 @@ mykonosGpioErr_t MYKONOS_setRxSlicerCtrl(mykonosDevice_t *device, uint8_t slicer
         /* Check for Rx2 Slicer input control */
         switch (rx2Pins)
         {
-            case GPIO_5_6_7:
+            case(GPIO_5_6_7):
                regWr |= 0x00;
                break;
-           case GPIO_11_12_13:
+           case(GPIO_11_12_13):
                regWr |= 0x04;
                break;
            default:
@@ -3870,14 +2976,15 @@ mykonosGpioErr_t MYKONOS_setRxSlicerCtrl(mykonosDevice_t *device, uint8_t slicer
         }
     }
 
-    /* Write to device the slicer configuration */
+    /* Write to device */
     CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_RX_SLCR_PIN_CFG, regWr);
 
+    /* Return */
     return MYKONOS_ERR_GPIO_OK;
 }
 
 /**
- * \brief This function will get the programmed Slicer control for Rx1 and Rx2 channels.
+ * \brief Slicer control over GPIO inputs.
  *
  * The user can control the slicer position via 3 GPIO inputs per channel.
  * There are various configurations for the GPIO pins, this configurations are enumerated in the mykonosRxSlicer_t.
@@ -3887,10 +2994,24 @@ mykonosGpioErr_t MYKONOS_setRxSlicerCtrl(mykonosDevice_t *device, uint8_t slicer
  * - device->spiSettings->chipSelectIndex
  *
  * \param device is a pointer to the device settings structure
- * \param slicerStep will contain the configured step size
- * \param rx1Pins will contain the configured GPIO combination for Rx1
- * \param rx2Pins will contain the configured GPIO combination for Rx2
- * \param enable will contain the programmed enable setting
+ * \param slicerStep configures the step size of the slicer when external pin contol mode is enabled.
+ * Slicer gain in this mode is determined by multiplying the step size by the input bit code from the BBP.
+ * Step sizes are as follows:
+ * sllicerStep  |  dB step
+ * -------------|------------
+ *       0      |   1
+ *       1      |   2
+ *       2      |   3
+ *       3      |   4
+ *
+ * \param rx1Pins Rx1 slicer inputs can take values from one of the following combinations that are specified in mykonosRxSlicer_t enum:
+ * -GPIO_2, GPIO_1, and GPIO_0
+ * -GPIO_7, GPIO_6, and GPIO_5
+ * -GPIO_10, GPIO_9, and GPIO_8
+ * \param rx2Pins Rx2 slicer inputs can take values from one of the following combinations that are specified in mykonosRxSlicer_t enum:
+ * -GPIO_7, GPIO_6, and GPIO_5
+ * -GPIO_13, GPIO_12, and GPIO_11
+ * \param enable this parameter enables the external pin control mode so the BBP can control the slicer setting. Clearing this bit switches the control to an internal gain control block.
  *
  * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
  * \retval MYKONOS_ERR_SLICER_RX1PIN_NULL_PARM rx1Pins is null pointer for the passed parameter
@@ -3898,20 +3019,18 @@ mykonosGpioErr_t MYKONOS_setRxSlicerCtrl(mykonosDevice_t *device, uint8_t slicer
  * \retval MYKONOS_ERR_SLICER_STEP_NULL_PARM slicerStep is null pointer for the passed parameter
  * \retval MYKONOS_ERR_SLICER_EN_NULL_PARM enable is null pointer for the passed parameter
  */
-mykonosGpioErr_t MYKONOS_getRxSlicerCtrl(mykonosDevice_t *device, uint8_t *slicerStep, mykonosRxSlicer_t *rx1Pins, mykonosRxSlicer_t *rx2Pins, uint8_t *enable)
+mykonosGpioErr_t MYKONOS_getRxSlicerCtrl(mykonosDevice_t *device,
+        uint8_t *slicerStep, mykonosRxSlicer_t *rx1Pins, mykonosRxSlicer_t *rx2Pins, uint8_t *enable)
 {
     uint8_t regRd = 0x00;
 
-    /* Mask parameter values populating parameters */
     const uint8_t EN_MASK = 0x80;
-    const uint8_t STEP_MASK = 0x60;
-    const uint8_t RX1_MASK = 0x03;
-    const uint8_t RX2_MASK = 0x0C;
-
-    /* Shift values for populating passed parameters */
     const uint8_t EN_SHIFT = 0x07;
+    const uint8_t STEP_MASK = 0x60;
     const uint8_t STEP_SHIFT = 0x05;
+    const uint8_t RX1_MASK = 0x03;
     const uint8_t RX1_SHIFT = 0x00;
+    const uint8_t RX2_MASK = 0x0C;
     const uint8_t RX2_SHIFT = 0x02;
 
 #if MYKONOS_VERBOSE == 1
@@ -3960,15 +3079,8 @@ mykonosGpioErr_t MYKONOS_getRxSlicerCtrl(mykonosDevice_t *device, uint8_t *slice
     /* Map to enum */
     switch ((regRd & RX2_MASK) >> RX2_SHIFT)
     {
-        case 0:
-            *rx2Pins = GPIO_5_6_7;
-            break;
-        case 1:
-            *rx2Pins = GPIO_11_12_13;
-            break;
-
-        default:
-            *rx2Pins = GPIO_5_6_7;
+        case 0: *rx2Pins = 1; break;
+        case 1: *rx2Pins = 3; break;
     }
 
     *rx1Pins = (regRd & RX1_MASK) >> RX1_SHIFT;
@@ -3976,181 +3088,6 @@ mykonosGpioErr_t MYKONOS_getRxSlicerCtrl(mykonosDevice_t *device, uint8_t *slice
     /* Return */
     return MYKONOS_ERR_GPIO_OK;
 }
-
-/**
- * \brief Slicer control over GPIO inputs for the observation channel.
- *
- * The user can control the slicer position via 3 GPIO inputs for the observation channel.
- * There are various configurations for the GPIO pins, this configurations are enumerated in the mykonosObsRxSlicer_t.
- *
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- * - Gain compensation block has to be enabled in order to user the slicer control
- *
- * \param device is a pointer to the device settings structure
- * \param slicerStep configures the step size of the slicer when external pin contol mode is enabled.
- * Slicer gain in this mode is determined by multiplying the step size by the input bit code from the BBP.
- * Step sizes are as follows:
- * sllicerStep  |  step
- * -------------|------------
- *       0      |   1
- *       1      |   2
- *       2      |   3
- *       3      |   4
- *
- * \param obsRxPins observation slicer inputs can take values from one of the following combinations that are specified in mykonosObsRxSlicer_t enum:
- * -GPIO_18, GPIO_17 and GPIO_16
- * -GPIO_16, GPIO_15 and GPIO_14
- * \param enable enables the external pin control mode so the BBP can control the slicer setting.
- * enable = 1
- * disable = 0
- *
- * \retval MYKONOS_ERR_SLICER_INV_OBS_RX_SEL invalid observation channel GPIO pin selection for Slicer control
- * \retval MYKONOS_ERR_SLICER_OBS_RX_STEP_OUT_OF_RANGE slicer step is out of range
- * \retval MYKONOS_ERR_SLICER_OBS_RX_EN_INV invalid enable
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setObsRxSlicerCtrl(mykonosDevice_t *device, uint8_t slicerStep, mykonosObsRxSlicer_t obsRxPins, uint8_t enable)
-{
-    uint8_t regWr = 0x00;
-
-    const uint8_t STEP_MASK = 0x03;
-    const uint8_t STEP_SHIFT = 0x05;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setObsRxSlicerCtrl()\n");
-#endif
-
-    if (enable > 1)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SLICER_OBS_RX_EN_INV,
-                             getGpioMykonosErrorMessage(MYKONOS_ERR_SLICER_OBS_RX_EN_INV));
-        return MYKONOS_ERR_SLICER_OBS_RX_EN_INV;
-    }
-    else if (enable == 1)
-    {
-        /* Enabling Slicer input control */
-        regWr = 0x80;
-
-        /* Check for Rx1 Slicer input control */
-        switch (obsRxPins)
-        {
-            case GPIO_18_17_16:
-                regWr |= 0x00;
-                break;
-            case GPIO_16_15_14:
-                regWr |= 0x01;
-                break;
-
-            default:
-                CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SLICER_INV_OBS_RX_SEL,
-                               getGpioMykonosErrorMessage(MYKONOS_ERR_SLICER_INV_OBS_RX_SEL));
-                return MYKONOS_ERR_SLICER_INV_OBS_RX_SEL;
-        }
-
-        /* Check for Slicer input step size control */
-        if (slicerStep & ~STEP_MASK)
-        {
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SLICER_OBS_RX_STEP_OUT_OF_RANGE,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_SLICER_OBS_RX_STEP_OUT_OF_RANGE));
-            return MYKONOS_ERR_SLICER_OBS_RX_STEP_OUT_OF_RANGE;
-        }
-        else
-        {
-            regWr |= (slicerStep << STEP_SHIFT);
-        }
-    }
-
-    /* Write to device the slicer configuration */
-    CMB_SPIWriteByte(device->spiSettings, MYKONOS_ADDR_DPD_SNF_RX_SLCR_PIN_CFG, regWr);
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief This function will get the programmed Slicer control for observation channel.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param slicerStep will contain the configured step size
- * \param obsRxPins will contain the configured GPIO combination
- * \param enable will contain the programmed enable setting
- *
- * \retval MYKONOS_ERR_SLICER_OBS_RXPIN_NULL_PARM obsRxPins is null pointer for the passed parameter
- * \retval MYKONOS_ERR_SLICER_OBS_RX_STEP_NULL_PARM slicerStep is null pointer for the passed parameter
- * \retval MYKONOS_ERR_SLICER_OBS_RX_EN_NULL_PARM, enable is null pointer for the passed parameter
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_getObsRxSlicerCtrl(mykonosDevice_t *device, uint8_t *slicerStep, mykonosObsRxSlicer_t *obsRxPins, uint8_t *enable)
-{
-    uint8_t regRd = 0x00;
-
-    /* Mask parameter values populating slicer parameters */
-    const uint8_t EN_MASK = 0x80;
-    const uint8_t STEP_MASK = 0x60;
-    const uint8_t OBS_RX_MASK = 0x03;
-
-    /* Shift values for writing slicer parameters */
-    const uint8_t EN_SHIFT = 0x07;
-    const uint8_t STEP_SHIFT = 0x05;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getObsRxSlicerCtrl()\n");
-#endif
-
-    /* Check for Rx1 Slicer input control null parameter */
-    if (obsRxPins == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SLICER_OBS_RXPIN_NULL_PARM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_SLICER_OBS_RXPIN_NULL_PARM));
-        return MYKONOS_ERR_SLICER_OBS_RXPIN_NULL_PARM;
-    }
-
-    /* Check for Slicer step control null parameter */
-    if (slicerStep == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SLICER_OBS_RX_STEP_NULL_PARM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_SLICER_OBS_RX_STEP_NULL_PARM));
-        return MYKONOS_ERR_SLICER_OBS_RX_STEP_NULL_PARM;
-    }
-
-    /* Check for Slicer step control null parameter */
-    if (enable == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SLICER_OBS_RX_EN_NULL_PARM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_SLICER_OBS_RX_EN_NULL_PARM));
-        return MYKONOS_ERR_SLICER_OBS_RX_EN_NULL_PARM;
-    }
-
-    /* Reading Slicer control register */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_DPD_SNF_RX_SLCR_PIN_CFG, &regRd);
-
-    /* Parsing values */
-    *enable = (regRd & EN_MASK) >> EN_SHIFT;
-    *slicerStep = (regRd & STEP_MASK) >> STEP_SHIFT;
-
-    /* Map to enum */
-    switch (regRd & OBS_RX_MASK)
-    {
-        case 0:
-            *obsRxPins = GPIO_18_17_16;
-            break;
-        case 1:
-            *obsRxPins = GPIO_16_15_14;
-            break;
-
-        default:
-            *obsRxPins = 0;
-            break;
-    }
-
-    /* Return */
-    return MYKONOS_ERR_GPIO_OK;
-}
-
 
 /**
  * \brief Floating point formatter enable and setup function.
@@ -4178,19 +3115,16 @@ mykonosGpioErr_t MYKONOS_setFloatPointFrmt (mykonosDevice_t *device, mykonosFloa
 {
     uint8_t regWr1 = 0x00;
 
-    /* Max parameter values for error checking */
-    const uint8_t ROUND_RANGE = 0x04;
-    const uint8_t DATA_FRMT_RANGE = 0x01;
-    const uint8_t ENCODE_RANGE = 0x01;
-    const uint8_t EXPBITS_RANGE = 0x03;
-    const uint8_t LEADING_RANGE = 0x01;
-
-    /* Shift values for writing mykonosFloatPntFrmt_t values */
     const uint8_t ROUND_SHIFT = 0x05;
+    const uint8_t ROUND_RANGE = 0x04;
     const uint8_t DATA_FRMT_SHIFT = 0x04;
+    const uint8_t DATA_FRMT_RANGE = 0x01;
     const uint8_t ENCODE_SHIFT = 0x03;
+    const uint8_t ENCODE_RANGE = 0x01;
     const uint8_t EXPBITS_SHIFT = 0x01;
+    const uint8_t EXPBITS_RANGE = 0x03;
     const uint8_t LEADING_SHIFT = 0x00;
+    const uint8_t LEADING_RANGE = 0x01;
 
 #if MYKONOS_VERBOSE == 1
     CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setFloatPointFrmt()\n");
@@ -4278,21 +3212,18 @@ mykonosGpioErr_t MYKONOS_getFloatPointFrmt (mykonosDevice_t *device, mykonosFloa
 {
     uint8_t regRd1 = 0x00;
 
-    /* Mask parameter values populating mykonosGainComp_t structure */
+    const uint8_t ROUND_SHIFT = 0x05;
     const uint8_t ROUND_MASK = 0xE0;
+    const uint8_t DATA_FRMT_SHIFT = 0x04;
     const uint8_t DATA_FRMT_MASK = 0x10;
+    const uint8_t ENCODE_SHIFT = 0x03;
     const uint8_t ENCODE_MASK = 0x08;
     const uint8_t EXPBITS_MASK = 0x06;
+    const uint8_t EXPBITS_SHIFT = 0x01;
     const uint8_t LEADING_MASK = 0x01;
 
-    /* Shift values for writing gain values */
-    const uint8_t ROUND_SHIFT = 0x05;
-    const uint8_t DATA_FRMT_SHIFT = 0x04;
-    const uint8_t ENCODE_SHIFT = 0x03;
-    const uint8_t EXPBITS_SHIFT = 0x01;
-
 #if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getFloatPointFrmt()\n");
+    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getRxGainCompensation()\n");
 #endif
 
     /* Check floatFrmt for Null */
@@ -4349,10 +3280,6 @@ mykonosGpioErr_t MYKONOS_setRxEnFloatPntFrmt (mykonosDevice_t *device, uint8_t r
     const uint8_t RXATT_RANGE = 0x07;
     const uint8_t RX1ATT_SHIFT = 0x01;
     const uint8_t RX2ATT_SHIFT = 0x05;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setRxEnFloatPntFrmt()\n");
-#endif
 
     if (enable > 1)
     {
@@ -4424,10 +3351,6 @@ mykonosGpioErr_t MYKONOS_getRxEnFloatPntFrmt (mykonosDevice_t *device, uint8_t *
     const uint8_t RX2ATT_MASK = 0xE0;
     const uint8_t RX2ATT_SHIFT = 0x05;
 
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getRxEnFloatPntFrmt()\n");
-#endif
-
     /* Check for rx1Att NULL parameter */
     if (rx1Att == NULL)
     {
@@ -4493,10 +3416,6 @@ mykonosGpioErr_t MYKONOS_setOrxEnFloatPntFrmt (mykonosDevice_t *device, uint8_t 
     const uint8_t ORXATT_RANGE = 0x07;
     const uint8_t ORXATT_SHIFT = 0x01;
 
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setOrxEnFloatPntFrmt()\n");
-#endif
-
     /* Check for enable */
     if (enable > 1)
     {
@@ -4556,10 +3475,6 @@ mykonosGpioErr_t MYKONOS_getOrxEnFloatPntFrmt (mykonosDevice_t *device, uint8_t 
     const uint8_t ORXATT_MASK = 0x0E;
     const uint8_t ORXATT_SHIFT = 0x01;
 
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getOrxEnFloatPntFrmt()\n");
-#endif
-
     /* Check for orxAtt NULL parameter */
     if (orxAtt == NULL)
     {
@@ -4584,837 +3499,5 @@ mykonosGpioErr_t MYKONOS_getOrxEnFloatPntFrmt (mykonosDevice_t *device, uint8_t 
 
     /* Return */
     return MYKONOS_ERR_GPIO_OK;
-}
-
-
-/**
- * \brief Sets up the Temperature Sensor
- *
- *  Before using this function to set up the temp sensor,
- *  make sure that you call the MYKONOS_setupAuxADC() function
- *  to ensure that the AuxADC clock is setup and running correctly at 40 MHz,
- *  and that the structure mykonosTempSensorConfig_t tempSensor is populated.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param tempSensor is a pointer to the mykonosTempSensorConfig_t which holds
- * the configuration settings for the temperature sensor
- *
- * \retval MYKONOS_ERR_SETUPTEMPSENSOR_NULL_PARAM Function parameter tempSensor is a NULL pointer
- * \retval MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPDECIMATION tempDecimation value out of range (0-7)
- * \retval MYKONOS_ERR_SETUPTEMPSENSOR_INV_OFFSET offset value out of range (0-255)
- * \retval MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPWINDOW tempWindow out of range (0-15)
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setupTempSensor(mykonosDevice_t *device, mykonosTempSensorConfig_t *tempSensor)
-{
-    uint8_t offsetFromDevice = 0;
-
-    const uint8_t OFFSET_API = 0x43;
-    const uint8_t TEMP_OFFSET_MASK = 0xFF;
-    const uint8_t TEMP_WINDOW_MASK = 0xF0;
-    const uint8_t TEMP_WINDOW_CHECK = 0x0F;
-    const uint8_t TEMP_DEC_MASK = 0x07;
-    const uint8_t OFFSET_OVERRIDE_MASK = 0x10;
-
-#ifdef MYKONOS_VERBOSE
-    CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setupTempSensor()\n");
-#endif
-
-    /* Check for structure initialisation mykonosTempSensorConfig_t */
-    if (tempSensor == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SETUPTEMPSENSOR_NULL_PARAM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_SETUPTEMPSENSOR_NULL_PARAM));
-        return MYKONOS_ERR_SETUPTEMPSENSOR_NULL_PARAM;
-    }
-
-    /* Check Temperature sensor decimation range */
-    if ((tempSensor->tempDecimation & ~TEMP_DEC_MASK) > 0)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPDECIMATION,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPDECIMATION));
-        return MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPDECIMATION;
-    }
-
-    /* Override fused offset */
-    if (tempSensor->overrideFusedOffset > 0)
-    {
-        /* Check Temperature sensor offset range */
-        if (tempSensor->offset & ~TEMP_OFFSET_MASK)
-        {
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SETUPTEMPSENSOR_INV_OFFSET,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_SETUPTEMPSENSOR_INV_OFFSET));
-            return MYKONOS_ERR_SETUPTEMPSENSOR_INV_OFFSET;
-        }
-
-        CMB_SPIWriteField (device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONFIG, 1, OFFSET_OVERRIDE_MASK, 4);
-        CMB_SPIWriteByte (device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_OFFSET, tempSensor->offset);
-    }
-    else
-    {
-        /* If manual override was not requested, read back device offset value.
-         * If factory fused it is non-zero; else API adds a typical offset value */
-        CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_OFFSET, &(offsetFromDevice));
-        if (offsetFromDevice == 0)
-        {
-            CMB_SPIWriteByte (device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_OFFSET, OFFSET_API);
-        }
-    }
-
-    /* Check Temperature sensor window range */
-    if ((tempSensor->tempWindow & ~TEMP_WINDOW_CHECK) > 0)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPWINDOW,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPWINDOW));
-        return MYKONOS_ERR_SETUPTEMPSENSOR_INV_TEMPWINDOW;
-    }
-    else
-    {
-        CMB_SPIWriteField (device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONTROL_LSB, tempSensor->tempWindow, TEMP_WINDOW_MASK, 4);
-    }
-
-    /* Single shot setup */
-    CMB_SPIWriteByte (device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONTROL_MSB, 0x00);
-
-    /* Write decimation factor for the Temperature sensor */
-    CMB_SPIWriteField (device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONFIG, tempSensor->tempDecimation, TEMP_DEC_MASK, 0);
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief Reads from the Temperature Sensor registers and populates device data structure
- *
- *  After this function is executed, the tempSensor parameter holds updated values
- *  from the device registers.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param tempSensor is a pointer to the mykonosTempSensorConfig_t which holds
- * the configuration settings for the tempSensor
- *
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- * \retval MYKONOS_ERR_GETTEMPSENSORCONFIG_NULL_PARAM Function parameter tempSensor is a NULL pointer
- */
-mykonosGpioErr_t MYKONOS_getTempSensorConfig(mykonosDevice_t *device, mykonosTempSensorConfig_t *tempSensor)
-{
-    uint8_t tempConfig = 0;
-
-    const uint8_t TEMP_WINDOW_MASK = 0xF0;
-    const uint8_t TEMP_FUSE_MASK = 0x10;
-    const uint8_t TEMP_DECIMATION_MASK = 0x07;
-    const uint8_t TEMP_FUSE_SHIFT = 0x04;
-
-#ifdef MYKONOS_VERBOSE
-    CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getTempSensorConfig()\n");
-#endif
-
-    /* Check tempSensor null parameter passed */
-    if (tempSensor == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GETTEMPSENSORCFG_NULL_PARAM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GETTEMPSENSORCFG_NULL_PARAM));
-        return MYKONOS_ERR_GETTEMPSENSORCFG_NULL_PARAM;
-    }
-
-    /* Read back factory offset, if fused; else manual offset value */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_OFFSET, &(tempSensor->offset));
-
-    /* Read back Decimation and override Offset Temperature sensor parameters */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONFIG, &tempConfig);
-    tempSensor->overrideFusedOffset = (tempConfig & TEMP_FUSE_MASK) >> TEMP_FUSE_SHIFT;
-    tempSensor->tempDecimation = (tempConfig & TEMP_DECIMATION_MASK);
-
-    /* Read back tempWindow */
-    CMB_SPIReadField(device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONTROL_LSB, &tempConfig, TEMP_WINDOW_MASK, 4);
-    tempSensor->tempWindow = tempConfig;
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief Initiates temperature measurement
- *
- * This function will initiate the Temperature sensor measurement.
- *
- * \pre
- * MYKONOS_setupTempSensor() function to set the temperature sensor.
- * MYKONOS_setAuxAdcChannel() function with the AuxADC setting for Temperature sensor channel MYK_TEMPSENSOR
- * from the enum type mykonosAuxAdcChannels_t.
- *
- * \post
- * Internal temperature sensor will perform measurement and updated register values,
- * read back using MYKONOS_readTempSensor() function.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- *
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_startTempMeasurement(mykonosDevice_t *device)
-{
-    const uint8_t TEMP_LOCK_MASK = 0x80;
-    const uint8_t TEMP_LOCK_BIT = 0x01;
-    const uint8_t MEASUREMENT_MASK = 0x01;
-
-#ifdef MYKONOS_VERBOSE
-    CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_startTempMeasurement()\n");
-#endif
-
-    /* Write the lock bit to ensure that a valid measurement is achieved */
-    CMB_SPIWriteField (device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONFIG, TEMP_LOCK_BIT, TEMP_LOCK_MASK, 7);
-
-    /* Initiate Temperature measurement */
-    CMB_SPIWriteField (device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONTROL_LSB, 1, MEASUREMENT_MASK, 0);
-    CMB_SPIWriteField (device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONTROL_LSB, 0, MEASUREMENT_MASK, 0);
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief Reads temperature code and statuses from the Temperature Sensor registers
- *
- *  This function reads the temperature sensor's statuses and temperature code.
- *  Allow at least one computation period to elapse.
- *  The temperature sensor computation period is as 6 times the AuxADC conversion time.
- *  AuxADC conversion time = (1/40Mhz) * (256 * 2^(tempDecimation))
- *
- *  Before using this function to read back the temperature, make sure that temperature sensor
- *  is setup using the MYKONOS_setupTempSensor() function.
- *
- * \pre Before using this function to read back the sensor value:
- *  MYKONOS_setupTempSensor() function is needed in order to set up the Temperature sensor.
- *  MYKONOS_setAuxAdcChannel() function has to be called in order to set the proper AuxADC
- *  channel. AuxADC channel MYK_TEMPSENSOR is used for the Temperature sensor.
- *  MYKONOS_startTempMeasurement() this function will start the Temperature sensor, this
- *  function is needed to be called for every reading that needs to be performed.
- *
- * \post "tempStatus" structure will contain the status information and the temperature
- *  code.
- *  If a valid measurement is achieved then tempStatus->tempValid will be set and
- *  tempStatus->tempCode will contain the actual reading.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param tempStatus is a pointer to the mykonosTempSensorStatus_t structure which will be updated
- * with the temp sensor readings
- *
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- * \retval MYKONOS_ERR_READTEMPSENSOR_NULL_PARAM Function parameter tempSensor is a NULL pointer
- * \retval MYKONOS_ERR_READTEMPSENSOR_NOT_LOCKED temperature sensor reading is not locked
- */
-mykonosGpioErr_t MYKONOS_readTempSensor(mykonosDevice_t *device, mykonosTempSensorStatus_t *tempStatus)
-{
-    int16_t temperature = 0;
-    uint8_t statusWord = 0;
-    uint8_t rgRd = 0x00;
-
-    const uint8_t CODE_TO_DEGREE_CELSIUS = 0x67;
-    const uint8_t TEMP_VALID_MASK = 0x02;
-    const uint8_t WINDOW_EXCEED_MASK = 0x08;
-    const uint8_t WINDOW_HI_LO_MASK = 0x04;
-    const uint8_t TEMP_LOCK = 0x80;
-
-#ifdef MYKONOS_VERBOSE
-    CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_readTempSensor()\n");
-#endif
-
-    if (tempStatus == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_READTEMPSENSOR_NULL_PARAM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_READTEMPSENSOR_NULL_PARAM));
-        return MYKONOS_ERR_READTEMPSENSOR_NULL_PARAM;
-    }
-
-    /* Check for temperature sensor value lock */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONFIG, &rgRd);
-    if ((rgRd & TEMP_LOCK) == TEMP_LOCK)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_READTEMPSENSOR_NOT_LOCKED,
-                        getGpioMykonosErrorMessage(MYKONOS_ERR_READTEMPSENSOR_NOT_LOCKED));
-        return MYKONOS_ERR_READTEMPSENSOR_NOT_LOCKED;
-    }
-
-    /* Perform temperature status reading */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_CONTROL_LSB, &statusWord);
-    tempStatus->windowExceeded = (statusWord & WINDOW_EXCEED_MASK) >> 3;
-    tempStatus->windowHiLo = (statusWord & WINDOW_HI_LO_MASK) >> 2;
-    tempStatus->tempValid = (0x01 & ~((statusWord & TEMP_VALID_MASK) >> 1));
-
-    /* Perform temperature reading */
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_ADDR_TEMP_SENSOR_READ, &rgRd);
-    temperature = rgRd - CODE_TO_DEGREE_CELSIUS;
-    tempStatus->tempCode = temperature;
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief This function sets the drive strength for the required GPIOs.
- *
- * This function will set the required drive strength, the settings for GPIO drive strength are normal drive and double drive.
- *
- * GPIO pins that can be assigned independent drive strength are:
- * -MYKGPIO0 to MYKGPIO7 and MYKGPIO18
- *
- * The rest of GPIOs are paired as:
- * -MYKGPIO17 and MYKGPIO16
- * -MYKGPIO8 and MYKGPIO15
- * -MYKGPIO14 and MYKGPIO13
- * -MYKGPIO10 and MYKGPIO9
- * -MYKGPIO12 and MYKGPIO11
- *
- * This means that if it is required to double the drive strength for MYKGPIO17 then the drive strength will also be doubled for MYKGPIO16.
- *
- * If the particular bitfield for gpioDrv is set then the drive strength will be doubled. Note that multiple GPIOs can be set at a time.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param gpioDrv GPIO drive strength setup, valid range is from 0x00000 to 0x7FFFF.
- *
- * \retval MYKONOS_ERR_GPIO_DRV_INV_PARAM GPIO out of range- valid GPIOs are in the range 0x00000 to 0x7FFFF.
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setGpioDrv(mykonosDevice_t *device, mykonosGpioSelect_t gpioDrv)
-{
-    uint32_t error = MYKONOS_ERR_GPIO_OK;
-    uint8_t reg0 = 0x00;
-    uint8_t reg1 = 0x00;
-
-    const uint32_t GPIO_MASK = 0x7FFFF;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setGpioDrv()\n");
-#endif
-
-    /* Error checking for correct number of GPIOs. */
-    if (gpioDrv > GPIO_MASK )
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_DRV_INV_PARAM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_DRV_INV_PARAM));
-        return MYKONOS_ERR_GPIO_DRV_INV_PARAM;
-    }
-
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_DRV_CTL_0, &reg0);
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_DRV_CTL_1, &reg1);
-
-    reg1 = reg1 & 0xC0;
-
-    if (gpioDrv & 0xFF)
-    {
-        reg0 = (uint8_t)(gpioDrv & 0xFF);
-    }
-
-    if (gpioDrv & MYKGPIO18)
-    {
-        reg1 |= 0x01;
-    }
-
-    if ((gpioDrv & MYKGPIO17) || (gpioDrv & MYKGPIO16))
-    {
-        reg1 |= 0x02;
-    }
-
-    if ((gpioDrv & MYKGPIO15) || (gpioDrv & MYKGPIO8))
-    {
-        reg1 |= 0x04;
-    }
-
-    if ((gpioDrv & MYKGPIO14) || (gpioDrv & MYKGPIO13))
-    {
-        reg1 |= 0x08;
-    }
-
-    if ((gpioDrv & MYKGPIO10) || (gpioDrv & MYKGPIO9))
-    {
-        reg1 |= 0x10;
-    }
-
-    if ((gpioDrv & MYKGPIO12) || (gpioDrv & MYKGPIO11))
-    {
-        reg1 |= 0x20;
-    }
-
-    CMB_SPIWriteByte (device->spiSettings, MYKONOS_GPIO_DRV_CTL_0, reg0);
-    CMB_SPIWriteByte (device->spiSettings, MYKONOS_GPIO_DRV_CTL_1, reg1);
-
-    return error;
-}
-
-
-/**
- * \brief This function gets the GPIOs drive strength.
- *
- * This function will get the programmed drive strength for all the GPIOs
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure.
- * \param gpioDrv will contain the current GPIOs drive strength setting.
- *
- * \retval MYKONOS_ERR_GETGPIODRV_NULL_PARAM null parameter passed to the function.
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_getGpioDrv(mykonosDevice_t *device, mykonosGpioSelect_t *gpioDrv)
-{
-    uint32_t error = MYKONOS_ERR_GPIO_OK;
-    uint8_t reg0 = 0x00;
-    uint8_t reg1 = 0x00;
-    uint32_t gpioDrvRd = 0x00;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_getGpioDrv()\n");
-#endif
-
-    /* Error checking for correct number of GPIOs. */
-    if (gpioDrv == NULL )
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GETGPIODRV_NULL_PARAM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GETGPIODRV_NULL_PARAM));
-        return MYKONOS_ERR_GETGPIODRV_NULL_PARAM;
-    }
-
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_DRV_CTL_0, &reg0);
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_DRV_CTL_1, &reg1);
-
-    gpioDrvRd = (uint32_t)reg0 & 0xFF;
-
-    if (reg1 & 0x01)
-    {
-        gpioDrvRd |= MYKGPIO18;
-    }
-
-    if (reg1 & 0x02)
-    {
-        gpioDrvRd |= MYKGPIO17 | MYKGPIO16;
-    }
-
-    if (reg1 & 0x04)
-    {
-        gpioDrvRd |= MYKGPIO8 | MYKGPIO15;
-    }
-
-    if (reg1 & 0x08)
-    {
-        gpioDrvRd |= MYKGPIO14 | MYKGPIO13;
-    }
-
-    if (reg1 & 0x10)
-    {
-        gpioDrvRd |= MYKGPIO10 | MYKGPIO9;
-    }
-
-    if (reg1 & 0x20)
-    {
-        gpioDrvRd |= MYKGPIO12 | MYKGPIO11;
-    }
-
-    *gpioDrv = gpioDrvRd;
-
-    return error;
-}
-
-/**
- * \brief This function sets the slew rate for the required GPIOs.
- *
- * This function will set the required slew rate, the settings for GPIO slew rate are given by the enumeration type mykonosGpioSlewRate_t.
- *
- * GPIO pins that can be assigned independent slew rate are:
- * -MYKGPIO0 to MYKGPIO7 and MYKGPIO18
- *
- * The rest of GPIOs are paired as:
- * -MYKGPIO17 and MYKGPIO16
- * -MYKGPIO8 and MYKGPIO15
- * -MYKGPIO14 and MYKGPIO13
- * -MYKGPIO10 and MYKGPIO9
- * -MYKGPIO12 and MYKGPIO11
- *
- * This means that if it is required to set the slew rate for MYKGPIO17 then the same slew rate will be applied for MYKGPIO16.
- *
- * If the particular bitfield for gpioSelect is set then slewRate will be set for that GPIO. Note that multiple GPIOs can be set at a time.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param gpioSelect GPIO for which the slew rate will be changed, valid range 0x00000 to 0x7FFFF.
- * \param slewRate slew rate setting, valid slew rate settings are given by the enumeration type mykonosGpioSlewRate_t
- *
- * \retval MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM GPIO out of range- valid GPIOs are in the range 0x00000 to 0x7FFFF.
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setGpioSlewRate(mykonosDevice_t *device, mykonosGpioSelect_t gpioSelect, mykonosGpioSlewRate_t slewRate)
-{
-    uint32_t error = MYKONOS_ERR_GPIO_OK;
-    uint8_t reg0 = 0x00;
-    uint8_t reg1 = 0x00;
-    uint8_t reg2 = 0x00;
-    uint8_t reg3 = 0x00;
-
-    const uint32_t GPIO_MASK = 0x7FFFF;
-    const uint8_t SLEWRATE_MASK = 0x03;
-    const uint32_t SHIFT4NIBLE = 0x06;
-    const uint32_t SHIFT3NIBLE = 0x04;
-    const uint32_t SHIFT2NIBLE = 0x02;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setGpioSlewRate()\n");
-#endif
-
-    /* Error checking for correct number of GPIOs. */
-    if ((gpioSelect > GPIO_MASK) || (slewRate > SLEWRATE_MASK))
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM));
-        return MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM;
-    }
-
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_0, &reg0);
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_1, &reg1);
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_2, &reg2);
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_3, &reg3);
-
-    if (gpioSelect & MYKGPIO18)
-    {
-        reg0 = (reg0 & ~(SLEWRATE_MASK << SHIFT4NIBLE)) | (slewRate << SHIFT4NIBLE);
-    }
-    if ((gpioSelect & MYKGPIO17) || (gpioSelect & MYKGPIO16))
-    {
-        reg0 = (reg0 & ~(SLEWRATE_MASK << SHIFT3NIBLE)) | (slewRate << SHIFT3NIBLE);
-    }
-    if ((gpioSelect & MYKGPIO15) || (gpioSelect & MYKGPIO8))
-    {
-        reg0 = (reg0 & ~(SLEWRATE_MASK << SHIFT2NIBLE)) | (slewRate << SHIFT2NIBLE);
-    }
-    if ((gpioSelect & MYKGPIO14) || (gpioSelect & MYKGPIO13))
-    {
-        reg0 = (reg0 & ~(SLEWRATE_MASK)) | slewRate;
-    }
-    if ((gpioSelect & MYKGPIO11) || (gpioSelect & MYKGPIO12))
-    {
-        reg1 = (reg1 & ~(SLEWRATE_MASK << SHIFT4NIBLE)) | (slewRate << SHIFT4NIBLE);
-    }
-    if ((gpioSelect & MYKGPIO9) || (gpioSelect & MYKGPIO10))
-    {
-        reg1 = (reg1 & ~(SLEWRATE_MASK << SHIFT3NIBLE)) | (slewRate << SHIFT3NIBLE);
-    }
-    if (gpioSelect & MYKGPIO7)
-    {
-        reg1 = (reg1 & ~(SLEWRATE_MASK << SHIFT2NIBLE)) | (slewRate << SHIFT2NIBLE);
-    }
-    if (gpioSelect & MYKGPIO6)
-    {
-        reg1 = (reg1 & ~(SLEWRATE_MASK)) | slewRate;
-    }
-    if (gpioSelect & MYKGPIO5)
-    {
-        reg2 = (reg2 & ~(SLEWRATE_MASK << SHIFT4NIBLE)) | (slewRate << SHIFT4NIBLE);
-    }
-    if (gpioSelect & MYKGPIO4)
-    {
-        reg2 = (reg2 & ~(SLEWRATE_MASK << SHIFT3NIBLE)) | (slewRate << SHIFT3NIBLE);
-    }
-    if (gpioSelect & MYKGPIO3)
-    {
-        reg2 = (reg2 & ~(SLEWRATE_MASK << SHIFT2NIBLE)) | (slewRate << SHIFT2NIBLE);
-    }
-    if (gpioSelect & MYKGPIO2)
-    {
-        reg2 = (reg2 & ~(SLEWRATE_MASK)) | slewRate;
-    }
-    if (gpioSelect & MYKGPIO1)
-    {
-        reg3 = (reg3 & ~(SLEWRATE_MASK << SHIFT2NIBLE)) | (slewRate << SHIFT2NIBLE);
-    }
-    if (gpioSelect & MYKGPIO0)
-    {
-        reg3 = (reg3 & ~(SLEWRATE_MASK)) | slewRate;
-    }
-
-    /* Prepare registers */
-    CMB_SPIWriteByte (device->spiSettings, MYKONOS_GPIO_SLEW_CTL_0, reg0);
-    CMB_SPIWriteByte (device->spiSettings, MYKONOS_GPIO_SLEW_CTL_1, reg1);
-    CMB_SPIWriteByte (device->spiSettings, MYKONOS_GPIO_SLEW_CTL_2, reg2);
-    CMB_SPIWriteByte (device->spiSettings, MYKONOS_GPIO_SLEW_CTL_3, reg3);
-
-    return error;
-}
-
-
-/**
- * \brief This function gets the GPIO slew rate setting.
- *
- * This function will get the programmed slew rate for the GPIO given by slewRateGpio.
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure.
- * \param gpioSelect GPIO selection for getting the slew rate setting.
- * \param slewRate will contain the GPIO slew rate setting.
- *
- * \retval MYKONOS_ERR_GPIO_GETSLEW_NULL_PARAM null parameter passed to the function.
- * \retval MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM GPIO out of range- valid GPIOs are in the range 0x00000 to 0x7FFFF.
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_getGpioSlewRate(mykonosDevice_t *device, mykonosGpioSelect_t gpioSelect, mykonosGpioSlewRate_t *slewRate)
-{
-    uint8_t reg0 = 0x00;
-    uint8_t reg1 = 0x00;
-    uint8_t reg2 = 0x00;
-    uint8_t reg3 = 0x00;
-    mykonosGpioSlewRate_t slewSetting = MYK_SLEWRATE_NONE;
-
-    const uint32_t SLEWRATE_MASK = 0x03;
-    const uint32_t SHIFT4NIBLE = 0x06;
-    const uint32_t SHIFT3NIBLE = 0x04;
-    const uint32_t SHIFT2NIBLE = 0x02;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setGpioSlewRate()\n");
-#endif
-
-    /* Error checking for NULL parameter. */
-    if (slewRate == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_GETSLEW_NULL_PARAM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_GETSLEW_NULL_PARAM));
-        return MYKONOS_ERR_GPIO_GETSLEW_NULL_PARAM;
-    }
-
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_0, &reg0);
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_1, &reg1);
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_2, &reg2);
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_3, &reg3);
-
-    switch (gpioSelect)
-    {
-        case MYKGPIO18:
-            slewSetting = (reg0 & (SLEWRATE_MASK << SHIFT4NIBLE)) >> SHIFT4NIBLE;
-            break;
-        case MYKGPIO17:
-        case MYKGPIO16:
-            slewSetting = (reg0 & (SLEWRATE_MASK << SHIFT3NIBLE)) >> SHIFT3NIBLE;
-            break;
-        case MYKGPIO15:
-        case MYKGPIO8:
-            slewSetting = (reg0 & (SLEWRATE_MASK << SHIFT2NIBLE)) >> SHIFT2NIBLE;
-            break;
-        case MYKGPIO14:
-        case MYKGPIO13:
-            slewSetting = (reg0 & (SLEWRATE_MASK));
-            break;
-        case MYKGPIO11:
-        case MYKGPIO12:
-            slewSetting = (reg1 & (SLEWRATE_MASK << SHIFT4NIBLE)) >> SHIFT4NIBLE;
-            break;
-        case MYKGPIO9:
-        case MYKGPIO10:
-            slewSetting = (reg1 & (SLEWRATE_MASK << SHIFT3NIBLE)) >> SHIFT3NIBLE;
-            break;
-        case MYKGPIO7:
-            slewSetting = (reg1 & (SLEWRATE_MASK << SHIFT2NIBLE)) >> SHIFT2NIBLE;
-            break;
-        case MYKGPIO6:
-            slewSetting = (reg1 & (SLEWRATE_MASK));
-            break;
-        case MYKGPIO5:
-            slewSetting = (reg2 & (SLEWRATE_MASK << SHIFT4NIBLE)) >> SHIFT4NIBLE;
-            break;
-        case MYKGPIO4:
-            slewSetting = (reg2 & (SLEWRATE_MASK << SHIFT3NIBLE)) >> SHIFT3NIBLE;
-            break;
-        case MYKGPIO3:
-            slewSetting = (reg2 & (SLEWRATE_MASK << SHIFT2NIBLE)) >> SHIFT2NIBLE;
-            break;
-        case MYKGPIO2:
-            slewSetting = (reg2 & (SLEWRATE_MASK));
-            break;
-        case MYKGPIO1:
-            slewSetting = (reg3 & (SLEWRATE_MASK << SHIFT2NIBLE)) >> SHIFT2NIBLE;
-            break;
-        case MYKGPIO0:
-            slewSetting = (reg3 & (SLEWRATE_MASK));
-            break;
-        default:
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM,
-                    getGpioMykonosErrorMessage(MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM));
-            return MYKONOS_ERR_GPIO_SLEW_RATE_INV_PARAM;
-    }
-
-    *slewRate = slewSetting;
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-
-/**
- * \brief This function sets the CMOS output driver.
- *
- * This function sets the CMOS output driver to increase pad drive strength for the SPI_DIO and GP_INTERRUPT pads
- * according to the following settings of the enumeration type mykonosCmosPadDrvStr_t
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param cmosDrv drive for the CMOS output driver
- *
- * \retval MYKONOS_ERR_CMOS_DRV_INV_PARAM invalid drive strength, valid settings are given by mykonosCmosPadDrvStr_t
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_setCmosDrv(mykonosDevice_t *device, mykonosCmosPadDrvStr_t cmosDrv)
-{
-    const uint8_t CMOS_DRV_MASK = 0x0F;
-    const uint8_t CMOS_DRV_SHIFT = 0x04;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setSpiDrv()\n");
-#endif
-
-    /* Error checking for correct drive */
-    switch (cmosDrv)
-    {   /* fall through since this is only checking */
-        case MYK_CMOSPAD_DRV_1X:
-        case MYK_CMOSPAD_DRV_2X:
-        case MYK_CMOSPAD_DRV_3X:
-        case MYK_CMOSPAD_DRV_4X:
-        case MYK_CMOSPAD_DRV_5X:
-            break;
-        default:
-            CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_CMOS_DRV_INV_PARAM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_CMOS_DRV_INV_PARAM));
-            return MYKONOS_ERR_CMOS_DRV_INV_PARAM;
-            break;
-    }
-
-    CMB_SPIWriteField(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_3, cmosDrv, (~CMOS_DRV_MASK), CMOS_DRV_SHIFT);
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
- * \brief This function gets the programmed CMOS output driver
- *
- *
- * <B>Dependencies</B>
- * - device->spiSettings->chipSelectIndex
- *
- * \param device is a pointer to the device settings structure
- * \param cmosDrv will be the programmed drive for the CMOS output driver
- *
- * \retval MYKONOS_ERR_CMOS_DRV_NULL_PARAM Null parameter passed to the function
- * \retval MYKONOS_ERR_GPIO_OK Function completed successfully
- */
-mykonosGpioErr_t MYKONOS_getCmosDrv(mykonosDevice_t *device, mykonosCmosPadDrvStr_t *cmosDrv)
-{
-    uint8_t regRd = 0x00;
-
-    const uint8_t CMOS_DRV_MASK = 0xF0;
-    const uint8_t CMOS_DRV_SHIFT = 0x04;
-
-#if MYKONOS_VERBOSE == 1
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_GPIO_OK, "MYKONOS_setGpioSlewRate()\n");
-#endif
-
-    if (cmosDrv == NULL)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex, MYKONOS_ERR_CMOS_DRV_NULL_PARAM,
-                getGpioMykonosErrorMessage(MYKONOS_ERR_CMOS_DRV_NULL_PARAM));
-        return MYKONOS_ERR_CMOS_DRV_NULL_PARAM;
-    }
-
-    CMB_SPIReadByte(device->spiSettings, MYKONOS_GPIO_SLEW_CTL_3, &regRd);
-
-    *cmosDrv = ((regRd & CMOS_DRV_MASK) >> CMOS_DRV_SHIFT);
-
-    return MYKONOS_ERR_GPIO_OK;
-}
-
-/**
-* \brief This API function configures and enables the secondary SPI port.
-*
-* This port allows control compatibility with BBPs that employ dual SPI ports.
-* The GPIO mapping for the SPI2 is fixed:
-*  SPI signal  |   GPIO
-* -------------|-------------------
-*  CSB_2       |   GPIO 3
-*  SCLK_2      |   GPIO 2
-*  SDO_2       |   GPIO 1
-*  SDO_2/SDI2  |   GPIO 0
-*
-* The secondary SPI port only has a small subset of registers that affect the
-* attenuation of the TX channels. It uses a fifth GPIO pin in order to decide
-* which TxAttenuation word is active. The Tx Attenuation words in the 2nd SPI
-* port are different than the first SPI port.  On the 2nd SPI port, each
-* transmitter has two Tx Attenuation words (an active word and an inactive
-* word).  The BBIC should write to the inactive TxAttenuation word. Then the
-* fifth GPIO pin should be asserted to make the inactive TxAttenuation word
-* active.  This allows the BBIC to tightly control in real time when the
-* TxAttenuation updates.
-*
-* <B>Dependencies</B>
-* - device->spiSettings
-* - device->spiSettings->chipSelectIndex
-*
-* \param device is a pointer to the device settings structure
-* \param enable This is parameter will enable the secondary SPI port: 1 = enable, 0 = disable
-* \param updateTxAttenPinSelect This parameter set the GPIO pin to be toggle for using the inactive attenuation words for both channels
-*  tx update  |   GPIO
-* ------------|-------------------
-*     0x00    |   GPIO 4
-*     0x01    |   GPIO 8
-*     0x02    |   GPIO 14
-*     0x03    |   none selected
-*
-* \retval MYKONOS_ERR_SPI2_INV_GPIO if an invalid GPIO pin configuration is passed
-* \retval MYKONOS_ERR_HAL_LAYER if HAL function error is passed
-* \retval MYKONOS_ERR_OK Function completed successfully
-*/
-mykonosGpioErr_t MYKONOS_spi2GpioSetup(mykonosDevice_t *device, uint8_t enable, uint8_t updateTxAttenPinSelect)
-{
-    uint8_t regWrite = 0;
-    uint8_t enableBit = 0;
-    mykonosErr_t error = MYKONOS_ERR_OK;
-    uint32_t halError = COMMONERR_OK;
-
-    const uint32_t SPI2_PIN_MASK = 0x03;
-
-#ifdef MYKONOS_VERBOSE
-    CMB_writeToLog(ADIHAL_LOG_MESSAGE, device->spiSettings->chipSelectIndex, MYKONOS_ERR_OK, "MYKONOS_txGpioAttControl()\n");
-#endif
-
-    /* Error checking for correctness of GPIO to control attenuation word. */
-    if (updateTxAttenPinSelect & ~SPI2_PIN_MASK)
-    {
-        CMB_writeToLog(ADIHAL_LOG_ERROR, device->spiSettings->chipSelectIndex,  MYKONOS_ERR_SPI2_INV_GPIO,
-                getMykonosErrorMessage(MYKONOS_ERR_SPI2_INV_GPIO));
-        return MYKONOS_ERR_SPI2_INV_GPIO;
-    }
-
-    /* masking the enable bit and the required pin */
-    enableBit = (enable > 0) ? 1 : 0;
-    regWrite = (updateTxAttenPinSelect << 4) | (enableBit << 3);
-
-    /* Set the SPI2 enable and the GPIO pin associated. */
-    halError = CMB_SPIWriteField(device->spiSettings, MYKONOS_ADDR_CONFIGURATION_CONTROL_1, regWrite, 0x38, 0);
-    if (halError)
-    {
-        return MYKONOS_ERR_HAL_LAYER;
-    }
-
-    return error;
 }
 

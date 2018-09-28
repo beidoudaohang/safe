@@ -15,19 +15,19 @@
 #include "module_adr_def.h"
 
 typedef struct {
-    u8 band;
-    f32 ul_low_freq;
-    f32 ul_high_freq;
-    f32 dl_low_freq;
-    f32 dl_high_freq;
+	u8 band;
+	f32 ul_low_freq;
+	f32 ul_high_freq;
+	f32 dl_low_freq;
+	f32 dl_high_freq;
 } band_table;
 
 typedef struct {
-    u8 ul_pa_att;
-    u8 dl_pa_att;
-    u8 ul_pa_pout;
-    u8 dl_pa_pout;
-    u8 sysnum;
+	u8 ul_pa_att;
+	u8 dl_pa_att;
+	u8 ul_pa_pout;
+	u8 dl_pa_pout;
+	u8 sysnum;
 } para_temp_save;
 
 void oldsys_band_table_init();
@@ -57,5 +57,8 @@ s16 check_dl_max_agc_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8
 s16 check_ul_att_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 s16 check_dl_att_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 s16 check_pa_att_th_exmod(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
+
+
+s8 exmod_data_restore(md_adr_info *md_adr, u8 mod_index);
 
 #endif

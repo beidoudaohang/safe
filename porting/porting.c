@@ -11,6 +11,7 @@ description:
 #include "helios.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 //file control
 #include <unistd.h>
 #include <sys/stat.h>
@@ -34,6 +35,7 @@ description:
 /*****************************para define*************************/
 
 static const s8 para_file_path[] = {"/datafile"};
+static const s8 para_file_bak_path[] = {"/datafile.bak"};
 
 static const s8 unit_file_name_a[] = {"/datafile/unita"};
 static const s8 unit_file_name_b[] = {"/datafile/unitb"};
@@ -43,6 +45,9 @@ static const s8 band_file_name_b[MOD_NUM_IN_ONE_PCB][20] = {"/datafile/band0b","
 
 static const s8 pcb_file_name_a[] = {"/datafile/pcba"};
 static const s8 pcb_file_name_b[] = {"/datafile/pcbb"};
+
+static const s8 exmod_file_name_a[] = {"/datafile/exmoda"};
+static const s8 exmod_file_name_b[] = {"/datafile/exmodb"};
 
 static s8 file_buf[MAX(sizeof(unit_para), (MD5_CODE_SIZE + 32 +  sizeof(band_para)))] = {0};
 
@@ -687,7 +692,225 @@ BAND_FILE_WRITE_ERR:
 	close(file_b);
 	return -1;
 }
+s32 exmod_file_read(band_para *bp, u8 mod_index)
+{
+	s32 err;
+	s32 file_a, file_b;
+	u32 file_code_a = 0;
+	u32  file_code_b = 0;
+	s32 read_len;
+	s32 file_cur, file_code_cur;
+	u8 d_buf[4] = {0};
+	char *filename;
 
+	if (NULL == bp)
+		return -1;
+	//open file
+	filename = malloc(sizeof(exmod_file_name_a) + 4);
+	if(filename == NULL) {
+        printf("exmod_file_read: malloc fail\n");
+        return -1;
+    }
+	memset(filename, 0, sizeof(exmod_file_name_a) + 4);
+	sprintf(filename, "%s%d", exmod_file_name_a, mod_index);
+	file_a = open((const char*)band_file_name_a[mod_index], O_RDONLY);
+	if (file_a < 0){
+		free(filename);
+		return -1;
+	}
+	sprintf(filename, "%s%d", exmod_file_name_b, mod_index);
+	file_b = open((const char*)band_file_name_b[mod_index], O_RDONLY);
+	if (file_b < 0) {
+		free(filename);
+		close(file_a);
+		return -1;
+	}
+
+	//chose file
+	read_len = read(file_a, &file_code_a, sizeof(file_code_b));
+	if ((read_len != sizeof(file_code_a)) || (read_len < 0)) {
+		free(filename);
+		close(file_a);
+		return -1;
+	}
+
+	read_len = read(file_b, &file_code_b, sizeof(file_code_b));
+	if ((read_len != sizeof(file_code_b)) || (read_len < 0)) {
+		free(filename);
+		close(file_a);
+		close(file_b);
+		return -1;
+	}
+
+	if (file_code_a > file_code_b) {
+		file_code_cur = file_code_a;
+		file_cur = file_a;
+		//close(file_b);
+		//RLDEBUG("band_file_read:choose band file a\r\n");
+	} else {
+		file_code_cur = file_code_b;
+		file_cur = file_b;
+		//close(file_a);
+		//RLDEBUG("band_file_read:choose band file b\r\n");
+	}
+	//read
+	file_code_cur = 0;
+BAND_FILE_READ_TRY:
+	file_code_cur++;
+	memset(file_buf, 0, sizeof(file_buf));
+	read_len = read(file_cur, file_buf, (sizeof(band_para) + MD5_CODE_SIZE));
+	if ((read_len < 0) /*|| (read_len != (sizeof(band_para) + MD5_CODE_SIZE))*/) {
+		//close(file_cur);
+		RLDEBUG("band_file_read:read band file false\r\n");
+		RLDEBUG("band_file_read: source len is:%d \r\n", (sizeof(band_para)));
+		RLDEBUG("band_file_read: read len is:%d \r\n", (read_len));
+	}
+	err = file_decode(file_buf, sizeof(file_buf), read_len - MD5_CODE_SIZE);
+	if (err < 0) {
+		RLDEBUG("band_file_read:newer band file err: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) , read_len, read_len - MD5_CODE_SIZE);
+		if (file_cur == file_a) {
+			file_cur = file_b;
+		} else if (file_cur == file_b) {
+			file_cur = file_a;
+		} else {
+			goto BAND_FILE_READ_ERR;
+		}
+		if (file_code_cur < 2) {
+			goto BAND_FILE_READ_TRY;
+		} else {
+			goto BAND_FILE_READ_ERR;
+		}
+	}
+
+	//RLDEBUG("band_file_read:newer band file done: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) , read_len, read_len - MD5_CODE_SIZE);
+
+	memcpy(bp, file_buf, read_len - MD5_CODE_SIZE);
+
+	free(filename);
+	close(file_a);
+	close(file_b);
+	file_cur = 0;
+
+	return 0;
+
+BAND_FILE_READ_ERR:
+	RLDEBUG("band_file_read:BAND_FILE_READ_ERR RUN\r\n");
+	free(filename);
+	close(file_a);
+	close(file_b);
+	return -1;
+}
+s32 exmod_file_write(band_para *bp, u8 mod_index)
+{
+	s32 err;
+	s32 file_a, file_b;
+	u32 file_code_a, file_code_b;
+	s32 read_len;
+	s32 file_cur, file_code_cur;
+	off_t file_offset = 0;
+	char *filename;
+
+	if (NULL == bp)
+		return -1;
+
+	
+	//open file
+	filename = malloc(sizeof(exmod_file_name_a) + 4);
+	if(filename == NULL) {
+        printf("exmod_file_write: malloc fail\n");
+        return -1;
+    }
+	memset(filename, 0, sizeof(exmod_file_name_a) + 4);
+	sprintf(filename, "%s%d", exmod_file_name_a, mod_index);
+	file_a = open((const char*)filename, O_RDWR);
+	if (file_a < 0) {
+		free(filename);
+		RLDEBUG("exmod_file_write:open exmod file a false\r\n");
+		return -1;
+	}
+	sprintf(filename, "%s%d", exmod_file_name_b, mod_index);
+	file_b = open((const char*)filename, O_RDWR);
+	if (file_b < 0) {
+		free(filename);
+		close(file_a);
+		RLDEBUG("band_file_write:open exmod file b false\r\n");
+		return -1;
+	}
+
+	//check file point adr
+	file_offset = lseek(file_a, 0, SEEK_SET);
+	file_offset = lseek(file_b, 0, SEEK_SET);
+
+	//chose file
+	read_len = read(file_a, &file_code_a, sizeof(file_code_a));
+	if ((read_len != sizeof(file_code_a)) || (read_len < 0)) {
+		free(filename);
+		close(file_a);
+		return -1;
+	}
+	read_len = read(file_b, &file_code_b, sizeof(file_code_b));
+	if ((read_len != sizeof(file_code_b)) || (read_len < 0)) {
+		free(filename);
+		close(file_a);
+		close(file_b);
+		return -1;
+	}
+
+	if (file_code_a < file_code_b) {
+		file_code_cur = file_code_b;
+		file_cur = file_a;
+	} else {
+		file_code_cur = file_code_a;
+		file_cur = file_b;
+	}
+	//write
+	read_len = lseek(file_cur, 0, SEEK_SET);
+	if (0 > read_len) {
+		RLDEBUG("exmod_file_write:lseek exmod file false\r\n");
+		goto BAND_FILE_WRITE_ERR;
+	}
+
+	file_code_cur += 1;
+	read_len = write(file_cur, (const void*)&file_code_cur, sizeof(file_code_cur));
+
+
+	if (read_len < 0) {
+		RLDEBUG("exmod_file_write:write exmod file code false\r\n");
+		goto BAND_FILE_WRITE_ERR;
+	}
+
+	memset(file_buf, 0, sizeof(file_buf));
+	memcpy(file_buf, (void*)bp, sizeof(band_para));
+	err = file_encode(file_buf, sizeof(file_buf), sizeof(band_para));
+	if (err < 0) {
+		RLDEBUG("exmod_file_write:write exmod file code false\r\n");
+		goto BAND_FILE_WRITE_ERR;
+	}
+	read_len = write(file_cur, (const void*)file_buf, ((sizeof(band_para)) + MD5_CODE_SIZE));
+	if (read_len < 0) {
+		RLDEBUG("exmod_file_write:write exmod file false\r\n");
+		goto BAND_FILE_WRITE_ERR;
+	}
+
+	RLDEBUG("exmod_file_write:write_len=%d ,file_len=%d\r\n", read_len, ((sizeof(band_para) ) + MD5_CODE_SIZE));
+
+	read_len = fsync(file_cur);
+	if (read_len < 0)
+		RLDEBUG("exmod_file_write:fsync exmod file false\r\n");
+
+	free(filename);
+	close(file_a);
+	close(file_b);
+	//close(file_cur);
+	return 0;
+
+BAND_FILE_WRITE_ERR:
+	RLDEBUG("exmod_file_write:BAND_FILE_WRITE_ERR\r\n");
+	free(filename);
+	close(file_a);
+	close(file_b);
+	return -1;
+}
 
 /********************pcb***********************/
 s32 pcb_file_init(void)
@@ -748,9 +971,12 @@ s32 pcb_file_init(void)
 		memset(pcb_share.net.ip, 0, sizeof(pcb_share.net.ip));
 		memset(pcb_share.net.mask, 0, sizeof(pcb_share.net.mask));
 		memset(pcb_share.net.gateway, 0, sizeof(pcb_share.net.gateway));
-		memcpy(pcb_share.net.ip, "192.168.0.10", sizeof("192.168.0.10"));
-		memcpy(pcb_share.net.mask, "255.255.255.0", sizeof("255.255.255.0"));
-		memcpy(pcb_share.net.gateway, "192.168.0.1", sizeof("192.168.0.1"));
+
+		read_network_para(pcb_share.net.ip, pcb_share.net.mask, pcb_share.net.gateway);
+
+		if(strlen(pcb_share.net.ip) == 0) memcpy(pcb_share.net.ip, "192.168.0.10", sizeof("192.168.0.10"));
+		if(strlen(pcb_share.net.mask) == 0) memcpy(pcb_share.net.mask, "255.255.255.0", sizeof("255.255.255.0"));
+		if(strlen(pcb_share.net.gateway) == 0) memcpy(pcb_share.net.gateway, "192.168.0.1", sizeof("192.168.0.1"));
 
 		memcpy(file_buf, &(pcb_share), sizeof(pcb_share));
 
@@ -807,9 +1033,12 @@ s32 pcb_file_init(void)
 		memset(pcb_share.net.ip, 0, sizeof(pcb_share.net.ip));
 		memset(pcb_share.net.mask, 0, sizeof(pcb_share.net.mask));
 		memset(pcb_share.net.gateway, 0, sizeof(pcb_share.net.gateway));
-		memcpy(pcb_share.net.ip, "192.168.0.10", sizeof("192.168.0.10"));
-		memcpy(pcb_share.net.mask, "255.255.255.0", sizeof("255.255.255.0"));
-		memcpy(pcb_share.net.gateway, "192.168.0.1", sizeof("192.168.0.1"));
+
+		read_network_para(pcb_share.net.ip, pcb_share.net.mask, pcb_share.net.gateway);
+
+		if(strlen(pcb_share.net.ip) == 0) memcpy(pcb_share.net.ip, "192.168.0.10", sizeof("192.168.0.10"));
+		if(strlen(pcb_share.net.mask) == 0) memcpy(pcb_share.net.mask, "255.255.255.0", sizeof("255.255.255.0"));
+		if(strlen(pcb_share.net.gateway) == 0) memcpy(pcb_share.net.gateway, "192.168.0.1", sizeof("192.168.0.1"));
 
 		memcpy(file_buf, &(pcb_share), sizeof(pcb_share));
 
@@ -1173,7 +1402,7 @@ s8 dig_band0_tty_open(void)
 	s32 err;
 
 	dig_band0_tty_flag = 0;
-	err = open(DIG_TTY_NAME, O_RDWR | O_NOCTTY);
+	err = open(DIG_TTY_NAME, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (err < 0)
 		return -1;
 	else
@@ -1213,8 +1442,11 @@ s8 dig_band0_tty_send(s8 *src, u16 len)
 	}
 	/************************************************/
 #if 0
+	RLDEBUG("dig_band0_tty_send:data is:");
 	for (err = 0; err < len; err++)
-		RLDEBUG("dig_band0_tty_send:data is:%x  \r\n", (u8)(src[err]));
+		RLDEBUG("%x", (u8)(src[err]));
+
+	RLDEBUG("\r\n");
 #endif
 	/***************************************************/
 	if (1 != dig_band0_tty_flag) {
@@ -1441,9 +1673,9 @@ s8 led_alarm_control(int val)
 	return 0;
 }
 
-//==============================================================================//
+//=======================AD9370 配置==============================================//
 
-
+//通过IO通知FPGA，现在已经改成串口通信
 //ioctl cmd
 #define LED_IOC_MAGIC 'k' //majic
 //cmd
@@ -1578,7 +1810,7 @@ s8 DevFpgaWrite(u8 code, u8 dat)
 }
 
 
-//==============================================================================//
+//=========================外部告警输入=========================================//
 
 
 static int m_alarm_fd = 0;
@@ -1663,6 +1895,260 @@ s8 alarm_read()
 	}
 	return 0;
 }
+
+//===============================================================================//
+#define NETWORK_FILE "/datafile/network_config.cfg"
+#define FILE_BUF_SIZE 512
+static network_task_flag = 0;
+
+s8 read_one_line(char *des, char *src, char *seg)
+{
+	char *start=NULL, *end=NULL;
+
+	if(des == NULL || src == NULL || seg == NULL) return -1;
+
+	start = strstr(src, seg);
+	if(start == NULL){
+        printf("read_one_line: strstr fail.\n");
+        return -1;
+	}
+	start += strlen(seg);
+	end = strchr(start, '\n');
+	if(end == NULL){
+        printf("read_one_line: strchr fail.\n");
+        return -1;
+	}
+	memcpy(des, start, end-start);
+
+    return 0;
+}
+
+s8 read_network_para(char *ip, char *mask, char *gw)
+{
+	FILE* file_fd;
+	char *file_buf;
+	int ret;
+
+	if(ip == NULL || mask == NULL || gw == NULL) return -1;
+
+    file_fd = fopen((const char*)NETWORK_FILE, "r");
+    if (file_fd == NULL) {
+        printf("read_network_para: open file a false\r\n");
+        return -1;
+    }
+    file_buf = malloc(FILE_BUF_SIZE);
+    if(file_buf == NULL) {
+        printf("read_network_para: malloc fail\n");
+        fclose(file_fd);
+        return -1;
+    }
+	ret = fread(file_buf, 1, FILE_BUF_SIZE, file_fd);
+    if (ret <= 0)
+    {
+        printf("read_network_para: read fail.\n");
+        goto ERR_READ_NETWORK_PARA;
+    }
+
+	read_one_line(ip, file_buf, "address ");
+
+	read_one_line(mask, file_buf, "netmask ");
+
+	read_one_line(gw, file_buf, "gateway ");
+
+    free(file_buf);
+    fclose(file_fd);
+    return 0;
+ERR_READ_NETWORK_PARA:
+    free(file_buf);
+    fclose(file_fd);
+    return -1;
+}
+
+s8 System_Check(int result)
+{
+	if((-1 != result) && (WIFEXITED(result)) && (!(WEXITSTATUS(result))))
+		return 0;
+	else{
+		RLDEBUG("System_Check ERROR\n");
+		return -1;
+	}
+}
+
+char * write_one_line(char *des, char *src)
+{
+    unsigned int len;
+	
+    //RLDEBUG("%s\n", src);
+    len = strlen(src);
+    memcpy(des, src, len);
+    des += len;
+
+    return des;
+}
+
+int write_network_para_file(char *ip, char *mask, char *gw)
+{
+    FILE* file_fd;
+    int ret;
+    char *file_buf;
+    char *p;
+    char buff[30]={0};
+
+    file_fd = fopen((const char*)NETWORK_FILE, "w+");
+    if (file_fd == NULL) {
+        RLDEBUG("write_network_para_file: open file a false\r\n");
+        return -1;
+    }
+
+    file_buf = malloc(FILE_BUF_SIZE);
+    if(file_buf == NULL) {
+        RLDEBUG("write_network_para_file: malloc fail\n");
+        fclose(file_fd);
+        return -1;
+    }
+    memset(file_buf, 0, FILE_BUF_SIZE);
+
+    p = file_buf;
+
+    sprintf(buff, "auto eth0\n");
+    p = write_one_line(p, buff);
+
+    sprintf(buff, "iface eth0 inet static\n");
+    p = write_one_line(p, buff);
+
+    sprintf(buff, "address %s\n", ip);
+    p = write_one_line(p, buff);
+
+    sprintf(buff, "netmask %s\n", mask);
+    p = write_one_line(p, buff);
+
+    sprintf(buff, "gateway %s\n", gw);
+    p = write_one_line(p, buff);
+
+    fseek(file_fd, 0L, SEEK_SET);
+    ret = fwrite(file_buf, 1, strlen(file_buf), file_fd);
+    if (ret < 0)
+    {
+        free(file_buf);
+        fclose(file_fd);
+        RLDEBUG("write_network_para_file: write fail.\n");
+        return -1;
+    }
+    
+    free(file_buf);
+    fclose(file_fd);
+    return 0;
+}
+
+s8 local_network_config_fun(void)
+{
+	char strbuf[100] = {0};
+	int err;
+
+	sleep(1);
+
+	write_network_para_file(pcb_share.net.ip, pcb_share.net.mask, pcb_share.net.gateway);
+	system("sync");
+	sleep(1);
+
+	sprintf(strbuf, "ifconfig eth0 %s netmask %s", pcb_share.net.ip, pcb_share.net.mask);
+	err = system(strbuf);
+	if(System_Check(err)){
+		return -1;
+	}
+	sleep(1);
+
+	sprintf(strbuf, "route add default gw %s", pcb_share.net.gateway);
+	system(strbuf);
+	if(System_Check(err)){
+		return -1;
+	}
+	sleep(1);
+
+	system("/etc/init.d/networking restart");
+	if(System_Check(err)){
+		return -1;
+	}
+	sleep(1);
+
+	return 0;
+}
+
+void *local_network_task(void* arg)
+{
+	local_network_config_fun();
+	network_task_flag = 0;
+}
+
+s8 local_network_config(void)
+{
+	pthread_t local_network_ts_id;
+	pthread_attr_t local_network_ts_attr;
+	s32 err;
+	
+
+	if(!network_task_flag){
+		network_task_flag = 1;
+		pthread_attr_init(&local_network_ts_attr);
+		pthread_attr_setdetachstate(&local_network_ts_attr, PTHREAD_CREATE_DETACHED);
+		pthread_attr_setstacksize(&local_network_ts_attr, STACKSIZE);
+		err = pthread_create(&local_network_ts_id, &local_network_ts_attr, local_network_task, NULL);
+		if (err < 0) {
+			RLDEBUG("creat local_network_task false!\r\n");
+		}
+	}
+	//return local_network_config_fun();
+}
+
+//===============================================================================================
+s8 backup_data_para(void)
+{
+    char strbuf[100] = {0};
+	int err;
+
+	if(exmod_data_file_save()){
+		RLDEBUG("exmod data file save error!\r\n");
+		return -1;
+	}
+    sprintf(strbuf, "cd / && tar zcvf %s %s", para_file_bak_path, &para_file_path[1]);
+    system(strbuf);
+	if(System_Check(err)){
+		return -1;
+	}
+    system("sync");
+
+	return 0;
+}
+
+s8 recover_data_para(void)
+{
+    char strbuf[100] = {0};
+	int err;
+	u16 cnt;
+
+    sprintf(strbuf, "cd / && tar zxvf %s", para_file_bak_path);
+    system(strbuf);
+	if(System_Check(err)){
+		return -1;
+	}
+    system("sync");
+
+	if(exmod_data_file_read()){
+		RLDEBUG("exmod data file read error!\r\n");
+		return -1;
+	}
+
+	for (cnt = 0; cnt < MONITOR_MOD_NUM; cnt++) {
+		if ((0 < (exmod_para_a[cnt].md_adr_t.mod_type)) && \
+		    (0 < (exmod_para_a[cnt].md_adr_t.mod_band)) ) {
+				exmod_data_restore(&exmod_para_a[cnt].md_adr_t, cnt);
+		}
+	}
+	
+	return 0;
+}
+
+
 /************************monitor uart task**********************/
 
 /************************dig uart task**************************/

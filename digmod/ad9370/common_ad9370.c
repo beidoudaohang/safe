@@ -68,6 +68,11 @@ commonErr_t CMB_setSPIOptions(spiSettings_t *spiSettings)
 commonErr_t CMB_setSPIChannel(u16 chipSelectIndex )
 {
     /* 0 = all chip selects de-asserted */
+    if(chipSelectIndex>0)
+        chipSelectIndex--;
+    else
+        return COMMONERR_FAILED;
+    
     _chipSelectIndex = (u8)chipSelectIndex;
 
     return(COMMONERR_OK);

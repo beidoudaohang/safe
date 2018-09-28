@@ -2136,35 +2136,35 @@ const dig_para_item dig_para_table_set[] =
 		.adr = DIG_ADR_BYTE_0,
 		.len = DIG_LEN_S8, //DIG_LEN_S16 @ccTag20170731
 		.pdatadeal = NULL
-	},
+	},*/
 	{
 		.key = 0xe1,
-		.pdat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.freq_rx),
+		.pdat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.ul),
 		.adr = DIG_ADR_BYTE_0,
 		.len = DIG_LEN_U32,
 		.pdatadeal = f32tou32
 	},
 	{
 		.key = 0xe2,
-		.pdat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.freq_tx),
+		.pdat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.dl),
 		.adr = DIG_ADR_BYTE_0,
 		.len = DIG_LEN_U32,
 		.pdatadeal = f32tou32
 	},
 	{
 		.key = 0xe3,
-		.pdat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_dl.freq_rx),
+		.pdat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.dl),
 		.adr = DIG_ADR_BYTE_0,
 		.len = DIG_LEN_U32,
 		.pdatadeal = f32tou32
 	},
 	{
 		.key = 0xe4,
-		.pdat = (void*) & (band_dynamic_para_a[0].adi_regulator_cur_ul.freq_tx),
+		.pdat = (void*) & (band_para_a[0].md_sundry.dig_sundry.center_freq.ul),
 		.adr = DIG_ADR_BYTE_0,
 		.len = DIG_LEN_U32,
 		.pdatadeal = f32tou32
-	}, */
+	}, 
 	{
 		.key = 0xe5,
 		.pdat = (void*) & (band_para_a[0].ch_info_t.uldl_mix_th[0]),

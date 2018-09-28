@@ -29,8 +29,8 @@ pthread_attr_t alarm_ts_attr;
 u8 alarm_send_flag = 0;
 
 /****************************funs************************************/
-//#define ALARM_SW(A)	((0x01&(A))&&(0x02&(A)))
-#define ALARM_SW(A)	((0x01&(A)))
+#define ALARM_SW(A)	((0x01&(A))&&(0x02&(A)))
+//#define ALARM_SW(A)	((0x01&(A)))
 
 /*告警搜集*/
 void alarm_collect(void)
@@ -709,10 +709,14 @@ void exmod_alarm_census(void)
 				}
 			}
 		}
-		//隔离度告警
+		//隔离度告警  
+		//盛华功放的自激告警过程中，偶尔会读到没有告警
+		static u8 iso_alarm_cnt = 0; //告警恢复统计
 		if (exmod_dynamic_para_a[md_index].alarm.iso_alarm) {
-			if (!exmod_alarm_a[md_index].m_alarm.iso_alarm && (exmod_alarm_a[md_index].m_alarm_cnt.iso_alarm > ALARM_CENSUS_TIME) && ALARM_SW(exmod_para_a[md_index].alarm_sw.iso_alarm)) {
+			iso_alarm_cnt = 0;
+			if (!exmod_alarm_a[md_index].m_alarm.iso_alarm && (exmod_alarm_a[md_index].m_alarm_cnt.iso_alarm > 3) && ALARM_SW(exmod_para_a[md_index].alarm_sw.iso_alarm)) {
 				exmod_alarm_a[md_index].m_alarm.iso_alarm = 1;
+				exmod_alarm_a[md_index].m_alarm_cnt.iso_alarm = 0;
 				alarm_send_flag = TRUE;
 				snmp_msg_send(MIB_ALARM_ISOLATION, 1);
 			} else if (ALARM_SW(exmod_para_a[md_index].alarm_sw.iso_alarm)) {
@@ -722,8 +726,9 @@ void exmod_alarm_census(void)
 				exmod_alarm_a[md_index].m_alarm.iso_alarm = 0;
 			}
 		} else if (exmod_dynamic_para_a[md_index].alarm.iso_alarm == 0) {
-			if (exmod_alarm_a[md_index].m_alarm.iso_alarm) {
+			if (exmod_alarm_a[md_index].m_alarm.iso_alarm && iso_alarm_cnt++ > 3) {
 				exmod_alarm_a[md_index].m_alarm_cnt.iso_alarm = 0;
+				iso_alarm_cnt = 0;
 				exmod_alarm_a[md_index].m_alarm.iso_alarm = 0;
 				alarm_send_flag = TRUE;
 				snmp_msg_send(MIB_ALARM_ISOLATION, 0);

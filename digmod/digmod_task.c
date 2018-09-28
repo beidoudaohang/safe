@@ -22,65 +22,64 @@ pthread_attr_t digmod_attr;
 
 s32 fpga_load()
 {
-    //TODO: FPGA Load
-    return 0;
+	//TODO: FPGA Load
+	return 0;
 }
 
 s32 fpga_config()
 {
-    //TODO: FPGA Config
-    return 0;
+	//TODO: FPGA Config
+	return 0;
 }
 
 s32 fpga_monitor()
 {
-    //TODO: FPGA Monitor
-    return 0;
+	//TODO: FPGA Monitor
+	return 0;
 }
 
 s32 dig_temp_monitor()
 {
-    //TODO: temp monitor
+	//TODO: temp monitor
 
-    //get temp val
+	//get temp val
 
-    //cheak temp 
+	//cheak temp 
 
 
-    return 0;
+	return 0;
 }
 
 s32 dig_alarm_deal()
 {
-    //TODO: alarm deal
-    return 0;
+	//TODO: alarm deal
+	return 0;
 }
 
 
 
 void *digmod_thread(void *arg)
 {
-    s32 err;
-    
-    // RLDEBUG("start digmod thread...\r\n"); 
+	s32 err;
+	
+	// RLDEBUG("start digmod thread...\r\n"); 
 
 /*     while(fpga_load()){
-        RLDEBUG("fpga load fail!");
-    }
+		RLDEBUG("fpga load fail!");
+	}
 
-    while(fpga_config()){
-        RLDEBUG("fpga config fail!");
-    }
+	while(fpga_config()){
+		RLDEBUG("fpga config fail!");
+	}
 
-    while(fpga_monitor()){
-        RLDEBUG("fpga monitor fail!");
-    } */
+	while(fpga_monitor()){
+		RLDEBUG("fpga monitor fail!");
+	} */
 
-    if(ad9528_config()){
-        RLDEBUG("ad9528 config fail!");
-    }
-    timedelay(0, 10, 0, 0);
-
+	if(ad9528_config()){
+		RLDEBUG("ad9528 config fail!");
+	}
+	timedelay(0, 10, 0, 0);
 
 	//RLDEBUG("dig band0 task start!\r\n");
 	dig_band0_init();
@@ -100,25 +99,32 @@ BAND0_READ_FPGA_SV:
 		RLDEBUG("band0_task:sv is:%x \r\n", band_dynamic_para_a[0].md_dynamic_sundry.dig_dynamic_sundry.sv);
 	}
 
-	//dig_read_deal();
-	// dig_para_set_again(); //ad80305相关
+	
+	dig_para_set_again(); //ad80305相关
 
-    if(ad9370_config()){
-        RLDEBUG("ad9370 config fail!");
-    }
+	if(ad9370_config()){
+		RLDEBUG("ad9370 config failed!");
+	}
+
+	dig_read_deal();
 
 	err = 0;
 
-    while(1){
-        timedelay(0, 0, 100, 0);
+	while(1){
+		timedelay(0, 0, 100, 0);
 
-        // dig_temp_monitor();
+		// dig_temp_monitor();
 
-        // dig_alarm_deal();
+		// dig_alarm_deal();
 
 		// dig_gain_processing(&(band_para_a[0].md_adr_t));
 		dig_band0_handle();
+		//RLDEBUG("band_dynamic_para_a[0].ch_rf_t.feature[0].data:%x\n", band_dynamic_para_a[0].ch_rf_t.feature[0].data);
 
-    }
+		if(band_dynamic_para_a[0].alarm.fpga_uart){
+			dig_para_set_again();
+			//band_dynamic_para_a[0].alarm.fpga_uart = 0;
+		}
+	}
 
 }

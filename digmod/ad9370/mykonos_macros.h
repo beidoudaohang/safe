@@ -1,8 +1,6 @@
 /**
  * \file mykonos_macros.h
  * \brief Contains address and miscellaneous macro definitions for Mykonos API
- *
- * Mykonos API version: 1.3.0.3528
  */
 
 #ifndef CLEMENTE_TDD_MACROS_H
@@ -15,13 +13,6 @@ extern "C" {
 #define MYKONOS_ADDR_CONFIGURATION_CONTROL_0                0x000
 #define MYKONOS_ADDR_SPI_CONFIGURATION_CONTROL_1            0x001
 #define MYKONOS_ADDR_PRODUCT_ID                             0x004
-#define MYKONOS_GPIO_DRV_CTL_0                              0x020
-#define MYKONOS_GPIO_DRV_CTL_1                              0x021
-#define MYKONOS_GPIO_SLEW_CTL_0                             0x022
-#define MYKONOS_GPIO_SLEW_CTL_1                             0x023
-#define MYKONOS_GPIO_SLEW_CTL_2                             0x024
-#define MYKONOS_GPIO_SLEW_CTL_3                             0x025
-
 #define MYKONOS_ADDR_DIGITAL_IO_CONTROL                     0x028
 
 #define MYKONOS_ADDR_SYSREF_PAD_CONFIG                      0x040
@@ -188,14 +179,6 @@ extern "C" {
 #define MYKONOS_ADDR_CLK_SYNTH_VCO_VAR_CTL1                 0x15E
 #define MYKONOS_ADDR_CLK_SYNTH_VCO_VAR_CTL2                 0x15F
 
-/* DPD Registers */
-#define MYKONOS_ADDR_TX1_DPD_RMS_INDIRECT_PTR               0x168
-#define MYKONOS_ADDR_TX2_DPD_RMS_INDIRECT_PTR               0x16C
-#define MYKONOS_ADDR_TX1_DPD_MODEL_INDIRECT_PTR             0x178
-#define MYKONOS_ADDR_TX2_DPD_MODEL_INDIRECT_PTR             0x17C
-#define MYKONOS_ADDR_DPD_RMS_BUF_SIZE                       0x180
-#define MYKONOS_ADDR_DPD_MODEL_BUF_SIZE                     0x182
-
 /* Rx NCO Control registers */
 #define MYKONOS_ADDR_CALPLL_SDM_CONTROL                     0x17F
 #define MYKONOS_ADDR_RX_NCO_CONTROL                         0x190
@@ -229,11 +212,6 @@ extern "C" {
 #define MYKONOS_ADDR_RX_FILTER_CONFIGURATION                0x410
 #define MYKONOS_ADDR_RX_FILTER_GAIN                         0x411
 #define MYKONOS_ADDR_DPD_SNIFFER_RX_FILTER_GAIN             0x412
-
-/* Mykonos Temperature Gain Compensation Registers */
-#define MYKONOS_ADDR_RX1_TEMP_GAIN_COMP                     0x420
-#define MYKONOS_ADDR_RX2_TEMP_GAIN_COMP                     0x421
-#define MYKONOS_ADDR_OBS_TEMP_GAIN_COMP                     0x422
 
 /* Mykonos AGC General Registers */
 #define MYKONOS_ADDR_AGC_CFG_1                              0x42E
@@ -430,9 +408,6 @@ extern "C" {
 #define MYKONOS_ADDR_RX2_GAIN_COMP_OFFSET                   0x712
 #define MYKONOS_ADDR_RX_GAIN_COMP_CFG                       0x713
 #define MYKONOS_ADDR_RX_SLCR_PIN_CFG                        0x714
-#define MYKONOS_ADDR_DPD_SNF_RX_GAIN_COMP_DELAY             0x715
-#define MYKONOS_ADDR_DPD_SNF_RX_GAIN_COMP_OFFSET            0x716
-#define MYKONOS_ADDR_DPD_SNF_RX_GAIN_COMP_CFG               0x717
 #define MYKONOS_ADDR_DPD_SNF_RX_SLCR_PIN_CFG                0x718
 
 #define MYKONOS_ADDR_FLOATING_POINT_CFG                     0x750
@@ -518,13 +493,6 @@ extern "C" {
 #define MYKONOS_ADDR_AUX_ADC_READ_LSB                       0xBC3
 #define MYKONOS_ADDR_AUX_ADC_SEL                            0xBC4
 #define MYKONOS_ADDR_AUX_ADC_BUFFER_CONFIG_0                0xBC5
-#define MYKONOS_ADDR_AUX_ADC_BUFFER_CONFIG_1                0xBC6
-
-#define MYKONOS_ADDR_TEMP_SENSOR_OFFSET                     0xBE0
-#define MYKONOS_ADDR_TEMP_SENSOR_CONTROL_LSB                0xBE1
-#define MYKONOS_ADDR_TEMP_SENSOR_CONTROL_MSB                0xBE2
-#define MYKONOS_ADDR_TEMP_SENSOR_READ                       0xBE3
-#define MYKONOS_ADDR_TEMP_SENSOR_CONFIG                     0xBE4
 
 #define MYKONOS_ADDR_DIGITAL_TEST_BYTE_0                    0xC40
 
@@ -635,23 +603,10 @@ extern "C" {
 #define MYKONOS_ARM_GET_OPCODE                              0x0C
 
 #define MYKONOS_ARM_OBJECTID_DPDINIT_CONFIG                 0x0F
-#define MYKONOS_ARM_OBJECTID_CLGCINIT_CONFIG                0x10
-#define MYKONOS_ARM_OBJECTID_VSWRINIT_CONFIG                0x11
 #define MYKONOS_ARM_OBJECTID_DPDCONFIG                      0x24
-#define MYKONOS_ARM_DPD_INIT_MODEL                          0x02
-#define MYKONOS_ARM_OBJECTID_GS_TRACKCALS                   0x66
-#define MYKONOS_ARM_OBJECTID_RXQEC_TRACKING                 0x20
-#define MYKONOS_ARM_OBJECTID_ORXQEC_TRACKING                0x21
-#define MYKONOS_ARM_OBJECTID_TXLOL_TRACKING                 0x22
-#define MYKONOS_ARM_OBJECTID_TXQEC_TRACKING                 0x23
-#define MYKONOS_ARM_OBJECTID_CLGCCONFIG                     0x25
-#define MYKONOS_ARM_OBJECTID_VSWRCONFIG                     0x26
 #define MYKONOS_ARM_OBJECTID_CAL_STATUS                     0x42
 #define MYKONOS_ARM_OBJECTID_INIT_CAL_DONE                  0x43
 #define MYKONOS_ARM_OBJECTID_ORX_MODE                       0x61
-#define MYKONOS_ARM_OBJECTID_TRACKING_CAL_SUSPEND_RESUME    0x65
-#define MYKONOS_ARM_OBJECTID_TRACKING_CAL_CONTROL           0x66
-#define MYKONOS_ARM_OBJECTID_TRACKING_CAL_PENDING           0x67
 #define MYKONOS_ARM_OBJECTID_RADIO_CONTROL                  0x81
 #define MYKONOS_ARM_OBJECTID_CALSCHEDULER                   0x83
 
@@ -672,11 +627,6 @@ extern "C" {
 #define ORX2_ENABLE_ACK_SIGNALID  0x09
 #define SRX_ENABLE_ACK_SIGNALID   0x0A
 #define TX_OBS_SELECT_SIGNALID    0x0B
-
-#define DISABLE_DPD_ACTUATOR      0x03
-#define ENABLE_DPD_ACTUATOR       0x04
-#define SET_CLGC_DESIRED_GAIN_1   0x05
-#define SET_CLGC_DESIRED_GAIN_2   0x06
 
 #ifdef __cplusplus
 }
