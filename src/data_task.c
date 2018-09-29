@@ -89,6 +89,7 @@ s32 data_init(void)
 		return -1;
 	}
 
+	read_network_para(pcb_share.net.ip, pcb_share.net.mask, pcb_share.net.gateway);
 
 	//check module adr
 	if (MOD_TYPE_MONITOR != (unit_para_t.md_adr_t.mod_type)) {

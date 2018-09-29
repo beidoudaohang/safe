@@ -43,11 +43,12 @@ static const s8 unit_file_name_b[] = {"/datafile/unitb"};
 static const s8 band_file_name_a[MOD_NUM_IN_ONE_PCB][20] = {"/datafile/band0a","/datafile/band1a","/datafile/band2a"};
 static const s8 band_file_name_b[MOD_NUM_IN_ONE_PCB][20] = {"/datafile/band0b","/datafile/band1b","/datafile/band2b"};
 
-static const s8 pcb_file_name_a[] = {"/datafile/pcba"};
-static const s8 pcb_file_name_b[] = {"/datafile/pcbb"};
-
 static const s8 exmod_file_name_a[] = {"/datafile/exmoda"};
 static const s8 exmod_file_name_b[] = {"/datafile/exmodb"};
+
+static const s8 secret_file_path[] = {"/secret"};
+static const s8 pcb_file_name_a[] = {"/secret/pcba"};
+static const s8 pcb_file_name_b[] = {"/secret/pcbb"};
 
 static s8 file_buf[MAX(sizeof(unit_para), (MD5_CODE_SIZE + 32 +  sizeof(band_para)))] = {0};
 
@@ -499,6 +500,101 @@ s32 band_file_init(void)
 
 	return 0;
 }
+
+s32 exmod_file_init(u8 mod_index)
+{
+	s32 err;
+	s32 len;
+	u32 filecode = 0;
+	s32 filenode;
+	char *filename = NULL;
+	//test path
+	err = access((const char*)para_file_path, F_OK);
+	if (err < 0) {
+		RLDEBUG("para path is inavilable\r\n");
+		err = mkdir((const char*)para_file_path, S_IRWXU | S_IRGRP | S_IWGRP);
+		if (err < 0)
+		{
+			RLDEBUG("mkdir para path err\r\n");
+			return -1;
+		}
+	}
+
+	filename = malloc(sizeof(exmod_file_name_a) + 4);
+	if(filename == NULL) {
+        printf("exmod_file_read: malloc fail\n");
+        return -1;
+    }
+	memset(filename, 0, sizeof(exmod_file_name_a) + 4);
+	sprintf(filename, "%s%d", exmod_file_name_a, mod_index);
+
+	//exmod file a
+	err = access((const char*)filename, F_OK);
+	if (err < 0) {
+		filenode = open((const char*)filename, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+		if (filenode < 0) {
+			free(filename);
+			return -1;
+		}
+
+		err = write(filenode, &filecode, sizeof(filecode));
+		if (err < 0) {
+			free(filename);
+			close(filenode);
+			return -1;
+		}
+		memset(file_buf, 0, sizeof(file_buf));
+		err = file_encode(file_buf, sizeof(file_buf), sizeof(band_para));
+		if (err < 0) {
+			free(filename);
+			close(filenode);
+			return -1;
+		}
+		err = write(filenode, file_buf, (sizeof(band_para) + MD5_CODE_SIZE));
+		if ((err < 0) || (err < (s32)sizeof(unit_para))) {
+			free(filename);
+			close(filenode);
+			return -1;
+		}
+		close(filenode);
+	}
+
+	sprintf(filename, "%s%d", exmod_file_name_b, mod_index);
+	//exmod file b
+	err = access((const char*)filename, F_OK);
+	if (err < 0) {
+		filenode = open((const char*)filename, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+		if (filenode < 0) {
+			free(filename);
+			return -1;
+		}
+
+		err = write(filenode, &filecode, sizeof(filecode));
+		if (err < 0) {
+			free(filename);
+			close(filenode);
+			return -1;
+		}
+		memset(file_buf, 0, sizeof(file_buf));
+		err = file_encode(file_buf, sizeof(file_buf), sizeof(band_para));
+		if (err < 0) {
+			free(filename);
+			close(filenode);
+			return -1;
+		}
+		err = write(filenode, file_buf, (sizeof(band_para) + MD5_CODE_SIZE));
+		if ((err < 0) || (err < (s32)sizeof(unit_para))) {
+			free(filename);
+			close(filenode);
+			return -1;
+		}
+		close(filenode);
+	}
+
+	free(filename);
+	return 0;
+}
+
 s32 band_file_read(band_para *bp, u8 mod_index)
 {
 	s32 err;
@@ -713,14 +809,16 @@ s32 exmod_file_read(band_para *bp, u8 mod_index)
     }
 	memset(filename, 0, sizeof(exmod_file_name_a) + 4);
 	sprintf(filename, "%s%d", exmod_file_name_a, mod_index);
-	file_a = open((const char*)band_file_name_a[mod_index], O_RDONLY);
+	file_a = open((const char*)filename, O_RDONLY);
 	if (file_a < 0){
+		printf("exmod_file_read: open file a fail\n");
 		free(filename);
 		return -1;
 	}
 	sprintf(filename, "%s%d", exmod_file_name_b, mod_index);
-	file_b = open((const char*)band_file_name_b[mod_index], O_RDONLY);
+	file_b = open((const char*)filename, O_RDONLY);
 	if (file_b < 0) {
+		printf("exmod_file_read: open file b fail\n");
 		free(filename);
 		close(file_a);
 		return -1;
@@ -729,6 +827,7 @@ s32 exmod_file_read(band_para *bp, u8 mod_index)
 	//chose file
 	read_len = read(file_a, &file_code_a, sizeof(file_code_b));
 	if ((read_len != sizeof(file_code_a)) || (read_len < 0)) {
+		printf("exmod_file_read: file_code_a fail\n");
 		free(filename);
 		close(file_a);
 		return -1;
@@ -736,6 +835,7 @@ s32 exmod_file_read(band_para *bp, u8 mod_index)
 
 	read_len = read(file_b, &file_code_b, sizeof(file_code_b));
 	if ((read_len != sizeof(file_code_b)) || (read_len < 0)) {
+		printf("exmod_file_read: file_code_b fail\n");
 		free(filename);
 		close(file_a);
 		close(file_b);
@@ -761,13 +861,13 @@ BAND_FILE_READ_TRY:
 	read_len = read(file_cur, file_buf, (sizeof(band_para) + MD5_CODE_SIZE));
 	if ((read_len < 0) /*|| (read_len != (sizeof(band_para) + MD5_CODE_SIZE))*/) {
 		//close(file_cur);
-		RLDEBUG("band_file_read:read band file false\r\n");
-		RLDEBUG("band_file_read: source len is:%d \r\n", (sizeof(band_para)));
-		RLDEBUG("band_file_read: read len is:%d \r\n", (read_len));
+		RLDEBUG("exmod_file_read:read exmod file false\r\n");
+		RLDEBUG("exmod_file_read: source len is:%d \r\n", (sizeof(band_para)));
+		RLDEBUG("exmod_file_read: read len is:%d \r\n", (read_len));
 	}
 	err = file_decode(file_buf, sizeof(file_buf), read_len - MD5_CODE_SIZE);
 	if (err < 0) {
-		RLDEBUG("band_file_read:newer band file err: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) , read_len, read_len - MD5_CODE_SIZE);
+		RLDEBUG("exmod_file_read:newer exmod file err: band_para size=%d,read_len=%d,read_len-md5=%d \r\n", sizeof(band_para) , read_len, read_len - MD5_CODE_SIZE);
 		if (file_cur == file_a) {
 			file_cur = file_b;
 		} else if (file_cur == file_b) {
@@ -794,7 +894,7 @@ BAND_FILE_READ_TRY:
 	return 0;
 
 BAND_FILE_READ_ERR:
-	RLDEBUG("band_file_read:BAND_FILE_READ_ERR RUN\r\n");
+	RLDEBUG("exmod_file_read:EXMOD_FILE_READ_ERR RUN\r\n");
 	free(filename);
 	close(file_a);
 	close(file_b);
@@ -813,7 +913,7 @@ s32 exmod_file_write(band_para *bp, u8 mod_index)
 	if (NULL == bp)
 		return -1;
 
-	
+	exmod_file_init(mod_index);
 	//open file
 	filename = malloc(sizeof(exmod_file_name_a) + 4);
 	if(filename == NULL) {
@@ -905,7 +1005,7 @@ s32 exmod_file_write(band_para *bp, u8 mod_index)
 	return 0;
 
 BAND_FILE_WRITE_ERR:
-	RLDEBUG("exmod_file_write:BAND_FILE_WRITE_ERR\r\n");
+	RLDEBUG("exmod_file_write:EXMOD_FILE_WRITE_ERR\r\n");
 	free(filename);
 	close(file_a);
 	close(file_b);
@@ -921,13 +1021,13 @@ s32 pcb_file_init(void)
 	s32 filenode;
 
 	//test path
-	err = access((const char*)para_file_path, F_OK);
+	err = access((const char*)secret_file_path, F_OK);
 	if (err < 0) {
-		RLDEBUG("para path is inavilable\r\n");
-		err = mkdir((const char*)para_file_path, S_IRWXU | S_IRGRP | S_IWGRP);
+		RLDEBUG("secret path is inavilable\r\n");
+		err = mkdir((const char*)secret_file_path, S_IRWXU | S_IRGRP | S_IWGRP);
 		if (err < 0)
 		{
-			RLDEBUG("mkdir para path err\r\n");
+			RLDEBUG("mkdir secret path err\r\n");
 			return -1;
 		}
 	}
@@ -1897,7 +1997,7 @@ s8 alarm_read()
 }
 
 //===============================================================================//
-#define NETWORK_FILE "/datafile/network_config.cfg"
+#define NETWORK_FILE "/etc/network/network_config.cfg"
 #define FILE_BUF_SIZE 512
 static network_task_flag = 0;
 
@@ -1919,7 +2019,8 @@ s8 read_one_line(char *des, char *src, char *seg)
         return -1;
 	}
 	memcpy(des, start, end-start);
-
+	des += (end-start);
+	*des = '\0';
     return 0;
 }
 
@@ -1964,12 +2065,12 @@ ERR_READ_NETWORK_PARA:
     return -1;
 }
 
-s8 System_Check(int result)
+s8 system_check(int result)
 {
 	if((-1 != result) && (WIFEXITED(result)) && (!(WEXITSTATUS(result))))
 		return 0;
 	else{
-		RLDEBUG("System_Check ERROR\n");
+		RLDEBUG("system_check ERROR\n");
 		return -1;
 	}
 }
@@ -2053,20 +2154,20 @@ s8 local_network_config_fun(void)
 
 	sprintf(strbuf, "ifconfig eth0 %s netmask %s", pcb_share.net.ip, pcb_share.net.mask);
 	err = system(strbuf);
-	if(System_Check(err)){
+	if(system_check(err)){
 		return -1;
 	}
 	sleep(1);
 
 	sprintf(strbuf, "route add default gw %s", pcb_share.net.gateway);
-	system(strbuf);
-	if(System_Check(err)){
+	err = system(strbuf);
+	if(system_check(err)){
 		return -1;
 	}
 	sleep(1);
 
-	system("/etc/init.d/networking restart");
-	if(System_Check(err)){
+	err = system("/etc/init.d/networking restart");
+	if(system_check(err)){
 		return -1;
 	}
 	sleep(1);
@@ -2111,27 +2212,61 @@ s8 backup_data_para(void)
 		return -1;
 	}
     sprintf(strbuf, "cd / && tar zcvf %s %s", para_file_bak_path, &para_file_path[1]);
-    system(strbuf);
-	if(System_Check(err)){
+    err = system(strbuf);
+	if(system_check(err)){
 		return -1;
 	}
     system("sync");
 
 	return 0;
 }
+s8 check_recover_file(void)
+{
+	int err;
+	err = access((const char*)para_file_bak_path, F_OK);
+	if(err < 0){
+		RLDEBUG("Lack of backup files!\n");
+		return -1;
+	}
 
+	return 0;
+}
 s8 recover_data_para(void)
 {
     char strbuf[100] = {0};
 	int err;
 	u16 cnt;
 
+	err = access((const char*)para_file_bak_path, F_OK);
+	if(err < 0){
+		RLDEBUG("Lack of backup files!\n");
+		return -1;
+	}
     sprintf(strbuf, "cd / && tar zxvf %s", para_file_bak_path);
-    system(strbuf);
-	if(System_Check(err)){
+    err = system(strbuf);
+	if(system_check(err)){
 		return -1;
 	}
     system("sync");
+
+	err = unit_file_read(&unit_para_t);
+	if (err < 0) {
+		RLDEBUG("read unit para false!\r\n");
+		return -1;
+	}
+
+	for (cnt=0; cnt<MOD_NUM_IN_ONE_PCB; cnt++){
+		err = band_file_read((band_para*)&band_para_a[cnt], cnt);
+		if (err < 0) {
+			RLDEBUG("read band para false!\r\n");
+			return -1;
+		}
+	}
+	err = pcb_file_read((pcb_share_para*)&pcb_share);
+	if (err < 0) {
+		RLDEBUG("read pcb para false!\r\n");
+		return -1;
+	}
 
 	if(exmod_data_file_read()){
 		RLDEBUG("exmod data file read error!\r\n");

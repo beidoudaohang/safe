@@ -9,7 +9,7 @@
 //#define SETTIME       180          /*设置延时时间*/
 
 #define GETTIME       250
-#define SETTIME       300          /*设置延时时间*/
+#define SETTIME       310          /*设置延时时间*/
 
 #define POLLSKIP      2            /*轮询间隔*/
 #define SPECSKIP      1            /*特殊事件间隔*/
@@ -121,7 +121,7 @@ typedef struct {
 *设置命令总结构,使用信号量传递
 */
 typedef struct {
-    _SET_STRUCT SET_STRUCT[5];       /*设置命令结构*/
+    _SET_STRUCT SET_STRUCT[20];       /*设置命令结构*/
     sem_t SetSem;                   /*设置命令信号量*/
     u8          SetSemFlag ;      /*设置命令标志*/
 } _SET_MOD_SEM;

@@ -28,4 +28,7 @@ void ieee754tof64(const u64 src, f64 *dest);
 s32 md_adr_to_index(md_adr_info *md_adr);
 s32 tech_to_tech_index(md_adr_info *md_adr, u8 tech);
 s32 reset_auto_manual_scan_flag(md_adr_info *md_adr);
+s32 ipv4_address_check(const char *str);
+s32 ipv4_mask_check(char* subnet);
+
 #endif //COMMON_API_H_

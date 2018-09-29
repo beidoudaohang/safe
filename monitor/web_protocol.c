@@ -542,7 +542,7 @@ void client_deal(fd_set rset, fd_set mainset, u16 ready)
 				hexdata_debug((s8*)&web_msg_send.data, cnt);
 				
 				if((sendbytes = send(client_fd, (void *)&web_msg_send.data, cnt, 0)) == -1){
-					RLDEBUG("send error ");
+					RLDEBUG("send error \n");
 					continue;
 				}
 				
@@ -576,7 +576,7 @@ void *local_web_thread(void *arg)
 		rset = mainset;
 		ready = select(maxfd+1, &rset, NULL, NULL, NULL);
 		if(ready == -1){
-			RLDEBUG("select error");
+			RLDEBUG("select error \n");
 			continue;
 		}
 

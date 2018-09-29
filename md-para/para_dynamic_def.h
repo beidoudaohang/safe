@@ -82,6 +82,7 @@ typedef struct {
 	fan_check fan;		//FAN_STATUS /*风扇状态*/
 	unit_alarm alarm;
 	u8 band_current; //表示当前操作的band  0-11
+	u8 recovery_flag;
 } unit_dynamic_para;
 
 /*****************************************模块动态信息****************************/

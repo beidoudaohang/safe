@@ -95,6 +95,8 @@ static s16 check_power_calibration_power(void* local, void* remote, md_adr_info 
 static s16 check_ch_bandwidth(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_dig_pa_sw(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_manual_cellid(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
+static s16 check_lan_ip(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
+static s16 check_lan_mask(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_lan_gateway(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_backup_data(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
 static s16 check_recover_data(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag);
@@ -3017,7 +3019,7 @@ const para_table u_para_table_a[] =
 				.md_adr = &(unit_para_t.md_adr_t),
 				.link_para_t = {
 					.para_type_t = {PARA_TYPE_STRING},
-					.len = 8,
+					.len = 20,
 					.dat = (void*) & (pcb_share.usr.usr[3].pass),
 					.dat_size = sizeof(pcb_share_para),
 					.min = {
@@ -3040,13 +3042,13 @@ const para_table u_para_table_a[] =
 				.link_para_t = {
 					.para_type_t = {PARA_TYPE_U8},
 					.len = 1,
-					.dat = NULL,
+					.dat = (void*) & unit_dynamic_para_t.recovery_flag,
 					.dat_size = sizeof(unit_para),
 					.min = {
 						.s8l = 0,
 					},
 					.max = {
-						.s8l = 1,
+						.s8l = 2,
 					},
 					.paradeal = check_recover_data,
 				},
@@ -13180,7 +13182,7 @@ static s16 check_manual_cellid(void* local, void* remote, md_adr_info *md_adr, u
 }
 static s16 check_lan_ip(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
 {
-	printf("check_lan_ip() start \r\n");
+	// printf("check_lan_ip() start \r\n");
 
 	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
 		return -1;
@@ -13188,8 +13190,35 @@ static s16 check_lan_ip(void* local, void* remote, md_adr_info *md_adr, u8 dig_a
 	dig_adr = dig_adr;
 
 	if (PARA_RW == flag) {
-		memcpy((void*)local, (void*)remote, 25);
-		local_network_config();
+		if(ipv4_address_check(remote)){
+			memcpy((void*)local, (void*)remote, 25);
+		}else{
+			return -1;
+		}
+
+	} else if (PARA_RD == flag) {
+		memcpy((void*)remote, (void*)local, 25);
+
+	} else {
+		return -1;
+	}
+
+	return 0;
+}
+static s16 check_lan_mask(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
+{
+	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
+		return -1;
+
+	dig_adr = dig_adr;
+
+	if (PARA_RW == flag) {
+		if(ipv4_mask_check(remote)){
+			memcpy((void*)local, (void*)remote, 25);
+		}else{
+			return -1;
+		}
+
 	} else if (PARA_RD == flag) {
 		memcpy((void*)remote, (void*)local, 25);
 
@@ -13207,8 +13236,16 @@ static s16 check_lan_gateway(void* local, void* remote, md_adr_info *md_adr, u8 
 	dig_adr = dig_adr;
 
 	if (PARA_RW == flag) {
-		memcpy(local, remote, 25);
-		local_network_config();
+		if(ipv4_address_check(remote)){
+			memcpy(local, remote, 25);
+			if(ipv4_address_check(pcb_share.net.ip) && ipv4_mask_check(pcb_share.net.mask)){
+				local_network_config();
+			}else{
+				return -1;
+			}
+		}else{
+			return -1;
+		}
 	} else if (PARA_RD == flag) {
 		memcpy(remote, local, 25);
 	} else {
@@ -13226,7 +13263,7 @@ static s16 check_backup_data(void* local, void* remote, md_adr_info *md_adr, u8 
 	dig_adr = dig_adr;
 
 	if (PARA_RW == flag) {
-		if(memcmp(local, remote, 20)){
+		if(strlen(local) != strlen(remote) || memcmp(local, remote, 20)){
 			return -1;
 		}
 		return backup_data_para();
@@ -13238,17 +13275,25 @@ static s16 check_backup_data(void* local, void* remote, md_adr_info *md_adr, u8 
 }
 static s16 check_recover_data(void* local, void* remote, md_adr_info *md_adr, u8 dig_adr, u8 flag)
 {
+	s8 err;
+
 	if ((NULL == local) || (NULL == remote) || (NULL == md_adr))
 		return -1;
 
 	dig_adr = dig_adr;
 
 	if (PARA_RW == flag) {
-		if(*(u8*)remote == 1)
-			return recover_data_para();
-		else{
+		if(*(u8*)remote == 1){
+			if(check_recover_file()) return -1;
+			
+			*(u8*)local = *(u8*)remote;
+			err = recover_data_para();
+			*(u8*)local = err<0 ? 2 : 0;
+		}else{
 			return -1;
 		}
+	} else if (PARA_RD == flag) {
+		*(u8*)remote = *(u8*)local;
 	} else {
 		return -1;
 	}
@@ -13848,7 +13893,7 @@ s8 one_para_adr_set_processing(const s8 *src, para_stream *ps)
 	u16 para_table_size = 0;
 	USR_AUTHORITY adr_permission = 0;
 	md_adr_info table_para_adr;
-	void *ptable_para_dat;
+	void *ptable_para_dat = NULL;
 
 	if ((NULL == ps) || (NULL == (ps->next)) || (NULL == src)) {
 		return -1;

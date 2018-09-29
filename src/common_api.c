@@ -11,7 +11,8 @@ description:
 #include "helios.h"
 #include "common_api.h"
 #include "para_table.h"
-
+#include <arpa/inet.h>
+#include <stdio.h>
 
 /***************************para define*******************************/
 typedef union {
@@ -132,3 +133,35 @@ s32 reset_auto_manual_scan_flag(md_adr_info *md_adr)
 	return 0;
 }
 
+//返回值大于0正确
+s32 ipv4_address_check(const char *str)
+{
+    struct in_addr addr;
+    int ret;
+
+    ret = inet_pton(AF_INET, str, &addr);
+
+/*     if (ret > 0);
+    else if (ret < 0)
+        printf("EAFNOSUPPORT: %d\n", strerror(local_errno));
+    else
+        printf("\"%s\" is not a valid IPv4 address\n", str); */
+    return ret;
+}
+
+//返回1正确
+s32 ipv4_mask_check(char* subnet)
+{
+    if(ipv4_address_check (subnet))
+    {
+        unsigned int b = 0, i, n[4];
+        sscanf(subnet, "%u.%u.%u.%u", &n[3], &n[2], &n[1], &n[0]);
+        for(i = 0; i < 4; ++i) //将子网掩码存入32位无符号整型
+            b += n[i] << (i * 8); 
+        b = ~b + 1;
+        if((b & (b - 1)) == 0)   //判断是否为2^n
+            return 1;
+    }
+    
+    return 0;
+}

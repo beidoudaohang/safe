@@ -1600,9 +1600,9 @@ s8 exmod_data_restore(md_adr_info *md_adr, u8 mod_index)
 			break;
 		case MOD_TYPE_PA:
 			if(md_adr->mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_UL){
-				rs485_pa_att_th_send(sys_num, (void*)&exmod_para_a[mod_index].md_basic.att, UL);
+				rs485_pa_att_th_send(sys_num, (void*)&exmod_para_a[mod_index].md_sundry.dig_sundry.att_ul.pa_att, UL);
 			}else if(md_adr->mod_adr_t.mod_sub_adr.mod_link == MOD_LINK_DL){
-				rs485_pa_att_th_send(sys_num, (void*)&exmod_para_a[mod_index].md_basic.att, DL);
+				rs485_pa_att_th_send(sys_num, (void*)&exmod_para_a[mod_index].md_sundry.dig_sundry.att_dl.pa_att, DL);
 			}
 			break;
 		default:
